@@ -35,19 +35,19 @@ class SimpleIterationTest {
     @Test
     void SimpleIterationNullFunctionTest() { // если функция = null
         assertThrows(IllegalArgumentException.class,
-                () -> new SimpleIteration(null, 1e-6, 100));
+                () -> new SimpleIteration(null, 1e-6, 100, 0.0));
     }
 
     @Test
     void SimpleIterationPrecisionTest() { // отрицательная точность
         assertThrows(IllegalArgumentException.class,
-                () -> new SimpleIteration(function, -1e-6, 1000));
+                () -> new SimpleIteration(function, -1e-6, 1000, 0.0));
     }
 
     @Test
     void SimpleIterationMaxIterationsTest() { // отрицательное число итераций
         assertThrows(IllegalArgumentException.class,
-                () -> new SimpleIteration(function, 1e-6, -100));
+                () -> new SimpleIteration(function, 1e-6, -100, 0.0));
     }
 
     @Test

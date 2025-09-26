@@ -3,6 +3,7 @@ package ru.ssau.tk.faible.labs.functions;
 public class SimpleIteration implements MathFunction {
     private double precision = 1e-6; // точность
     private int maxIterations = 1000; // максимальное количество итераций
+    private double initialApproximation = 0.0; // начальное приближение
     private final MathFunction phi;
 
     public SimpleIteration(MathFunction func) { // конструктор с одним параметром - функцией
@@ -13,7 +14,7 @@ public class SimpleIteration implements MathFunction {
     }
 
     // Конструктор с точностью и максимальным количеством итераций
-    public SimpleIteration(MathFunction func, double prec, int maxIter) {
+    public SimpleIteration(MathFunction func, double prec, int maxIter, double initialApprox) {
         if (func == null) { // если функция - null
             throw new IllegalArgumentException("The iteration function cannot be null");
         }
@@ -23,10 +24,17 @@ public class SimpleIteration implements MathFunction {
         if (Double.isNaN(prec) || Double.isInfinite(prec)) { // если точность - NaN или бесконечность
             throw new IllegalArgumentException(("Precision cannot be NaN or infinite"));
         }
+        if (initialApprox <= 0) { // если точность отрицательая
+            throw new IllegalArgumentException("Initial approximation must be positive");
+        }
+        if (Double.isNaN(initialApprox) || Double.isInfinite(initialApprox)) { // если точность - NaN или бесконечность
+            throw new IllegalArgumentException(("Initial approximation cannot be NaN or infinite"));
+        }
         if (maxIter <= 0 || maxIter >= 10_000_000) { // если
             throw new IllegalArgumentException("The number of iterations must be positive and < 10_000_000");
         }
         phi = func;
+        initialApproximation = initialApprox;
         precision = prec;
         maxIterations = maxIter;
     }
@@ -39,10 +47,7 @@ public class SimpleIteration implements MathFunction {
      */
 
     @Override
-    public double apply(double initialApproximation) {
-        if (Double.isNaN(initialApproximation) || Double.isInfinite(initialApproximation)) {
-            throw new IllegalArgumentException(("Initial approximation cannot be NaN or infinite"));
-        }
+    public double apply(double x) {
         double x0 = initialApproximation;
         double x1;
         int iteration = 0;
