@@ -14,17 +14,17 @@ public class SimpleIteration implements MathFunction {
 
     // Конструктор с точностью и максимальным количеством итераций
     public SimpleIteration(MathFunction func, double prec, int maxIter) {
-        if (func == null) {
+        if (func == null) { // если функция - null
             throw new IllegalArgumentException("The iteration function cannot be null");
         }
-        if (prec <= 0) {
+        if (prec <= 0) { // если точность отрицательая
             throw new IllegalArgumentException("Precision must be positive");
         }
-        if (Double.isNaN(prec) || Double.isInfinite(prec)) {
+        if (Double.isNaN(prec) || Double.isInfinite(prec)) { // если точность - NaN или бесконечность
             throw new IllegalArgumentException(("Precision cannot be NaN or infinite"));
         }
-        if (maxIter <= 0 || maxIter >= 1_000_000) {
-            throw new IllegalArgumentException("The number of iterations must be positive");
+        if (maxIter <= 0 || maxIter >= 10_000_000) { // если
+            throw new IllegalArgumentException("The number of iterations must be positive and < 10_000_000");
         }
         phi = func;
         precision = prec;

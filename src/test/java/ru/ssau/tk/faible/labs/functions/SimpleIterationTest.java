@@ -18,7 +18,7 @@ class SimpleIterationTest {
     }
 
     @Test
-    void SimpleIterationIdenticalFunctionTest() { // обычная сходящаяся функция
+    void SimpleIterationIdenticalFunctionTest() { // тождественная функция
         MathFunction f = x -> x;
         solver = new SimpleIteration(f);
         double result = solver.apply(0.0);
