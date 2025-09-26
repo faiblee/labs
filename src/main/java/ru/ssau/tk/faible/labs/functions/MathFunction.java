@@ -1,5 +1,5 @@
 package ru.ssau.tk.faible.labs.functions;
 
-interface MathFunction {
+public interface MathFunction {
     double apply(double x);
 }
