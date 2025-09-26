@@ -17,9 +17,4 @@ public class ConstantFunction implements MathFunction {
     public double getConstant() { // геттер
         return constant;
     }
-
-//    @Override
-//    public String toString() {
-//        return "ConstantFunction[constant=" + constant + "]";
-//    }
 }
