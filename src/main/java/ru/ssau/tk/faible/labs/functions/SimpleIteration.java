@@ -5,7 +5,14 @@ public class SimpleIteration implements MathFunction {
     private int maxIterations = 1000; // максимальное количество итераций
     private final MathFunction phi;
 
-    // Конструктор
+    public SimpleIteration(MathFunction func) { // конструктор с одним параметром - функцией
+        if (func == null) {
+            throw new IllegalArgumentException("The iteration function cannot be null");
+        }
+        phi = func;
+    }
+
+    // Конструктор с точностью и максимальным количеством итераций
     public SimpleIteration(MathFunction func, double prec, int maxIter) {
         if (func == null) {
             throw new IllegalArgumentException("The iteration function cannot be null");
@@ -13,7 +20,10 @@ public class SimpleIteration implements MathFunction {
         if (prec <= 0) {
             throw new IllegalArgumentException("Precision must be positive");
         }
-        if (maxIter <= 0) {
+        if (Double.isNaN(prec) || Double.isInfinite(prec)) {
+            throw new IllegalArgumentException(("Precision cannot be NaN or infinite"));
+        }
+        if (maxIter <= 0 || maxIter >= 1_000_000) {
             throw new IllegalArgumentException("The number of iterations must be positive");
         }
         phi = func;
