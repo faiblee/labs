@@ -28,6 +28,7 @@ public class SimpleIteration implements MathFunction {
      * @throws ArithmeticException if method did not converge
      */
 
+    @Override
     public double apply(double initialApproximation) {
         if (Double.isNaN(initialApproximation) || Double.isInfinite(initialApproximation)) {
             throw new IllegalArgumentException(("Initial approximation cannot be NaN or infinite"));
@@ -48,20 +49,6 @@ public class SimpleIteration implements MathFunction {
         }
 
         throw new ArithmeticException("The method did not converge within the selected number of iterations");
-    }
-
-    /**
-     * Transforms an equation of the form f(x) = 0 into the form x = phi(x)
-     * @param func - function type f(x) = 0
-     * @param lambda - relaxation parameter
-     * @return function type x = phi(x)
-     */
-
-    public static MathFunction createIterationFunction(MathFunction func, double lambda) {
-        if (func == null) {
-            throw new IllegalArgumentException("Function cannot be null");
-        }
-        return x -> x - lambda * func.apply(x);
     }
 
     // геттеры и сеттеры
