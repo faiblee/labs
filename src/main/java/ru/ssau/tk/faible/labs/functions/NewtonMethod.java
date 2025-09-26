@@ -1,14 +1,18 @@
 package ru.ssau.tk.faible.labs.functions;
 
 public class NewtonMethod implements MathFunction {
-    private static final double DEFAULT_TOLERANCE = 1e-10;
-    private static final int DEFAULT_MAX_ITERATIONS = 1000;
 
-    private final MathFunction function;
-    private final double initialGuess;
-    // Убрали: private Double solution;
+    private static final double DEFAULT_TOLERANCE = 1e-10; // точность решения
+    private static final int DEFAULT_MAX_ITERATIONS = 1000; // максимальное количество итераций
+
+    private final MathFunction function; // фукнция, для которой ищется корень
+    private final double initialGuess; // начальное приближение корня
+
 
     public NewtonMethod(MathFunction function, double initialGuess) {
+        if (function == null) {
+            throw new IllegalArgumentException("Функция не может быть null");
+        }
         this.function = function;
         this.initialGuess = initialGuess;
     }
@@ -20,35 +24,44 @@ public class NewtonMethod implements MathFunction {
 
     public double solve() {
 
-        MathFunction derivative = createDerivative(function);
+        MathFunction derivative = createDerivative(function); // создаем численную производную функции
         double x = initialGuess;
 
+        // итерационный процесс метода Ньютона
         for (int i = 0; i < DEFAULT_MAX_ITERATIONS; i++) {
+
+            // Вычисляем значение функции и производной в текущей точке
             double fx = function.apply(x);
             double fpx = derivative.apply(x);
 
+            // проверка на то,чтобы производная не была равна нулю, иначе будет деление на 0
             if (Math.abs(fpx) < DEFAULT_TOLERANCE) {
                 throw new IllegalArgumentException("Производная близка к нулю");
             }
 
-            double xNew = x - fx / fpx;
+            double xNew = x - fx / fpx; // формула Ньютона
 
+            // проверка на условие сходимости
             if (Math.abs(xNew - x) < DEFAULT_TOLERANCE) {
-                return xNew; // Просто возвращаем, не кэшируем
+                return xNew; // корень найден
             }
 
-            x = xNew;
+            x = xNew; // переходим к следующей итерации
         }
 
+        // если достигнуто максимальное число итераций без сходимости, то выбрасываем исключение
         throw new IllegalArgumentException("Метод не сошелся");
     }
 
     public double getRoot() {
-        return solve(); // Всегда вычисляет заново
+        return solve();
     }
 
+    // создаем численную производную функции с помощью формулы центральной разности
     private MathFunction createDerivative(MathFunction function) {
-        final double h = 1e-8;
+        final double h = 1e-8; // шаг дифференцирования
+
+        // вычисляем производную по формуле центральной разности
         return x -> (function.apply(x + h) - function.apply(x - h)) / (2 * h);
     }
 }
