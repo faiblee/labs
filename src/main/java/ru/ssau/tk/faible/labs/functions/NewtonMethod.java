@@ -17,12 +17,9 @@ public class NewtonMethod implements MathFunction {
         this.initialGuess = initialGuess;
     }
 
-    @Override
-    public double apply(double x) {
-        return function.apply(x);
-    }
 
-    public double solve() {
+    @Override
+    public double apply(double x1) {
 
         MathFunction derivative = createDerivative(function); // создаем численную производную функции
         double x = initialGuess;
@@ -53,9 +50,6 @@ public class NewtonMethod implements MathFunction {
         throw new IllegalArgumentException("Метод не сошелся");
     }
 
-    public double getRoot() {
-        return solve();
-    }
 
     // создаем численную производную функции с помощью формулы центральной разности
     private MathFunction createDerivative(MathFunction function) {
