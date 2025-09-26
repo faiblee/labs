@@ -22,16 +22,6 @@ class NewtonMethodTest {
         Assertions.assertEquals(5.0, result, 1e-10);
     }
 
-    // решение уравнения положительный корень
-    @Test
-    void solve_ShouldFindPositiveRoot() {
-        MathFunction f = x -> x * x - 25; // x² - 25 = 0
-        NewtonMethod solver = new NewtonMethod(f, 10.0);
-
-        double root = solver.apply(0.0);
-        Assertions.assertEquals(5.0, root, 1e-6);
-    }
-
     // решение уравнения отрицательный корень
     @Test
     void solve_ShouldFindNegativeRoot() {
