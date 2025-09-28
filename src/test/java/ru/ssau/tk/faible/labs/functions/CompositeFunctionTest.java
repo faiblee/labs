@@ -8,7 +8,8 @@ class CompositeFunctionTest {
 
     private static final double PRECISION = 1e-6;
 
-    @Test // сложная функция f(g(x))
+    @Test
+        // сложная функция f(g(x))
     void CompositeFunctionBasicTest() { // ((x+1)+2)
         MathFunction add1 = x -> x + 1;
         MathFunction add2 = x -> x + 2;
@@ -17,7 +18,8 @@ class CompositeFunctionTest {
         assertEquals(4.0, function.apply(1.0), PRECISION);
     }
 
-    @Test // сложная функция f(f(x))
+    @Test
+        // сложная функция f(f(x))
     void CompositeFunctionSameFunction() { // (x^2)^2
         MathFunction pow2 = x -> Math.pow(x, 2);
         CompositeFunction function = new CompositeFunction(pow2, pow2);
@@ -25,7 +27,8 @@ class CompositeFunctionTest {
         assertEquals(16.0, function.apply(2.0), PRECISION);
     }
 
-    @Test // сложная функция f(g(h(x)))
+    @Test
+        // сложная функция f(g(h(x)))
     void CompositeFunctionComplexFunction() { // (2*(x+1))^2
         MathFunction add1 = x -> x + 1;
         MathFunction mult2 = x -> 2 * x;
@@ -36,7 +39,8 @@ class CompositeFunctionTest {
         assertEquals(36.0, function.apply(2.0), PRECISION);
     }
 
-    @Test // проверка исключительных ситуаций
+    @Test
+        // проверка исключительных ситуаций
     void CompositeFunctionNullArgs() {
         MathFunction add1 = x -> x + 1;
         assertThrows(IllegalArgumentException.class, () -> new CompositeFunction(null, add1)); // firstFunc - null
@@ -44,7 +48,8 @@ class CompositeFunctionTest {
         assertThrows(IllegalArgumentException.class, () -> new CompositeFunction(null, null)); // first & second func - null
     }
 
-    @Test // тест для специальных значений Double
+    @Test
+        // тест для специальных значений Double
     void CompositeFunctionSpecialValues() {
         MathFunction add1 = x -> x + 1;
 
@@ -55,7 +60,8 @@ class CompositeFunctionTest {
         assertEquals(Double.NEGATIVE_INFINITY, function.apply(Double.NEGATIVE_INFINITY)); //(NegInf + 1) + 1 = NegInf
     }
 
-    @Test // тестирование больших сложных функций
+    @Test
+        // тестирование больших сложных функций
     void CompositeFunctionHugeComplex() {
         MathFunction add5 = x -> x + 5;
         MathFunction mult3 = x -> x * 3;
@@ -66,7 +72,8 @@ class CompositeFunctionTest {
         assertEquals(68.0, function.apply(2.0), PRECISION);
     }
 
-    @Test // тестирование с классами SqrFunction и IdentityFunction
+    @Test
+        // тестирование с классами SqrFunction и IdentityFunction
     void CompositeFunctionSqrIdentityFunction() {
         MathFunction square = new SqrFunction();
         MathFunction identity = new IdentityFunction();
@@ -75,7 +82,8 @@ class CompositeFunctionTest {
         assertEquals(16.0, function.apply(4.0), PRECISION);
     }
 
-    @Test // тестирование с классами NewtonMethod и SimpleIteration
+    @Test
+        // тестирование с классами NewtonMethod и SimpleIteration
     void CompositeFunctionNewtonSimpleIterationMethod() {
         MathFunction Newton = new NewtonMethod(x -> x * x - 25, -10.0); // -5
         MathFunction SimpleIter = new SimpleIteration(x -> 0.5 * x + 2, PRECISION, 100, 1.0); // 4
@@ -88,7 +96,8 @@ class CompositeFunctionTest {
         assertEquals(7.0, functionSimpleIter.apply(0.0), PRECISION);
     }
 
-    @Test // тест andThen с двумя LinkedList функциями
+    @Test
+        // тест andThen с двумя LinkedList функциями
     void andThenWithTwoLinkedListTabulatedFunctionsTest() {
         // Первая функция: f(x) = x + 1
         double[] xValues1 = {1.0, 2.0, 3.0, 4.0};
@@ -113,10 +122,11 @@ class CompositeFunctionTest {
         assertEquals(7.0, composite.apply(2.5), PRECISION); // 2*2.5 + 2 = 7
     }
 
-    @Test // тест andThen с комбинацией разных видов функций
+    @Test
+        // тест andThen с комбинацией разных видов функций
     void andThenWithThreeTabulatedFunctions() {
 
-        MathFunction phi = x -> 0.5*x + 1;
+        MathFunction phi = x -> 0.5 * x + 1;
         MathFunction f = new SimpleIteration(phi, PRECISION, 500, 0.5);
 
         // f(x) = x + 1
@@ -133,6 +143,29 @@ class CompositeFunctionTest {
         // Проверяем значения
         assertEquals(6.0, composite.apply(0.0), PRECISION);
 
+    }
+
+    @Test // тест andThen с LinkedListTabulated и ArrayTabulated функциями
+    void andThenWithLinkedListAndArrayTabulatedFunctionsTest() {
+        MathFunction f = x -> x + 1;
+        MathFunction func1 = new LinkedListTabulatedFunction(f, 1.0, 4.0, 4);
+
+        // Вторая функция: g(x) = x * 2
+        double[] xValues2 = {2.0, 3.0, 4.0, 5.0};
+        double[] yValues2 = {4.0, 6.0, 8.0, 10.0};
+        MathFunction func2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        // Композиция: h(x) = g(f(x)) = (x + 1) * 2 = 2x + 2
+        MathFunction composite = func1.andThen(func2);
+
+        // значения которые уже есть
+        assertEquals(4.0, composite.apply(1.0), PRECISION); // 2*1 + 2 = 4
+        assertEquals(6.0, composite.apply(2.0), PRECISION); // 2*2 + 2 = 6
+        assertEquals(8.0, composite.apply(3.0), PRECISION); // 2*3 + 2 = 8
+
+        // интерполяция
+        assertEquals(5.0, composite.apply(1.5), PRECISION); // 2*1.5 + 2 = 5
+        assertEquals(7.0, composite.apply(2.5), PRECISION); // 2*2.5 + 2 = 7
     }
 
 }
