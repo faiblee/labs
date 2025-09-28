@@ -77,8 +77,8 @@ class CompositeFunctionTest {
 
     @Test // тестирование с классами NewtonMethod и SimpleIteration
     void CompositeFunctionNewtonSimpleIterationMethod() {
-        MathFunction Newton = new NewtonMethod(x-> x * x - 25, -10.0); // -5
-        MathFunction SimpleIter = new SimpleIteration(x->0.5*x+2, PRECISION, 100, 1.0); // 4
+        MathFunction Newton = new NewtonMethod(x -> x * x - 25, -10.0); // -5
+        MathFunction SimpleIter = new SimpleIteration(x -> 0.5 * x + 2, PRECISION, 100, 1.0); // 4
         MathFunction add3 = x -> x + 3;
 
         CompositeFunction functionNewton = new CompositeFunction(Newton, add3); // (-5) + 3
@@ -87,4 +87,52 @@ class CompositeFunctionTest {
         assertEquals(-2.0, functionNewton.apply(0.0), PRECISION);
         assertEquals(7.0, functionSimpleIter.apply(0.0), PRECISION);
     }
+
+    @Test // тест andThen с двумя LinkedList функциями
+    void andThenWithTwoLinkedListTabulatedFunctionsTest() {
+        // Первая функция: f(x) = x + 1
+        double[] xValues1 = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues1 = {2.0, 3.0, 4.0, 5.0};
+        MathFunction func1 = new LinkedListTabulatedFunction(xValues1, yValues1);
+
+        // Вторая функция: g(x) = x * 2
+        double[] xValues2 = {2.0, 3.0, 4.0, 5.0};
+        double[] yValues2 = {4.0, 6.0, 8.0, 10.0};
+        MathFunction func2 = new LinkedListTabulatedFunction(xValues2, yValues2);
+
+        // Композиция: h(x) = g(f(x)) = (x + 1) * 2 = 2x + 2
+        MathFunction composite = func1.andThen(func2);
+
+        // значения которые уже есть
+        assertEquals(4.0, composite.apply(1.0), PRECISION); // 2*1 + 2 = 4
+        assertEquals(6.0, composite.apply(2.0), PRECISION); // 2*2 + 2 = 6
+        assertEquals(8.0, composite.apply(3.0), PRECISION); // 2*3 + 2 = 8
+
+        // интерполяция
+        assertEquals(5.0, composite.apply(1.5), PRECISION); // 2*1.5 + 2 = 5
+        assertEquals(7.0, composite.apply(2.5), PRECISION); // 2*2.5 + 2 = 7
+    }
+
+    @Test // тест andThen с комбинацией разных видов функций
+    void andThenWithThreeTabulatedFunctions() {
+
+        MathFunction phi = x -> 0.5*x + 1;
+        MathFunction f = new SimpleIteration(phi, PRECISION, 500, 0.5);
+
+        // f(x) = x + 1
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {2.0, 3.0, 4.0};
+        MathFunction g = new LinkedListTabulatedFunction(xValues1, yValues1);
+
+        // g(x) = x * 2 - простая лямбда-функция
+        MathFunction h = x -> x * 2;
+
+        // сначала находим корень x=0.5x+1 через метод простых итераций, потом прибавляем 1 и умножаем на 2
+        MathFunction composite = f.andThen(g).andThen(h);
+
+        // Проверяем значения
+        assertEquals(6.0, composite.apply(0.0), PRECISION);
+
+    }
+
 }
