@@ -1,6 +1,6 @@
 package ru.ssau.tk.faible.labs.functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction {
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable{
     protected int count;
     private Node head;
 
@@ -49,6 +49,79 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction {
                 double y = source.apply(x);
                 addNode(x, y);
             }
+        }
+    }
+    @Override
+    public void insert(double x, double y) {
+        // если список пустой, просто добавляем узел
+        if (head == null) {
+            addNode(x, y);
+            return;
+        }
+
+        // проверяем, существует ли уже узел с таким x
+        for (int i = 0; i < count; i++) {
+            Node currentNode = getNode(i);
+            if (isEqual(currentNode.x, x)) {
+                // если нашли узел с таким x, обновляем y и выходим
+                currentNode.y = y;
+                return;
+            }
+        }
+
+        // создаем новый узел
+        Node newNode = new Node(x, y);
+
+        // если новый узел должен быть в начале списка
+        if (x < head.x) {
+            Node last = head.prev;
+
+            // устанавливаем связи для нового узла
+            newNode.next = head;
+            newNode.prev = last;
+
+            // обновляем связи соседних узлов
+            head.prev = newNode;
+            last.next = newNode;
+
+            // обновляем голову списка
+            head = newNode;
+            count++;
+            return;
+        }
+
+        // если новый узел должен быть в конце списка
+        if (x > head.prev.x) {
+            Node last = head.prev;
+
+            // устанавливаем связи для нового узла
+            newNode.next = head;
+            newNode.prev = last;
+
+            // обновляем связи соседних узлов
+            last.next = newNode;
+            head.prev = newNode;
+
+            count++;
+            return;
+        }
+
+        // поиск места для вставки в середину списка
+        Node current = head;
+        for (int i = 0; i < count; i++) {
+            if (current.x < x && x < current.next.x) {
+                // нашли место для вставки между current и current.next
+                newNode.next = current.next;
+                newNode.prev = current;
+
+                // обновляем связи соседних узлов
+                current.next.prev = newNode;
+                current.next = newNode;
+
+                count++;
+                return;
+            }
+            current = current.next;
         }
     }
 

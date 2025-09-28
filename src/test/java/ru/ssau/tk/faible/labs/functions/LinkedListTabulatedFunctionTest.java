@@ -241,5 +241,198 @@ class LinkedListTabulatedFunctionTest {
         assertEquals(-2.0, quadraticFunc.apply(0.0), PRECISION); // слева
         assertEquals(23.0, quadraticFunc.apply(5.0), PRECISION); // справа
     }
+    @Test
+    void insertIntoEmptyListTest() {
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[]{}, new double[]{});
 
+        function.insert(5.0, 10.0);
+        assertEquals(1, function.getCount());
+        assertEquals(5.0, function.getX(0), PRECISION);
+        assertEquals(10.0, function.getY(0), PRECISION);
+        assertEquals(5.0, function.leftBound(), PRECISION);
+        assertEquals(5.0, function.rightBound(), PRECISION);
+    }
+
+    @Test
+    void insertAtBeginningTest() {
+        double[] xValues = {2.0, 3.0, 4.0};
+        double[] yValues = {20.0, 30.0, 40.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(1.0, 10.0);
+
+        assertEquals(4, function.getCount());
+        assertEquals(1.0, function.getX(0), PRECISION);
+        assertEquals(10.0, function.getY(0), PRECISION);
+        assertEquals(2.0, function.getX(1), PRECISION);
+        assertEquals(20.0, function.getY(1), PRECISION);
+        assertEquals(1.0, function.leftBound(), PRECISION);
+    }
+
+    @Test
+    void insertAtEndTest() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(4.0, 40.0);
+
+        assertEquals(4, function.getCount());
+        assertEquals(3.0, function.getX(2), PRECISION);
+        assertEquals(30.0, function.getY(2), PRECISION);
+        assertEquals(4.0, function.getX(3), PRECISION);
+        assertEquals(40.0, function.getY(3), PRECISION);
+        assertEquals(4.0, function.rightBound(), PRECISION);
+    }
+
+    @Test
+    void insertInMiddleTest() {
+        double[] xValues = {1.0, 3.0, 5.0};
+        double[] yValues = {10.0, 30.0, 50.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(2.0, 20.0);
+        function.insert(4.0, 40.0);
+
+        assertEquals(5, function.getCount());
+        assertEquals(1.0, function.getX(0), PRECISION);
+        assertEquals(2.0, function.getX(1), PRECISION);
+        assertEquals(3.0, function.getX(2), PRECISION);
+        assertEquals(4.0, function.getX(3), PRECISION);
+        assertEquals(5.0, function.getX(4), PRECISION);
+
+        assertEquals(10.0, function.getY(0), PRECISION);
+        assertEquals(20.0, function.getY(1), PRECISION);
+        assertEquals(30.0, function.getY(2), PRECISION);
+        assertEquals(40.0, function.getY(3), PRECISION);
+        assertEquals(50.0, function.getY(4), PRECISION);
+    }
+
+    @Test
+    void insertDuplicateXTest() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // вставляем узел с существующим x
+        function.insert(2.0, 25.0);
+
+        // количество узлов не должно измениться
+        assertEquals(3, function.getCount());
+        // значение y должно обновиться
+        assertEquals(25.0, function.getY(1), PRECISION);
+        // остальные значения должны остаться прежними
+        assertEquals(10.0, function.getY(0), PRECISION);
+        assertEquals(30.0, function.getY(2), PRECISION);
+    }
+
+    @Test
+    void insertMultipleNodesTest() {
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[]{}, new double[]{});
+
+        // вставляем узлы в разном порядке
+        function.insert(3.0, 30.0);
+        function.insert(1.0, 10.0);
+        function.insert(5.0, 50.0);
+        function.insert(2.0, 20.0);
+        function.insert(4.0, 40.0);
+
+        assertEquals(5, function.getCount());
+
+        // проверяем правильную сортировку по x
+        assertEquals(1.0, function.getX(0), PRECISION);
+        assertEquals(2.0, function.getX(1), PRECISION);
+        assertEquals(3.0, function.getX(2), PRECISION);
+        assertEquals(4.0, function.getX(3), PRECISION);
+        assertEquals(5.0, function.getX(4), PRECISION);
+
+        assertEquals(10.0, function.getY(0), PRECISION);
+        assertEquals(20.0, function.getY(1), PRECISION);
+        assertEquals(30.0, function.getY(2), PRECISION);
+        assertEquals(40.0, function.getY(3), PRECISION);
+        assertEquals(50.0, function.getY(4), PRECISION);
+    }
+
+    @Test
+    void insertWithCircularLinksTest() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function.insert(1.5, 15.0);
+
+        // проверяем, что циклические связи сохранились через граничные значения
+        assertEquals(4, function.getCount());
+        assertEquals(1.0, function.leftBound(), PRECISION);
+        assertEquals(3.0, function.rightBound(), PRECISION);
+
+        // проверяем, что можно пройти по всем элементам
+        for (int i = 0; i < function.getCount(); i++) {
+            function.getX(i);
+            function.getY(i);
+        }
+    }
+
+
+    @Test
+    void insertAndInterpolateTest() {
+        double[] xValues = {1.0, 3.0};
+        double[] yValues = {10.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // вставляем узел в середину
+        function.insert(2.0, 20.0);
+
+        // проверяем интерполяцию
+        assertEquals(15.0, function.apply(1.5), PRECISION);
+        assertEquals(25.0, function.apply(2.5), PRECISION);
+    }
+
+    @Test
+    void insertAndExtrapolateTest() {
+        double[] xValues = {2.0, 3.0};
+        double[] yValues = {20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // вставляем узел в начало
+        function.insert(1.0, 10.0);
+
+        // проверяем экстраполяцию слева
+        assertEquals(0.0, function.apply(0.0), PRECISION);
+
+        // вставляем узел в конец
+        function.insert(4.0, 40.0);
+
+        // проверяем экстраполяцию справа
+        assertEquals(50.0, function.apply(5.0), PRECISION);
+    }
+
+    @Test
+    void insertNegativeValuesTest() {
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[]{}, new double[]{});
+
+        function.insert(-3.0, -30.0);
+        function.insert(-1.0, -10.0);
+        function.insert(-2.0, -20.0);
+
+        assertEquals(3, function.getCount());
+        assertEquals(-3.0, function.getX(0), PRECISION);
+        assertEquals(-2.0, function.getX(1), PRECISION);
+        assertEquals(-1.0, function.getX(2), PRECISION);
+    }
+
+    @Test
+    void insertSingleNodeThenUpdateTest() {
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[]{}, new double[]{});
+
+        function.insert(5.0, 50.0);
+        assertEquals(1, function.getCount());
+        assertEquals(50.0, function.getY(0), PRECISION);
+
+        // обновляем значение
+        function.insert(5.0, 55.0);
+        assertEquals(1, function.getCount());
+        assertEquals(55.0, function.getY(0), PRECISION);
+    }
 }
+
