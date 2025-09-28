@@ -155,7 +155,7 @@ class CompositeFunctionTest {
         double[] yValues2 = {4.0, 6.0, 8.0, 10.0};
         MathFunction func2 = new ArrayTabulatedFunction(xValues2, yValues2);
 
-        // Композиция: h(x) = g(f(x)) = (x + 1) * 2 = 2x + 2
+        // композиция: h(x) = g(f(x)) = (x + 1) * 2 = 2x + 2
         MathFunction composite = func1.andThen(func2);
 
         // значения которые уже есть
@@ -166,6 +166,60 @@ class CompositeFunctionTest {
         // интерполяция
         assertEquals(5.0, composite.apply(1.5), PRECISION); // 2*1.5 + 2 = 5
         assertEquals(7.0, composite.apply(2.5), PRECISION); // 2*2.5 + 2 = 7
+    }
+    @Test
+    void andThenWithNegativeValuesTest() {
+        // f(x) = |x|
+        double[] xValues1 = {-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0};
+        double[] yValues1 = {3.0, 2.0, 1.0, 0.0, 1.0, 2.0, 3.0};
+        ArrayTabulatedFunction func1 = new ArrayTabulatedFunction(xValues1, yValues1);
+
+        // g(x) = √x
+        MathFunction sqrt = Math::sqrt;
+        ArrayTabulatedFunction func2 = new ArrayTabulatedFunction(sqrt, 0.0, 4.0, 5);
+
+        // композиция: g(f(x)) = √|x|
+        MathFunction composite = func1.andThen(func2);
+
+        assertEquals(Math.sqrt(3.0), composite.apply(-3.0), PRECISION);
+        assertEquals(Math.sqrt(2.0), composite.apply(-2.0), PRECISION);
+        assertEquals(0.0, composite.apply(0.0), PRECISION);
+        assertEquals(1.0, composite.apply(1.0), PRECISION);
+        assertEquals(Math.sqrt(3.0), composite.apply(3.0), PRECISION);
+    }
+    @Test
+    void andThenWithExtremeValuesTest() {
+        // f(x) с очень большими значениями
+        double[] xValues1 = {1e-10, 1.0, 1e10};
+        double[] yValues1 = {1e-10, 1.0, 1e10};
+        ArrayTabulatedFunction func1 = new ArrayTabulatedFunction(xValues1, yValues1);
+
+        // g(x) = log(x)
+        MathFunction log = Math::log;
+
+        // композиция: g(f(x)) = log(x)
+        MathFunction composite = func1.andThen(log);
+
+        assertEquals(Math.log(1e-10), composite.apply(1e-10), PRECISION);
+        assertEquals(0.0, composite.apply(1.0), PRECISION);
+        assertEquals(Math.log(1e10), composite.apply(1e10), PRECISION);
+    }
+    @Test
+    void andThenWithIdentityFunctionTest() {
+        // f(x) = 2x + 1
+        MathFunction linear = x -> 2 * x + 1;
+        ArrayTabulatedFunction func = new ArrayTabulatedFunction(linear, 0.0, 3.0, 4);
+
+        // g(x) = x (тождественная функция)
+        MathFunction identity = x -> x;
+
+        // Композиция: g(f(x)) = 2x + 1
+        MathFunction composite = func.andThen(identity);
+
+        assertEquals(1.0, composite.apply(0.0), PRECISION);
+        assertEquals(3.0, composite.apply(1.0), PRECISION);
+        assertEquals(5.0, composite.apply(2.0), PRECISION);
+        assertEquals(7.0, composite.apply(3.0), PRECISION);
     }
 
 }
