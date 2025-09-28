@@ -276,18 +276,219 @@ class ArrayTabulatedFunctionTest {
         function.insert(3.0, 30.0);
         function.insert(0.0, 0.0);
 
-        // Проверяем, что функция продолжает корректно работать
+        // проверяем, что функция продолжает корректно работать
         Assertions.assertEquals(0.0, function.apply(0.0), PRECISION);
         Assertions.assertEquals(15.0, function.apply(1.5), PRECISION);
         Assertions.assertEquals(30.0, function.apply(3.0), PRECISION);
         Assertions.assertEquals(-10.0, function.apply(-1.0), PRECISION);
         Assertions.assertEquals(70.0, function.apply(7.0), PRECISION);
 
-        // Проверяем поиск индексов
+        // проверяем поиск индексов
         Assertions.assertEquals(0, function.indexOfX(0.0));
         Assertions.assertEquals(3, function.indexOfX(3.0));
         Assertions.assertEquals(0, function.indexOfY(0.0));
         Assertions.assertEquals(3, function.indexOfY(30.0));
+    }
+    @Test
+    void removeFirstElementTest() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(0);
+
+        Assertions.assertEquals(3, function.getCount());
+        Assertions.assertEquals(2.0, function.getX(0), PRECISION);
+        Assertions.assertEquals(3.0, function.getX(1), PRECISION);
+        Assertions.assertEquals(4.0, function.getX(2), PRECISION);
+        Assertions.assertEquals(20.0, function.getY(0), PRECISION);
+        Assertions.assertEquals(30.0, function.getY(1), PRECISION);
+        Assertions.assertEquals(40.0, function.getY(2), PRECISION);
+        Assertions.assertEquals(2.0, function.leftBound(), PRECISION);
+    }
+
+    @Test
+    void removeLastElementTest() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(3);
+
+        Assertions.assertEquals(3, function.getCount());
+        Assertions.assertEquals(1.0, function.getX(0), PRECISION);
+        Assertions.assertEquals(2.0, function.getX(1), PRECISION);
+        Assertions.assertEquals(3.0, function.getX(2), PRECISION);
+        Assertions.assertEquals(10.0, function.getY(0), PRECISION);
+        Assertions.assertEquals(20.0, function.getY(1), PRECISION);
+        Assertions.assertEquals(30.0, function.getY(2), PRECISION);
+        Assertions.assertEquals(3.0, function.rightBound(), PRECISION);
+    }
+
+    @Test
+    void removeMiddleElementTest() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(1);
+
+        Assertions.assertEquals(3, function.getCount());
+        Assertions.assertEquals(1.0, function.getX(0), PRECISION);
+        Assertions.assertEquals(3.0, function.getX(1), PRECISION);
+        Assertions.assertEquals(4.0, function.getX(2), PRECISION);
+        Assertions.assertEquals(10.0, function.getY(0), PRECISION);
+        Assertions.assertEquals(30.0, function.getY(1), PRECISION);
+        Assertions.assertEquals(40.0, function.getY(2), PRECISION);
+    }
+
+    @Test
+    void removeMultipleElementsTest() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0, 5.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0, 50.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(2); // удаляем элемент 3.0
+        function.remove(1); // удаляем элемент 2.0 (теперь он на позиции 1 после первого удаления)
+
+        Assertions.assertEquals(3, function.getCount());
+        Assertions.assertEquals(1.0, function.getX(0), PRECISION);
+        Assertions.assertEquals(4.0, function.getX(1), PRECISION);
+        Assertions.assertEquals(5.0, function.getX(2), PRECISION);
+        Assertions.assertEquals(10.0, function.getY(0), PRECISION);
+        Assertions.assertEquals(40.0, function.getY(1), PRECISION);
+        Assertions.assertEquals(50.0, function.getY(2), PRECISION);
+    }
+
+    @Test
+    void removeFromTwoElementArrayTest() {
+        double[] xValues = {1.0, 2.0};
+        double[] yValues = {10.0, 20.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(0);
+
+        Assertions.assertEquals(1, function.getCount());
+        Assertions.assertEquals(2.0, function.getX(0), PRECISION);
+        Assertions.assertEquals(20.0, function.getY(0), PRECISION);
+        Assertions.assertEquals(2.0, function.leftBound(), PRECISION);
+        Assertions.assertEquals(2.0, function.rightBound(), PRECISION);
+    }
+
+    @Test
+    void removeInvalidIndexTest() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            function.remove(-1);
+        });
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            function.remove(3);
+        });
+    }
+
+    @Test
+    void removeLastPointTest() {
+        double[] xValues = {1.0};
+        double[] yValues = {10.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            function.remove(0);
+        });
+    }
+
+    @Test
+    void removeAndCheckInterpolationTest() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(1); // Удаляем точку (2.0, 20.0)
+
+        // проверяем интерполяцию между оставшимися точками
+        Assertions.assertEquals(15.0, function.apply(1.5), PRECISION); // между 1.0 и 3.0
+        Assertions.assertEquals(25.0, function.apply(2.5), PRECISION); // между 1.0 и 3.0
+        Assertions.assertEquals(35.0, function.apply(3.5), PRECISION); // между 3.0 и 4.0
+    }
+
+    @Test
+    void removeAndCheckExtrapolationTest() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(0); // Удаляем первую точку
+
+        // проверяем экстраполяцию слева
+        Assertions.assertEquals(0.0, function.apply(0.0), PRECISION);
+
+        function.remove(function.getCount() - 1); // Удаляем последнюю точку
+
+        // проверяем экстраполяцию справа
+        Assertions.assertEquals(50.0, function.apply(5.0), PRECISION);
+    }
+
+    @Test
+    void removeAndFloorIndexOfXTest() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(1); // Удаляем точку 2.0
+
+        // проверяем floorIndexOfX после удаления
+        Assertions.assertEquals(0, function.floorIndexOfX(0.5));  // до первого
+        Assertions.assertEquals(0, function.floorIndexOfX(1.0));  // точно первый
+        Assertions.assertEquals(0, function.floorIndexOfX(1.5));  // между 1 и 3
+        Assertions.assertEquals(0, function.floorIndexOfX(2.0));  // между 1 и 3
+        Assertions.assertEquals(0, function.floorIndexOfX(2.5));  // между 1 и 3
+        Assertions.assertEquals(1, function.floorIndexOfX(3.0));  // точно второй
+        Assertions.assertEquals(1, function.floorIndexOfX(3.5));  // между 3 и 4
+        Assertions.assertEquals(2, function.floorIndexOfX(4.0));  // точно третий
+        Assertions.assertEquals(3, function.floorIndexOfX(5.0));  // после последнего
+    }
+
+    @Test
+    void removeAndIndexOfTest() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(1); // удаляем точку (2.0, 20.0)
+
+        // проверяем поиск индексов после удаления
+        Assertions.assertEquals(0, function.indexOfX(1.0));
+        Assertions.assertEquals(1, function.indexOfX(3.0));
+        Assertions.assertEquals(2, function.indexOfX(4.0));
+        Assertions.assertEquals(-1, function.indexOfX(2.0)); // удаленная точка
+
+        Assertions.assertEquals(0, function.indexOfY(10.0));
+        Assertions.assertEquals(1, function.indexOfY(30.0));
+        Assertions.assertEquals(2, function.indexOfY(40.0));
+        Assertions.assertEquals(-1, function.indexOfY(20.0)); // удаленное значение
+    }
+
+    @Test
+    void removeAllButOneTest() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        function.remove(0); // удаляем первую точку
+        function.remove(0); // удаляем новую первую точку (бывшую вторую)
+
+        Assertions.assertEquals(1, function.getCount());
+        Assertions.assertEquals(3.0, function.getX(0), PRECISION);
+        Assertions.assertEquals(30.0, function.getY(0), PRECISION);
+
+        // проверяем, что нельзя удалить последнюю точку
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            function.remove(0);
+        });
     }
 
 }
