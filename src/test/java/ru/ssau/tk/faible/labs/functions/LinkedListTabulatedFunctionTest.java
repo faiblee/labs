@@ -1,5 +1,6 @@
 package ru.ssau.tk.faible.labs.functions;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -433,6 +434,116 @@ class LinkedListTabulatedFunctionTest {
         function.insert(5.0, 55.0);
         assertEquals(1, function.getCount());
         assertEquals(55.0, function.getY(0), PRECISION);
+    }
+
+    @BeforeEach
+    void setUp() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0, 5.0};
+        double[] yValues = {10.0, 20.0, 30.0, 40.0, 50.0};
+        function = new LinkedListTabulatedFunction(xValues, yValues);
+    }
+
+    @Test
+    // удаление элемента из начала списка
+    void removeFirstElementTest() {
+        function.remove(0);
+
+        assertEquals(4, function.getCount());
+        assertEquals(2.0, function.getX(0), PRECISION);
+        assertEquals(20.0, function.getY(0), PRECISION);
+        assertEquals(5.0, function.getX(3), PRECISION);
+        assertEquals(50.0, function.getY(3), PRECISION);
+    }
+
+    @Test
+    // удаление элемента из конца
+    void removeLastElementTest() {
+        function.remove(4);
+
+        assertEquals(4, function.getCount());
+        assertEquals(1.0, function.getX(0), PRECISION);
+        assertEquals(10.0, function.getY(0), PRECISION);
+        assertEquals(4.0, function.getX(3), PRECISION);
+        assertEquals(40.0, function.getY(3), PRECISION);
+    }
+
+    @Test
+    // удаление элемента из середины
+    void removeMiddleElementTest() {
+        function.remove(2);
+
+        assertEquals(4, function.getCount());
+        assertEquals(2.0, function.getX(1), PRECISION);
+        assertEquals(4.0, function.getX(2), PRECISION);
+
+        assertEquals(20.0, function.getY(1), PRECISION);
+        assertEquals(40.0, function.getY(2), PRECISION);
+    }
+
+    @Test
+    // удаление head
+    void removeHeadTest() {
+        double originalFirstX = function.getX(0);
+        function.remove(0);
+
+        // нулевой элемент должен измениться
+        assertNotEquals(originalFirstX, function.getX(0));
+        assertEquals(2.0, function.getX(0), PRECISION);
+    }
+
+    @Test
+    // удаление для функции из двух элементов
+    void removeShouldWorkWithTwoElements() {
+        double[] xValues = {1.0, 2.0};
+        double[] yValues = {10.0, 20.0};
+        LinkedListTabulatedFunction twoElementFunc = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // удаляем нулевой элемент
+        twoElementFunc.remove(0);
+        assertEquals(1, twoElementFunc.getCount());
+        assertEquals(2.0, twoElementFunc.getX(0), PRECISION);
+        assertEquals(20.0, twoElementFunc.getY(0), PRECISION);
+    }
+
+    @Test
+    // удаление для функции из одного элемента
+    void removeShouldWorkWithSingleElement() {
+        double[] xValues = {1.0};
+        double[] yValues = {10.0};
+        LinkedListTabulatedFunction singleElementFunc = new LinkedListTabulatedFunction(xValues, yValues);
+
+        singleElementFunc.remove(0);
+
+        assertEquals(0, singleElementFunc.getCount());
+
+        singleElementFunc.insert(0.0, 1.0);
+
+        assertEquals(0.0, singleElementFunc.getX(0));
+        assertEquals(1.0, singleElementFunc.getY(0));
+    }
+
+    @Test
+    // несколько удалений подряд
+    void removeSomeRemovalsTest() {
+        // Удаляем несколько элементов подряд
+        function.remove(2); // Удаляем x=3.0
+        assertEquals(4, function.getCount());
+
+        function.remove(0); // Удаляем x=1.0
+        assertEquals(3, function.getCount());
+        assertEquals(2.0, function.getX(0), 1e-10);
+
+        function.remove(1); // Удаляем x=4.0 (теперь это индекс 1)
+        assertEquals(2, function.getCount());
+        assertEquals(2.0, function.getX(0), 1e-10);
+        assertEquals(5.0, function.getX(1), 1e-10);
+
+        function.remove(1); // Удаляем x=5.0
+        assertEquals(1, function.getCount());
+        assertEquals(2.0, function.getX(0), 1e-10);
+
+        function.remove(0); // Удаляем последний элемент
+        assertEquals(0, function.getCount());
     }
 }
 

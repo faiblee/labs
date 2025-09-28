@@ -1,6 +1,6 @@
 package ru.ssau.tk.faible.labs.functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable{
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
     protected int count;
     private Node head;
 
@@ -51,6 +51,27 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
             }
         }
     }
+
+    @Override
+    public void remove(int index) {
+        Node removable = getNode(index);
+
+        if (count == 1) { // если элемент единственный, очищаем голову
+            head = null;
+        } else {
+            removable.prev.next = removable.next; // связываем следующий и предыдущие узлы
+            removable.next.prev = removable.prev;
+
+            if (removable == head) {
+                head = head.next;
+            }
+        }
+
+        removable.next = null;
+        removable.prev = null;
+        count--;
+    }
+
     @Override
     public void insert(double x, double y) {
         // если список пустой, просто добавляем узел
@@ -190,7 +211,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
     @Override
-    protected int floorIndexOfX(double x) { // нахождение промежутка для x  по значению
+    protected int floorIndexOfX(double x) { // нахождение промежутка для x по значению
         if (x < getX(0)) { // если x меньше первого элемента => меньше всех
             return 0;
         }
@@ -215,7 +236,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     @Override
     protected double interpolate(double x, int floorIndex) { // интерполяция для промежутка
         if (count == 1) return getY(0);
-        return interpolate(x, getX(floorIndex), getX(floorIndex+1), getY(floorIndex), getY(floorIndex + 1));
+        return interpolate(x, getX(floorIndex), getX(floorIndex + 1), getY(floorIndex), getY(floorIndex + 1));
     }
 
     @Override
@@ -227,6 +248,6 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     @Override
     protected double extrapolateRight(double x) { // экстраполяция справа <=> интерполяция от самого правого промежутка
         if (count == 1) return getY(0);
-        return interpolate(x, getX(count-2), getX(count-1), getY(count-2), getY(count-1));
+        return interpolate(x, getX(count - 2), getX(count - 1), getY(count - 2), getY(count - 1));
     }
 }
