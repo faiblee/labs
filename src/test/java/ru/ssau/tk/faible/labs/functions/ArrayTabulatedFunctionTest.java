@@ -1,6 +1,7 @@
 package ru.ssau.tk.faible.labs.functions;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ArrayTabulatedFunctionTest {
@@ -15,9 +16,9 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка корректного создания объекта
-        Assertions.assertEquals(3, function.getCount(),PRECISION);
-        Assertions.assertEquals(1.0, function.leftBound(),PRECISION);
-        Assertions.assertEquals(3.0, function.rightBound(),PRECISION);
+        Assertions.assertEquals(3, function.getCount(), PRECISION);
+        Assertions.assertEquals(1.0, function.leftBound(), PRECISION);
+        Assertions.assertEquals(3.0, function.rightBound(), PRECISION);
     }
 
     @Test
@@ -40,9 +41,9 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка интерполяции и экстраполяции
-        Assertions.assertEquals(2.0, function.apply(1.0),PRECISION);  // экстраполяция слева
-        Assertions.assertEquals(8.0, function.apply(4.0),PRECISION);  // точное значение
-        Assertions.assertEquals(10.0, function.apply(5.0),PRECISION); // интерполяция
+        Assertions.assertEquals(2.0, function.apply(1.0), PRECISION);  // экстраполяция слева
+        Assertions.assertEquals(8.0, function.apply(4.0), PRECISION);  // точное значение
+        Assertions.assertEquals(10.0, function.apply(5.0), PRECISION); // интерполяция
     }
 
     @Test
@@ -63,8 +64,8 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка линейной интерполяции
-        Assertions.assertEquals(1.5, function.interpolate(1.5, 0),PRECISION);
-        Assertions.assertEquals(2.5, function.interpolate(2.5, 1),PRECISION);
+        Assertions.assertEquals(1.5, function.interpolate(1.5, 0), PRECISION);
+        Assertions.assertEquals(2.5, function.interpolate(2.5, 1), PRECISION);
     }
 
     @Test
@@ -74,10 +75,9 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка экстраполяции
-        Assertions.assertEquals(0.0, function.extrapolateLeft(0.0),PRECISION);
-        Assertions.assertEquals(4.0, function.extrapolateRight(4.0),PRECISION);
+        Assertions.assertEquals(0.0, function.extrapolateLeft(0.0), PRECISION);
+        Assertions.assertEquals(4.0, function.extrapolateRight(4.0), PRECISION);
     }
-
 
 
     @Test
@@ -87,10 +87,10 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка доступа к данным
-        Assertions.assertEquals(10.0, function.getX(0),PRECISION);
-        Assertions.assertEquals(30.0, function.getX(2),PRECISION);
-        Assertions.assertEquals(100.0, function.getY(0),PRECISION);
-        Assertions.assertEquals(300.0, function.getY(2),PRECISION);
+        Assertions.assertEquals(10.0, function.getX(0), PRECISION);
+        Assertions.assertEquals(30.0, function.getX(2), PRECISION);
+        Assertions.assertEquals(100.0, function.getY(0), PRECISION);
+        Assertions.assertEquals(300.0, function.getY(2), PRECISION);
     }
 
     @Test
@@ -100,7 +100,7 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         function.setY(1, 25.0);
-        Assertions.assertEquals(25.0, function.getY(1),PRECISION);
+        Assertions.assertEquals(25.0, function.getY(1), PRECISION);
     }
 
     @Test
@@ -136,8 +136,8 @@ class ArrayTabulatedFunctionTest {
         // проверка создания функции с одинаковыми границами
         Assertions.assertEquals(4, function.getCount());
         for (int i = 0; i < 4; i++) {
-            Assertions.assertEquals(3.0, function.getX(i),PRECISION);
-            Assertions.assertEquals(9.0, function.getY(i),PRECISION);
+            Assertions.assertEquals(3.0, function.getX(i), PRECISION);
+            Assertions.assertEquals(9.0, function.getY(i), PRECISION);
         }
     }
 
@@ -196,6 +196,98 @@ class ArrayTabulatedFunctionTest {
         MathFunction composite = func1.andThen(square);
         double result = composite.apply(2.0);
         // func1(2.0) = 2.0, затем square(2.0) = 4.0
-        Assertions.assertEquals(4.0, result, 1e-10);
+        Assertions.assertEquals(4.0, result, PRECISION);
     }
+
+    ArrayTabulatedFunction function;
+
+    @BeforeEach
+    void setUp() {
+        double[] xValues = {1.0, 2.0, 4.0, 5.0};
+        double[] yValues = {10.0, 20.0, 40.0, 50.0};
+        function = new ArrayTabulatedFunction(xValues, yValues);
+    }
+
+
+    @Test
+        // замена y при существующем x
+    void insertExistsXTest() {
+        function.insert(2.0, 25.0);
+
+        Assertions.assertEquals(4, function.getCount());
+        Assertions.assertEquals(25.0, function.getY(1), PRECISION);
+    }
+
+    @Test
+        // вставка в начало
+    void insertToBeginningTest() {
+        function.insert(0.5, 5.0);
+
+        Assertions.assertEquals(5, function.getCount());
+        Assertions.assertEquals(0.5, function.getX(0), PRECISION);
+        Assertions.assertEquals(5.0, function.getY(0), PRECISION);
+    }
+
+    @Test
+        // вставка в конец
+    void insertToEndTest() {
+        function.insert(6.0, 60.0);
+
+        Assertions.assertEquals(5, function.getCount());
+        Assertions.assertEquals(5.0, function.getX(3), PRECISION);
+        Assertions.assertEquals(50.0, function.getY(3), PRECISION);
+        Assertions.assertEquals(6.0, function.getX(4), PRECISION);
+        Assertions.assertEquals(60.0, function.getY(4), PRECISION);
+    }
+
+    @Test
+        // вставка между существующими значениями
+    void insertBetweenExistingValuesTest() {
+        function.insert(3.0, 30.0);
+
+        Assertions.assertEquals(5, function.getCount());
+        Assertions.assertEquals(2.0, function.getX(1), PRECISION);
+        Assertions.assertEquals(20.0, function.getY(1), PRECISION);
+        Assertions.assertEquals(3.0, function.getX(2), PRECISION);
+        Assertions.assertEquals(30.0, function.getY(2), PRECISION);
+        Assertions.assertEquals(4.0, function.getX(3), PRECISION);
+        Assertions.assertEquals(40.0, function.getY(3), PRECISION);
+    }
+
+    @Test
+    // множественные вставки
+    void insertMultipleInsertsTest() {
+        function.insert(3.0, 30.0);
+        function.insert(0.0, 0.0);
+        function.insert(2.5, 25.0);
+
+        Assertions.assertEquals(7, function.getCount());
+        Assertions.assertEquals(0.0, function.getX(0));
+        Assertions.assertEquals(0.0, function.getY(0));
+        Assertions.assertEquals(2.5, function.getX(3));
+        Assertions.assertEquals(25.0, function.getY(3));
+        Assertions.assertEquals(3.0, function.getX(4));
+        Assertions.assertEquals(30.0, function.getY(4));
+    }
+
+    @Test
+    // проверка сохранения работоспособности после вставки
+    void insertPreserveFunctionalityTest() {
+        function.insert(3.0, 30.0);
+        function.insert(0.0, 0.0);
+
+        // Проверяем, что функция продолжает корректно работать
+        Assertions.assertEquals(0.0, function.apply(0.0), PRECISION);
+        Assertions.assertEquals(15.0, function.apply(1.5), PRECISION);
+        Assertions.assertEquals(30.0, function.apply(3.0), PRECISION);
+        Assertions.assertEquals(-10.0, function.apply(-1.0), PRECISION);
+        Assertions.assertEquals(70.0, function.apply(7.0), PRECISION);
+
+        // Проверяем поиск индексов
+        Assertions.assertEquals(0, function.indexOfX(0.0));
+        Assertions.assertEquals(3, function.indexOfX(3.0));
+        Assertions.assertEquals(0, function.indexOfY(0.0));
+        Assertions.assertEquals(3, function.indexOfY(30.0));
+    }
+
 }

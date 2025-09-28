@@ -3,15 +3,15 @@ package ru.ssau.tk.faible.labs.functions;
 import java.util.Arrays;
 
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable {
 
-    private final double[] xValues; // массив значений аргумента
-    private final double[] yValues; // массив значений функции
-    private final int count; // количсетво точек
+    private double[] xValues; // массив значений аргумента
+    private double[] yValues; // массив значений функции
+    private int count; // количество точек
 
 
     public ArrayTabulatedFunction(double[] xValues, double[] yValues) {
-        if (xValues.length != yValues.length) { // проверка на длины массивов (должныбыть одинаковой длины)
+        if (xValues.length != yValues.length) { // проверка на длины массивов (должны быть одинаковой длины)
             throw new IllegalArgumentException("Массивы x и y должны быть одинаковой длины");
         }
         if (xValues.length == 0) { // массивы не должны быть пустыми
@@ -59,6 +59,40 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
                 xValues[i] = xFrom + i * step;
                 yValues[i] = source.apply(xValues[i]);
             }
+        }
+    }
+
+    @Override
+    public void insert(double x, double y) {
+        int index = indexOfX(x);
+        if (index != -1) { // если элемент существует
+            yValues[index] = y;
+        } else { // если элемента нет
+            int insertIndex = 0;
+            while (insertIndex < count && xValues[insertIndex] < x) { // находим индекс для вставки
+                insertIndex++;
+            }
+            double[] newXValues = new double[count + 1];
+            double[] newYValues = new double[count + 1];
+            // копируем элементы до insertIndex
+            if (insertIndex > 0) {
+                System.arraycopy(xValues, 0, newXValues, 0, insertIndex);
+                System.arraycopy(yValues, 0, newYValues, 0, insertIndex);
+            }
+
+            // вставляем новый элемент
+            newXValues[insertIndex] = x;
+            newYValues[insertIndex] = y;
+
+            // копируем оставшиеся элементы
+            if (insertIndex < count) {
+                System.arraycopy(xValues, insertIndex, newXValues, insertIndex + 1, count - insertIndex);
+                System.arraycopy(yValues, insertIndex, newYValues, insertIndex + 1, count - insertIndex);
+            }
+
+            xValues = newXValues; // меняем ссылки в массивах
+            yValues = newYValues;
+            count++; // увеличиваем размерность массива
         }
     }
 
@@ -133,7 +167,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
             double currentX = getX(i); // текущий х
             double nextX = getX(i + 1); // следующий х
 
-            if (Math.abs(currentX-x) < 1e-10 ) { // если нашли точное совпадение
+            if (Math.abs(currentX - x) < 1e-10) { // если нашли точное совпадение
                 return i; // возвращаем его индекс
             }
 
@@ -147,7 +181,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
     @Override
     protected double interpolate(double x, int floorIndex) {
         if (count == 1) return getY(0);
-        return interpolate(x, getX(floorIndex), getX(floorIndex+1), getY(floorIndex), getY(floorIndex + 1));
+        return interpolate(x, getX(floorIndex), getX(floorIndex + 1), getY(floorIndex), getY(floorIndex + 1));
     }
 
     @Override
@@ -159,6 +193,6 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
     @Override
     protected double extrapolateRight(double x) { // интерполяция от самого правого промежутка
         if (count == 1) return getY(0);
-        return interpolate(x, getX(count-2), getX(count-1), getY(count-2), getY(count-1));
+        return interpolate(x, getX(count - 2), getX(count - 1), getY(count - 2), getY(count - 1));
     }
 }
