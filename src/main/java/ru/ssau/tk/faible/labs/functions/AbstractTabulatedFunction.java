@@ -1,9 +1,5 @@
 package ru.ssau.tk.faible.labs.functions;
 
-/**
- * Абстрактный класс для табличных функций, реализующий общую логику интерполяции и экстраполяции.
- * Реализует интерфейс TabulatedFunction и предоставляет готовую реализацию метода apply().
- */
 public abstract class AbstractTabulatedFunction implements TabulatedFunction {
 
 
@@ -11,7 +7,7 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
 
     protected abstract double extrapolateLeft(double x);
 
-    protected  abstract double extrapolateRight(double x);
+    protected abstract double extrapolateRight(double x);
 
     protected abstract double interpolate(double x, int floorIndex);
 
