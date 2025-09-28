@@ -3,7 +3,7 @@ package ru.ssau.tk.faible.labs.functions;
 import java.util.Arrays;
 
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable {
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable,Removable{
 
     private double[] xValues; // массив значений аргумента
     private double[] yValues; // массив значений функции
@@ -153,6 +153,32 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     public double rightBound() {
         return xValues[count - 1];
+    }
+    @Override
+    public void remove(int index) {
+        if (index < 0 || index >= count) {
+            throw new IllegalArgumentException("Индекс вне диапазона: " + index);
+        }
+        if (count == 1) {
+            throw new IllegalStateException("Нельзя удалить последнюю точку");
+        }
+
+        // cоздаем новые массивы уменьшенного размера
+        double[] newXValues = new double[count - 1];
+        double[] newYValues = new double[count - 1];
+
+        // rопируем элементы до удаляемого индекса
+        System.arraycopy(xValues, 0, newXValues, 0, index);
+        System.arraycopy(yValues, 0, newYValues, 0, index);
+
+        //  копируем элементы после удаляемого индекса
+        System.arraycopy(xValues, index + 1, newXValues, index, count - index - 1);
+        System.arraycopy(yValues, index + 1, newYValues, index, count - index - 1);
+
+        // обновляем ссылки и счетчик
+        this.xValues = newXValues;
+        this.yValues = newYValues;
+        this.count--;
     }
 
     @Override
