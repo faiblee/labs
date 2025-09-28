@@ -1,6 +1,6 @@
 package ru.ssau.tk.faible.labs.functions;
 
-public interface TabulatedFunction extends MathFunction {
+interface TabulatedFunction extends MathFunction {
     int getCount();
     double getX(int index);
     double getY(int index);
