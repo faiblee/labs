@@ -1,6 +1,6 @@
 package ru.ssau.tk.faible.labs.functions;
 
-public class NewtonMethod implements MathFunction {
+public class NewtonMethod {
 
     private static final double DEFAULT_TOLERANCE = 1e-10; // точность решения
     private static final int DEFAULT_MAX_ITERATIONS = 1000; // максимальное количество итераций
@@ -18,8 +18,8 @@ public class NewtonMethod implements MathFunction {
     }
 
 
-    @Override
-    public double apply(double x1) {
+
+    public double solve() {
 
         MathFunction derivative = createDerivative(function); // создаем численную производную функции
         double x = initialGuess;
