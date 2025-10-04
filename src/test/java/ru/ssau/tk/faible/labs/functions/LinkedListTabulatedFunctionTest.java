@@ -99,8 +99,6 @@ class LinkedListTabulatedFunctionTest {
         assertEquals(1, function.floorIndexOfX(2.5)); // между существующими
         assertEquals(3, function.floorIndexOfX(4.7));
 
-        assertEquals(0, function.floorIndexOfX(0.5)); // меньше всех
-
         assertEquals(5, function.floorIndexOfX(6.0)); // больше всех
 
     }
@@ -120,16 +118,6 @@ class LinkedListTabulatedFunctionTest {
     }
 
     @Test
-    void interpolateSinglePointTest() { // интерполяция с одной точкой
-        double[] xValues = {2.0};
-        double[] yValues = {4.0};
-        LinkedListTabulatedFunction func = new LinkedListTabulatedFunction(xValues, yValues);
-
-        double result = func.interpolate(3.0, 0);
-        assertEquals(4.0, result, PRECISION);
-    }
-
-    @Test
     void extrapolateLeftTest() { // экстраполяция слева
         function = new LinkedListTabulatedFunction(xValues, yValues);
 
@@ -144,19 +132,6 @@ class LinkedListTabulatedFunctionTest {
     }
 
     @Test
-    void extrapolateLeftSinglePointTest() { // экстраполяция слева с одной точкой
-        double[] xValues = {2.0};
-        double[] yValues = {4.0};
-        LinkedListTabulatedFunction singlePointFunc = new LinkedListTabulatedFunction(xValues, yValues);
-
-        double result = singlePointFunc.extrapolateLeft(1.0);
-        assertEquals(4.0, result, PRECISION);
-
-        result = singlePointFunc.extrapolateLeft(0.0);
-        assertEquals(4.0, result, PRECISION);
-    }
-
-    @Test
     void extrapolateRightTest() { // экстраполяция справа
         function = new LinkedListTabulatedFunction(xValues, yValues);
 
@@ -168,19 +143,6 @@ class LinkedListTabulatedFunctionTest {
 
         result = function.extrapolateRight(7.0);
         assertEquals(14.0, result, PRECISION); // 8 + (10-8)*(7-4)/(5-4) = 14.0
-    }
-
-    @Test
-    void extrapolateRightSinglePointTest() { // экстраполяция справа с одной точкой
-        double[] xValues = {2.0};
-        double[] yValues = {4.0};
-        LinkedListTabulatedFunction singlePointFunc = new LinkedListTabulatedFunction(xValues, yValues);
-
-        double result = singlePointFunc.extrapolateRight(3.0);
-        assertEquals(4.0, result, PRECISION);
-
-        result = singlePointFunc.extrapolateRight(5.0);
-        assertEquals(4.0, result, PRECISION);
     }
 
     @Test
@@ -199,26 +161,26 @@ class LinkedListTabulatedFunctionTest {
 
     @Test
     void applyTest() { // тест для метода apply
-        function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        function = new LinkedListTabulatedFunction(new double[]{1.0, 2.0, 3.0}, new double[]{10.0, 20.0, 30.0});
 
         // точное совпадение
-        assertEquals(2.0, function.apply(1.0), PRECISION);
-        assertEquals(6.0, function.apply(3.0), PRECISION);
-        assertEquals(10.0, function.apply(5.0), PRECISION);
+        assertEquals(10.0, function.apply(1.0), PRECISION);
+        assertEquals(20.0, function.apply(2.0), PRECISION);
+        assertEquals(30.0, function.apply(3.0), PRECISION);
 
         // интерполяция
-        assertEquals(3.0, function.apply(1.5), PRECISION);
-        assertEquals(5.0, function.apply(2.5), PRECISION);
-        assertEquals(7.0, function.apply(3.5), PRECISION);
-        assertEquals(9.0, function.apply(4.5), PRECISION);
+        assertEquals(15.0, function.apply(1.5), PRECISION);
+        assertEquals(25.0, function.apply(2.5), PRECISION);
+
 
         // экстраполяция слева
-        assertEquals(0.0, function.apply(0.0), PRECISION);
-        assertEquals(-2.0, function.apply(-1.0), PRECISION);
+        assertEquals(0.0, function.apply(0.0));
+        assertEquals(-10.0, function.apply(-1.0));
 
         // экстраполяция справа
-        assertEquals(12.0, function.apply(6.0), PRECISION);
-        assertEquals(14.0, function.apply(7.0), PRECISION);
+        assertEquals(60.0, function.apply(6.0), PRECISION);
+        assertEquals(70.0, function.apply(7.0), PRECISION);
     }
 
     @Test
@@ -241,17 +203,6 @@ class LinkedListTabulatedFunctionTest {
         // экстраполяция
         assertEquals(-2.0, quadraticFunc.apply(0.0), PRECISION); // слева
         assertEquals(23.0, quadraticFunc.apply(5.0), PRECISION); // справа
-    }
-    @Test
-    void insertIntoEmptyListTest() {
-        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[]{}, new double[]{});
-
-        function.insert(5.0, 10.0);
-        assertEquals(1, function.getCount());
-        assertEquals(5.0, function.getX(0), PRECISION);
-        assertEquals(10.0, function.getY(0), PRECISION);
-        assertEquals(5.0, function.leftBound(), PRECISION);
-        assertEquals(5.0, function.rightBound(), PRECISION);
     }
 
     @Test
@@ -329,29 +280,29 @@ class LinkedListTabulatedFunctionTest {
 
     @Test
     void insertMultipleNodesTest() {
-        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[]{}, new double[]{});
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
 
         // вставляем узлы в разном порядке
-        function.insert(3.0, 30.0);
-        function.insert(1.0, 10.0);
-        function.insert(5.0, 50.0);
-        function.insert(2.0, 20.0);
-        function.insert(4.0, 40.0);
+        function.insert(8.0, 16.0);
+        function.insert(6.0, 12.0);
+        function.insert(10.0, 20.0);
+        function.insert(7.0, 14.0);
+        function.insert(9.0, 18.0);
 
-        assertEquals(5, function.getCount());
+        assertEquals(10, function.getCount());
 
         // проверяем правильную сортировку по x
         assertEquals(1.0, function.getX(0), PRECISION);
-        assertEquals(2.0, function.getX(1), PRECISION);
-        assertEquals(3.0, function.getX(2), PRECISION);
-        assertEquals(4.0, function.getX(3), PRECISION);
-        assertEquals(5.0, function.getX(4), PRECISION);
+        assertEquals(6.0, function.getX(5), PRECISION);
+        assertEquals(7.0, function.getX(6), PRECISION);
+        assertEquals(8.0, function.getX(7), PRECISION);
+        assertEquals(9.0, function.getX(8), PRECISION);
 
-        assertEquals(10.0, function.getY(0), PRECISION);
-        assertEquals(20.0, function.getY(1), PRECISION);
-        assertEquals(30.0, function.getY(2), PRECISION);
-        assertEquals(40.0, function.getY(3), PRECISION);
-        assertEquals(50.0, function.getY(4), PRECISION);
+        assertEquals(2.0, function.getY(0), PRECISION);
+        assertEquals(12.0, function.getY(5), PRECISION);
+        assertEquals(14.0, function.getY(6), PRECISION);
+        assertEquals(16.0, function.getY(7), PRECISION);
+        assertEquals(18.0, function.getY(8), PRECISION);
     }
 
     @Test
@@ -410,30 +361,16 @@ class LinkedListTabulatedFunctionTest {
 
     @Test
     void insertNegativeValuesTest() {
-        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[]{}, new double[]{});
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[]{1, 2, 3}, new double[]{1, 2, 3});
 
         function.insert(-3.0, -30.0);
         function.insert(-1.0, -10.0);
         function.insert(-2.0, -20.0);
 
-        assertEquals(3, function.getCount());
+        assertEquals(6, function.getCount());
         assertEquals(-3.0, function.getX(0), PRECISION);
         assertEquals(-2.0, function.getX(1), PRECISION);
         assertEquals(-1.0, function.getX(2), PRECISION);
-    }
-
-    @Test
-    void insertSingleNodeThenUpdateTest() {
-        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(new double[]{}, new double[]{});
-
-        function.insert(5.0, 50.0);
-        assertEquals(1, function.getCount());
-        assertEquals(50.0, function.getY(0), PRECISION);
-
-        // обновляем значение
-        function.insert(5.0, 55.0);
-        assertEquals(1, function.getCount());
-        assertEquals(55.0, function.getY(0), PRECISION);
     }
 
     @BeforeEach
@@ -444,7 +381,7 @@ class LinkedListTabulatedFunctionTest {
     }
 
     @Test
-    // удаление элемента из начала списка
+        // удаление элемента из начала списка
     void removeFirstElementTest() {
         function.remove(0);
 
@@ -456,7 +393,7 @@ class LinkedListTabulatedFunctionTest {
     }
 
     @Test
-    // удаление элемента из конца
+        // удаление элемента из конца
     void removeLastElementTest() {
         function.remove(4);
 
@@ -468,7 +405,7 @@ class LinkedListTabulatedFunctionTest {
     }
 
     @Test
-    // удаление элемента из середины
+        // удаление элемента из середины
     void removeMiddleElementTest() {
         function.remove(2);
 
@@ -481,7 +418,7 @@ class LinkedListTabulatedFunctionTest {
     }
 
     @Test
-    // удаление head
+        // удаление head
     void removeHeadTest() {
         double originalFirstX = function.getX(0);
         function.remove(0);
@@ -492,7 +429,7 @@ class LinkedListTabulatedFunctionTest {
     }
 
     @Test
-    // удаление для функции из двух элементов
+        // удаление для функции из двух элементов
     void removeShouldWorkWithTwoElements() {
         double[] xValues = {1.0, 2.0};
         double[] yValues = {10.0, 20.0};
@@ -506,24 +443,7 @@ class LinkedListTabulatedFunctionTest {
     }
 
     @Test
-    // удаление для функции из одного элемента
-    void removeShouldWorkWithSingleElement() {
-        double[] xValues = {1.0};
-        double[] yValues = {10.0};
-        LinkedListTabulatedFunction singleElementFunc = new LinkedListTabulatedFunction(xValues, yValues);
-
-        singleElementFunc.remove(0);
-
-        assertEquals(0, singleElementFunc.getCount());
-
-        singleElementFunc.insert(0.0, 1.0);
-
-        assertEquals(0.0, singleElementFunc.getX(0));
-        assertEquals(1.0, singleElementFunc.getY(0));
-    }
-
-    @Test
-    // несколько удалений подряд
+        // несколько удалений подряд
     void removeSomeRemovalsTest() {
         // Удаляем несколько элементов подряд
         function.remove(2); // Удаляем x=3.0
@@ -531,19 +451,71 @@ class LinkedListTabulatedFunctionTest {
 
         function.remove(0); // Удаляем x=1.0
         assertEquals(3, function.getCount());
-        assertEquals(2.0, function.getX(0), 1e-10);
+        assertEquals(2.0, function.getX(0), PRECISION);
 
         function.remove(1); // Удаляем x=4.0 (теперь это индекс 1)
         assertEquals(2, function.getCount());
-        assertEquals(2.0, function.getX(0), 1e-10);
-        assertEquals(5.0, function.getX(1), 1e-10);
+        assertEquals(2.0, function.getX(0), PRECISION);
+        assertEquals(5.0, function.getX(1), PRECISION);
 
         function.remove(1); // Удаляем x=5.0
         assertEquals(1, function.getCount());
-        assertEquals(2.0, function.getX(0), 1e-10);
+        assertEquals(2.0, function.getX(0), PRECISION);
 
         function.remove(0); // Удаляем последний элемент
         assertEquals(0, function.getCount());
     }
+
+    @Test
+    void FirstConstructorExceptionTest() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new LinkedListTabulatedFunction(new double[]{}, new double[]{}));
+        assertThrows(IllegalArgumentException.class,
+                () -> new LinkedListTabulatedFunction(new double[]{1.0, 2.0, 3.0}, new double[]{10.0, 20.0}));
+    }
+
+    @Test
+    void SecondConstructorExceptionTest() {
+        MathFunction source = (x) -> x + 1;
+        assertThrows(IllegalArgumentException.class,
+                () -> new LinkedListTabulatedFunction(source, 0.0, 10.0, 1));
+    }
+
+    @Test
+    void getXExceptionTest() {
+        // Отрицательный индекс
+        assertThrows(IllegalArgumentException.class, () -> function.getX(-1));
+        // Индекс больше размера
+        assertThrows(IllegalArgumentException.class, () -> function.getX(10));
+
+    }
+
+    @Test
+    void getYExceptionTest() {
+
+        assertThrows(IllegalArgumentException.class, () -> function.getY(-1));
+        assertThrows(IllegalArgumentException.class, () -> function.getY(10));
+    }
+
+    @Test
+    void setYExceptionTest() {
+
+        assertThrows(IllegalArgumentException.class, () -> function.setY(-1, 100.0));
+        assertThrows(IllegalArgumentException.class, () -> function.setY(10, 100.0));
+    }
+
+    @Test
+    void floorIndexOfXExceptionTest() {
+
+        assertThrows(IllegalArgumentException.class, () -> function.floorIndexOfX(0.5));
+        assertThrows(IllegalArgumentException.class, () -> function.floorIndexOfX(-1.0));
+    }
+
+    @Test
+    void removeExceptionTest() {
+        assertThrows(IllegalArgumentException.class, () -> function.remove(-1));
+        assertThrows(IllegalArgumentException.class, () -> function.remove(10));
+    }
+
 }
 
