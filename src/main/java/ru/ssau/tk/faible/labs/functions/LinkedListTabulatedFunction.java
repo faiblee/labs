@@ -2,6 +2,8 @@ package ru.ssau.tk.faible.labs.functions;
 
 import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
+import java.util.Iterator;
+
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
     protected int count;
     private Node head;
@@ -175,6 +177,11 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         }
         return currentNode;
     }
+    @Override
+    public Iterator<Point> iterator(){
+        throw new UnsupportedOperationException();
+    }
+
 
     @Override
     public int getCount() { // геттер для count

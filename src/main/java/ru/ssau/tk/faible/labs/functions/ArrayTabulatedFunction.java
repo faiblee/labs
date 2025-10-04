@@ -3,6 +3,7 @@ package ru.ssau.tk.faible.labs.functions;
 import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable,Removable{
@@ -10,6 +11,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     private double[] xValues; // массив значений аргумента
     private double[] yValues; // массив значений функции
     private int count; // количество точек
+
 
 
     public ArrayTabulatedFunction(double[] xValues, double[] yValues) {
@@ -52,6 +54,10 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
                 yValues[i] = source.apply(xValues[i]);
             }
         }
+    }
+    @Override
+    public Iterator<Point> iterator(){
+        throw new UnsupportedOperationException();
     }
 
     @Override
