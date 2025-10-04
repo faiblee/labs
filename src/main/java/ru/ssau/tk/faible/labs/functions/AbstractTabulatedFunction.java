@@ -41,14 +41,8 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
     public double apply(double x) {
         int count = getCount();
 
-        // Если точек нет
-        if (count == 0) {
-            throw new IllegalStateException("Табличная функция не содержит точек");
-        }
-
-        // Если только одна точка
-        if (count == 1) {
-            return getY(0); // Всегда возвращаем единственное значение
+        if (x < getX((0))) { // экстраполяция слева проверяется первой
+            return extrapolateLeft(x);
         }
 
         // Проверяем, есть ли точное совпадение
@@ -59,11 +53,6 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
 
         // Определяем положение x относительно таблицы
         int floorIndex = floorIndexOfX(x);
-
-        // Экстраполяция слева
-        if (floorIndex == 0) {
-            return extrapolateLeft(x);
-        }
 
         // Экстраполяция справа
         if (floorIndex == count) {
