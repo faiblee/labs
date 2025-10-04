@@ -1,5 +1,7 @@
 package ru.ssau.tk.faible.labs.functions;
 
+import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
+
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
     protected int count;
     private Node head;
@@ -36,7 +38,9 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         return Math.abs(first - second) <= 1e-6;
     }
 
-    public LinkedListTabulatedFunction(double[] xValues, double[] yValues) { // первый конструктор для двух массивов
+    public LinkedListTabulatedFunction(double[] xValues, double[] yValues) {// первый конструктор для двух массивов
+        AbstractTabulatedFunction.checkLengthIsTheSame(xValues,yValues);
+        AbstractTabulatedFunction.checkSorted(xValues);
         for (int i = 0; i < xValues.length; i++) {
             addNode(xValues[i], yValues[i]);
         }
@@ -248,6 +252,13 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     @Override
     protected double interpolate(double x, int floorIndex) { // интерполяция для промежутка
         if (count == 1) return getY(0);
+        // границы интервала
+        double leftX = getX(floorIndex);
+        double rightX = getX(floorIndex +1);
+
+        if (x < leftX || x > rightX){
+            throw new InterpolationException("x вне зоны интерполяции"); // бросаем исключение
+        }
         return interpolate(x, getX(floorIndex), getX(floorIndex + 1), getY(floorIndex), getY(floorIndex + 1));
     }
 

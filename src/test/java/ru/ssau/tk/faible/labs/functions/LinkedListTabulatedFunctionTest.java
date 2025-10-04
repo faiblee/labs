@@ -2,6 +2,7 @@ package ru.ssau.tk.faible.labs.functions;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -545,5 +546,71 @@ class LinkedListTabulatedFunctionTest {
         function.remove(0); // Удаляем последний элемент
         assertEquals(0, function.getCount());
     }
+    @Test
+    void testLinkedListInterpolate_WithXOutsideInterval_Left() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        assertThrows(InterpolationException.class, () ->
+                function.interpolate(0.5, 0));
+    }
+
+    @Test
+    void testLinkedListInterpolate_WithXOutsideInterval_Right() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        assertThrows(InterpolationException.class, () ->
+                function.interpolate(2.5, 0));
+    }
+
+    @Test
+    void testLinkedListInterpolate_WithXInsideInterval() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        assertDoesNotThrow(() -> function.interpolate(1.5, 0));
+    }
+
+    @Test
+    void testLinkedListInterpolate_WithXAtBoundaries() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        assertDoesNotThrow(() -> function.interpolate(1.0, 0));
+        assertDoesNotThrow(() -> function.interpolate(2.0, 0));
+    }
+    @Test
+    void testInterpolate_WithNegativeNumbers() {
+        // тест с отрицательными числами
+        double[] xValues = {-5.0, -3.0, -1.0};
+        double[] yValues = {25.0, 9.0, 1.0};
+
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // Интервал [-5, -3]
+        assertThrows(InterpolationException.class, () -> function.interpolate(-6.0, 0)); // слева
+        assertThrows(InterpolationException.class, () -> function.interpolate(-2.0, 0)); // справа
+        assertDoesNotThrow(() -> function.interpolate(-4.0, 0)); // внутри
+    }
+    @Test
+    void testInterpolate_WithDifferentIntervals() {
+        double[] xValues = {0.0, 1.0, 5.0, 10.0};
+        double[] yValues = {0.0, 1.0, 25.0, 100.0};
+
+        // тестируем оба типа функций
+        LinkedListTabulatedFunction linkedFunc = new LinkedListTabulatedFunction(xValues, yValues);
+
+        assertThrows(InterpolationException.class, () -> linkedFunc.interpolate(6.0, 1));
+
+        // корректные значения для интервала [1, 5]
+        assertDoesNotThrow(() -> linkedFunc.interpolate(4.0, 1));
+    }
+
+
 }
 

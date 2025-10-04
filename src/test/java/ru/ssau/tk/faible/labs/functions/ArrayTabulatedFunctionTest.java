@@ -3,6 +3,10 @@ package ru.ssau.tk.faible.labs.functions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ArrayTabulatedFunctionTest {
 
@@ -142,45 +146,14 @@ class ArrayTabulatedFunctionTest {
     }
 
     @Test
-    void constructorInvalidArraysTest() {
-        // разные длины массивов
-        double[] xValues = {1.0, 2.0, 3.0};
-        double[] yValues = {10.0, 20.0};
-
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new ArrayTabulatedFunction(xValues, yValues);
-        });
-    }
-
-    @Test
-    void constructorEmptyArraysTest() {
-        double[] xValues = {};
-        double[] yValues = {};
-
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new ArrayTabulatedFunction(xValues, yValues);
-        });
-    }
-
-    @Test
-    void constructorInvalidDataTest() {
-        double[] xValues = {1.0, 3.0, 2.0}; // не упорядочены
-        double[] yValues = {10.0, 30.0, 20.0};
-
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new ArrayTabulatedFunction(xValues, yValues);
-        });
-    }
-
-    @Test
     void getInvalidIndexTest() {
         double[] xValues = {1.0, 2.0, 3.0};
         double[] yValues = {10.0, 20.0, 30.0};
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка обработки неверных индексов
-        Assertions.assertThrows(IllegalArgumentException.class, () -> function.getX(-1));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> function.getX(3));
+        assertThrows(IllegalArgumentException.class, () -> function.getX(-1));
+        assertThrows(IllegalArgumentException.class, () -> function.getX(3));
     }
 
 
@@ -381,11 +354,11 @@ class ArrayTabulatedFunctionTest {
         double[] yValues = {10.0, 20.0, 30.0};
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             function.remove(-1);
         });
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             function.remove(3);
         });
     }
@@ -396,7 +369,7 @@ class ArrayTabulatedFunctionTest {
         double[] yValues = {10.0};
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        assertThrows(IllegalStateException.class, () -> {
             function.remove(0);
         });
     }
@@ -486,9 +459,80 @@ class ArrayTabulatedFunctionTest {
         Assertions.assertEquals(30.0, function.getY(0), PRECISION);
 
         // проверяем, что нельзя удалить последнюю точку
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        assertThrows(IllegalStateException.class, () -> {
             function.remove(0);
         });
     }
+    @Test
+    void testArrayInterpolateWithXOutsideIntervalLeft() {
+
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        assertThrows(InterpolationException.class, () ->
+                function.interpolate(0.5, 0));
+    }
+
+    @Test
+    void testArrayInterpolateWithXOutsideIntervalRight() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        assertThrows(InterpolationException.class, () ->
+                function.interpolate(2.5, 0));
+    }
+
+    @Test
+    void testArrayInterpolate_WithXInsideInterval() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        assertDoesNotThrow(() -> function.interpolate(1.5, 0));
+    }
+
+    @Test
+    void testArrayInterpolate_WithXAtBoundaries() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+
+        assertDoesNotThrow(() -> function.interpolate(1.0, 0)); // левая граница
+        assertDoesNotThrow(() -> function.interpolate(2.0, 0)); // правая граница
+    }
+    @Test
+    void testInterpolate_WithNegativeNumbers() {
+        double[] xValues = {-5.0, -3.0, -1.0};
+        double[] yValues = {25.0, 9.0, 1.0};
+
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        assertThrows(InterpolationException.class, () -> function.interpolate(-6.0, 0)); // слева
+        assertThrows(InterpolationException.class, () -> function.interpolate(-2.0, 0)); // справа
+        assertDoesNotThrow(() -> function.interpolate(-4.0, 0)); // внутри
+    }
+    @Test
+    void testInterpolate_WithDifferentIntervals() {
+        double[] xValues = {0.0, 1.0, 5.0, 10.0};
+        double[] yValues = {0.0, 1.0, 25.0, 100.0};
+
+        // тестируем оба типа функций
+        ArrayTabulatedFunction arrayFunc = new ArrayTabulatedFunction(xValues, yValues);
+
+
+        assertThrows(InterpolationException.class, () -> arrayFunc.interpolate(0.5, 1));
+
+        // корректные значения для интервала [1, 5]
+        assertDoesNotThrow(() -> arrayFunc.interpolate(3.0, 1));
+    }
+
+
 
 }

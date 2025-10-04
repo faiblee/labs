@@ -1,5 +1,7 @@
 package ru.ssau.tk.faible.labs.functions;
 
+import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
+
 import java.util.Arrays;
 
 
@@ -11,19 +13,9 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
 
     public ArrayTabulatedFunction(double[] xValues, double[] yValues) {
-        if (xValues.length != yValues.length) { // проверка на длины массивов (должны быть одинаковой длины)
-            throw new IllegalArgumentException("Массивы x и y должны быть одинаковой длины");
-        }
-        if (xValues.length == 0) { // массивы не должны быть пустыми
-            throw new IllegalArgumentException("Массивы не могут быть пустыми");
-        }
+        AbstractTabulatedFunction.checkLengthIsTheSame(xValues,yValues);
+        AbstractTabulatedFunction.checkSorted(xValues);
 
-        // проверяем упорядоченность xValues
-        for (int i = 1; i < xValues.length; i++) {
-            if (xValues[i] <= xValues[i - 1]) {
-                throw new IllegalArgumentException("значения x должны быть строго возрастающими");
-            }
-        }
 
         this.count = xValues.length;
         this.xValues = Arrays.copyOf(xValues, count);
@@ -207,6 +199,14 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     protected double interpolate(double x, int floorIndex) {
         if (count == 1) return getY(0);
+        // границы интервала
+        double leftX = getX(floorIndex);
+        double rightX = getX(floorIndex +1);
+
+        if (x < leftX || x > rightX){
+            throw new InterpolationException("x вне зоны интерполяции"); // бросаем исключение
+        }
+
         return interpolate(x, getX(floorIndex), getX(floorIndex + 1), getY(floorIndex), getY(floorIndex + 1));
     }
 

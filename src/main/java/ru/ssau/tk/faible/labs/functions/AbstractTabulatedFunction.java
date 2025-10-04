@@ -1,5 +1,8 @@
 package ru.ssau.tk.faible.labs.functions;
 
+import ru.ssau.tk.faible.labs.exceptions.ArrayIsNotSortedException;
+import ru.ssau.tk.faible.labs.exceptions.DifferentLengthOfArraysException;
+
 public abstract class AbstractTabulatedFunction implements TabulatedFunction {
 
 
@@ -11,7 +14,19 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
 
     protected abstract double interpolate(double x, int floorIndex);
 
+    static void checkLengthIsTheSame(double[]xValues, double[] yValues){ // метод, который проверяет, одинаковая ли длина массивов
+        if (xValues.length != yValues.length){
+            throw new DifferentLengthOfArraysException("Длины массивов не совпадают"); // выбрасываем исключение
+        }
+    }
+    static void checkSorted(double[] xValues){ // метод, который проверяет массив на отсортированность
+        for(int j = 1; j < xValues.length; j++){
+            if (xValues[j] <= xValues[j-1]){
+                throw new ArrayIsNotSortedException("Массив не отсортирован");
+            }
 
+        }
+    }
 
     protected double interpolate(double x, double leftX, double rightX, double leftY, double rightY) {
         if (leftX == rightX) {
