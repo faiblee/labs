@@ -4,6 +4,18 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     protected int count;
     private Node head;
 
+    static class Node { // вложенный класс узла Node
+        public Node next;
+        public Node prev;
+        public double x;
+        public double y;
+
+        public Node(double x, double y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
     private void addNode(double x, double y) { // Добавление нового узла в конец списка
         Node newNode = new Node(x, y);
         if (head == null) {
