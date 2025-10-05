@@ -3,6 +3,9 @@ package ru.ssau.tk.faible.labs.functions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class LinkedListTabulatedFunctionTest {
@@ -515,6 +518,36 @@ class LinkedListTabulatedFunctionTest {
     void removeExceptionTest() {
         assertThrows(IllegalArgumentException.class, () -> function.remove(-1));
         assertThrows(IllegalArgumentException.class, () -> function.remove(10));
+    }
+
+    @Test
+    void iteratorWhileTest() {
+        LinkedListTabulatedFunction func = new LinkedListTabulatedFunction(xValues, yValues);
+        Iterator<Point> iterator = func.iterator();
+
+        int index = 0;
+        while(iterator.hasNext()) {
+            Point point = iterator.next();
+
+            assertEquals(xValues[index], point.x, PRECISION);
+            assertEquals(yValues[index], point.y, PRECISION);
+
+            index++;
+        }
+        assertThrows(NoSuchElementException.class, iterator::next);
+    }
+
+    @Test
+    void iteratorForEachTest() {
+        LinkedListTabulatedFunction func = new LinkedListTabulatedFunction(xValues, yValues);
+        int index = 0;
+
+        for (Point point : func) {
+            assertEquals(xValues[index], point.x, PRECISION);
+            assertEquals(yValues[index], point.y, PRECISION);
+
+            index++;
+        }
     }
 
 }

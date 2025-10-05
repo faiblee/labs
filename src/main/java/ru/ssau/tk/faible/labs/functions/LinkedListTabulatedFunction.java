@@ -3,6 +3,7 @@ package ru.ssau.tk.faible.labs.functions;
 import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
     protected int count;
@@ -41,7 +42,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
     public LinkedListTabulatedFunction(double[] xValues, double[] yValues) {// первый конструктор для двух массивов
-        AbstractTabulatedFunction.checkLengthIsTheSame(xValues,yValues);
+        AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues);
         AbstractTabulatedFunction.checkSorted(xValues);
         for (int i = 0; i < xValues.length; i++) {
             addNode(xValues[i], yValues[i]);
@@ -177,9 +178,31 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         }
         return currentNode;
     }
+
     @Override
-    public Iterator<Point> iterator(){
-        throw new UnsupportedOperationException();
+    public Iterator<Point> iterator() {
+        return new Iterator<Point>() {
+            private Node node = head;
+
+            @Override
+            public boolean hasNext() {
+                return node != null;
+            }
+
+            @Override
+            public Point next() {
+                if (!hasNext()) throw new NoSuchElementException("В таблице не осталось элементов");
+
+                Point point = new Point(node.x, node.y); // создаем объект Point
+
+                if (node.next == head) { // если текущий элемент последний
+                    node = null;
+                } else {
+                    node = node.next;
+                }
+                return point;
+            }
+        };
     }
 
 
@@ -261,9 +284,9 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         if (count == 1) return getY(0);
         // границы интервала
         double leftX = getX(floorIndex);
-        double rightX = getX(floorIndex +1);
+        double rightX = getX(floorIndex + 1);
 
-        if (x < leftX || x > rightX){
+        if (x < leftX || x > rightX) {
             throw new InterpolationException("x вне зоны интерполяции"); // бросаем исключение
         }
         return interpolate(x, getX(floorIndex), getX(floorIndex + 1), getY(floorIndex), getY(floorIndex + 1));
