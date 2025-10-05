@@ -16,7 +16,7 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
 
     static void checkLengthIsTheSame(double[]xValues, double[] yValues){ // метод, который проверяет, одинаковая ли длина массивов
         if (xValues.length != yValues.length){
-            throw new IllegalArgumentException("Длины массивов не совпадают"); // выбрасываем исключение
+            throw new DifferentLengthOfArraysException("Длины массивов не совпадают"); // выбрасываем исключение
         }
     }
     static void checkSorted(double[] xValues){ // метод, который проверяет массив на отсортированность
