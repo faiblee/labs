@@ -16,6 +16,9 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     public ArrayTabulatedFunction(double[] xValues, double[] yValues) {
         AbstractTabulatedFunction.checkLengthIsTheSame(xValues,yValues);
+        if (xValues.length < 2) {
+            throw new IllegalArgumentException("Длина массива не может быть меньше 2");
+        }
         AbstractTabulatedFunction.checkSorted(xValues);
 
 
@@ -181,8 +184,8 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     @Override
     protected int floorIndexOfX(double x) {
-        if (x < getX(0)) { // если x меньше первого элемента => меньше всех
-            return 0;
+        if (x < getX(0)) { // если x меньше первого элемента
+            throw new IllegalArgumentException("x меньше левой границы");
         }
         if (x > getX(count - 1)) { // если x больше всех элементов
             return count;

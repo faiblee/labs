@@ -119,19 +119,6 @@ class ArrayTabulatedFunctionTest {
         Assertions.assertEquals(-1, function.indexOfX(5.0)); // не найден
     }
 
-
-    @Test
-    void singlePointFunctionTest() {
-        double[] xValues = {5.0};
-        double[] yValues = {10.0};
-        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
-
-        // проверка работы с функцией из одной точки
-        Assertions.assertEquals(10.0, function.apply(1.0));  // всегда возвращает Y
-        Assertions.assertEquals(10.0, function.apply(5.0));
-        Assertions.assertEquals(10.0, function.apply(10.0));
-    }
-
     @Test
     void constructorWithSameBoundsTest() {
         MathFunction square = x -> x * x;
@@ -146,6 +133,30 @@ class ArrayTabulatedFunctionTest {
     }
 
     @Test
+    void constructorWithEmptyArraysTest() {
+        double[] xValues = new double[]{};
+        double[] yValues = new double[]{};
+
+        assertThrows(IllegalArgumentException.class, () -> new ArrayTabulatedFunction(xValues, yValues));
+    }
+
+    @Test
+    void constructorWithOneElementArraysTest() {
+        double[] xValues = new double[]{1.0};
+        double[] yValues = new double[]{2.0};
+
+        assertThrows(IllegalArgumentException.class, () -> new ArrayTabulatedFunction(xValues, yValues));
+    }
+
+    @Test
+    void constructorWithDifferentElementArraysTest() {
+        double[] xValues = new double[]{1.0, 2.0};
+        double[] yValues = new double[]{3.0, 4.0, 5.0};
+
+        assertThrows(IllegalArgumentException.class, () -> new ArrayTabulatedFunction(xValues, yValues));
+    }
+
+    @Test
     void getInvalidIndexTest() {
         double[] xValues = {1.0, 2.0, 3.0};
         double[] yValues = {10.0, 20.0, 30.0};
@@ -154,6 +165,8 @@ class ArrayTabulatedFunctionTest {
         // проверка обработки неверных индексов
         assertThrows(IllegalArgumentException.class, () -> function.getX(-1));
         assertThrows(IllegalArgumentException.class, () -> function.getX(3));
+        assertThrows(IllegalArgumentException.class, () -> function.getY(-1));
+        assertThrows(IllegalArgumentException.class, () -> function.getY(3));
     }
 
 
@@ -364,17 +377,6 @@ class ArrayTabulatedFunctionTest {
     }
 
     @Test
-    void removeLastPointTest() {
-        double[] xValues = {1.0};
-        double[] yValues = {10.0};
-        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
-
-        assertThrows(IllegalStateException.class, () -> {
-            function.remove(0);
-        });
-    }
-
-    @Test
     void removeAndCheckInterpolationTest() {
         double[] xValues = {1.0, 2.0, 3.0, 4.0};
         double[] yValues = {10.0, 20.0, 30.0, 40.0};
@@ -414,7 +416,6 @@ class ArrayTabulatedFunctionTest {
         function.remove(1); // Удаляем точку 2.0
 
         // проверяем floorIndexOfX после удаления
-        Assertions.assertEquals(0, function.floorIndexOfX(0.5));  // до первого
         Assertions.assertEquals(0, function.floorIndexOfX(1.0));  // точно первый
         Assertions.assertEquals(0, function.floorIndexOfX(1.5));  // между 1 и 3
         Assertions.assertEquals(0, function.floorIndexOfX(2.0));  // между 1 и 3
