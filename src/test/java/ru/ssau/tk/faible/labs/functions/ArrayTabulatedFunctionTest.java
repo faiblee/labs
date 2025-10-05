@@ -1,12 +1,13 @@
 package ru.ssau.tk.faible.labs.functions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class ArrayTabulatedFunctionTest {
 
@@ -20,9 +21,9 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка корректного создания объекта
-        Assertions.assertEquals(3, function.getCount(), PRECISION);
-        Assertions.assertEquals(1.0, function.leftBound(), PRECISION);
-        Assertions.assertEquals(3.0, function.rightBound(), PRECISION);
+        assertEquals(3, function.getCount(), PRECISION);
+        assertEquals(1.0, function.leftBound(), PRECISION);
+        assertEquals(3.0, function.rightBound(), PRECISION);
     }
 
     @Test
@@ -31,10 +32,10 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(linear, 0.0, 4.0, 5);
 
         // проверка табулирования функции
-        Assertions.assertEquals(5, function.getCount());
-        Assertions.assertEquals(1.0, function.getY(0));  // 2*0 + 1 = 1
-        Assertions.assertEquals(3.0, function.getY(1));  // 2*1 + 1 = 3
-        Assertions.assertEquals(9.0, function.getY(4));  // 2*4 + 1 = 9
+        assertEquals(5, function.getCount());
+        assertEquals(1.0, function.getY(0));  // 2*0 + 1 = 1
+        assertEquals(3.0, function.getY(1));  // 2*1 + 1 = 3
+        assertEquals(9.0, function.getY(4));  // 2*4 + 1 = 9
     }
 
 
@@ -45,9 +46,9 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка интерполяции и экстраполяции
-        Assertions.assertEquals(2.0, function.apply(1.0), PRECISION);  // экстраполяция слева
-        Assertions.assertEquals(8.0, function.apply(4.0), PRECISION);  // точное значение
-        Assertions.assertEquals(10.0, function.apply(5.0), PRECISION); // интерполяция
+        assertEquals(2.0, function.apply(1.0), PRECISION);  // экстраполяция слева
+        assertEquals(8.0, function.apply(4.0), PRECISION);  // точное значение
+        assertEquals(10.0, function.apply(5.0), PRECISION); // интерполяция
     }
 
     @Test
@@ -57,8 +58,8 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка поиска индекса для разных позиций
-        Assertions.assertEquals(1, function.floorIndexOfX(1.5)); // Между 1 и 2
-        Assertions.assertEquals(3, function.floorIndexOfX(3.5)); // Между 3 и 4
+        assertEquals(1, function.floorIndexOfX(1.5)); // Между 1 и 2
+        assertEquals(3, function.floorIndexOfX(3.5)); // Между 3 и 4
     }
 
     @Test
@@ -68,8 +69,8 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка линейной интерполяции
-        Assertions.assertEquals(1.5, function.interpolate(1.5, 0), PRECISION);
-        Assertions.assertEquals(2.5, function.interpolate(2.5, 1), PRECISION);
+        assertEquals(1.5, function.interpolate(1.5, 0), PRECISION);
+        assertEquals(2.5, function.interpolate(2.5, 1), PRECISION);
     }
 
     @Test
@@ -79,8 +80,8 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка экстраполяции
-        Assertions.assertEquals(0.0, function.extrapolateLeft(0.0), PRECISION);
-        Assertions.assertEquals(4.0, function.extrapolateRight(4.0), PRECISION);
+        assertEquals(0.0, function.extrapolateLeft(0.0), PRECISION);
+        assertEquals(4.0, function.extrapolateRight(4.0), PRECISION);
     }
 
 
@@ -91,10 +92,10 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка доступа к данным
-        Assertions.assertEquals(10.0, function.getX(0), PRECISION);
-        Assertions.assertEquals(30.0, function.getX(2), PRECISION);
-        Assertions.assertEquals(100.0, function.getY(0), PRECISION);
-        Assertions.assertEquals(300.0, function.getY(2), PRECISION);
+        assertEquals(10.0, function.getX(0), PRECISION);
+        assertEquals(30.0, function.getX(2), PRECISION);
+        assertEquals(100.0, function.getY(0), PRECISION);
+        assertEquals(300.0, function.getY(2), PRECISION);
     }
 
     @Test
@@ -104,7 +105,7 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         function.setY(1, 25.0);
-        Assertions.assertEquals(25.0, function.getY(1), PRECISION);
+        assertEquals(25.0, function.getY(1), PRECISION);
     }
 
     @Test
@@ -114,9 +115,9 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка поиска элементов
-        Assertions.assertEquals(0, function.indexOfX(1.0));
-        Assertions.assertEquals(3, function.indexOfX(4.0));
-        Assertions.assertEquals(-1, function.indexOfX(5.0)); // не найден
+        assertEquals(0, function.indexOfX(1.0));
+        assertEquals(3, function.indexOfX(4.0));
+        assertEquals(-1, function.indexOfX(5.0)); // не найден
     }
 
 
@@ -127,9 +128,9 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
         // проверка работы с функцией из одной точки
-        Assertions.assertEquals(10.0, function.apply(1.0));  // всегда возвращает Y
-        Assertions.assertEquals(10.0, function.apply(5.0));
-        Assertions.assertEquals(10.0, function.apply(10.0));
+        assertEquals(10.0, function.apply(1.0));  // всегда возвращает Y
+        assertEquals(10.0, function.apply(5.0));
+        assertEquals(10.0, function.apply(10.0));
     }
 
     @Test
@@ -138,10 +139,10 @@ class ArrayTabulatedFunctionTest {
         ArrayTabulatedFunction function = new ArrayTabulatedFunction(square, 3.0, 3.0, 4);
 
         // проверка создания функции с одинаковыми границами
-        Assertions.assertEquals(4, function.getCount());
+        assertEquals(4, function.getCount());
         for (int i = 0; i < 4; i++) {
-            Assertions.assertEquals(3.0, function.getX(i), PRECISION);
-            Assertions.assertEquals(9.0, function.getY(i), PRECISION);
+            assertEquals(3.0, function.getX(i), PRECISION);
+            assertEquals(9.0, function.getY(i), PRECISION);
         }
     }
 
@@ -169,7 +170,7 @@ class ArrayTabulatedFunctionTest {
         MathFunction composite = func1.andThen(square);
         double result = composite.apply(2.0);
         // func1(2.0) = 2.0, затем square(2.0) = 4.0
-        Assertions.assertEquals(4.0, result, PRECISION);
+        assertEquals(4.0, result, PRECISION);
     }
 
     ArrayTabulatedFunction function;
@@ -187,8 +188,8 @@ class ArrayTabulatedFunctionTest {
     void insertExistsXTest() {
         function.insert(2.0, 25.0);
 
-        Assertions.assertEquals(4, function.getCount());
-        Assertions.assertEquals(25.0, function.getY(1), PRECISION);
+        assertEquals(4, function.getCount());
+        assertEquals(25.0, function.getY(1), PRECISION);
     }
 
     @Test
@@ -196,9 +197,9 @@ class ArrayTabulatedFunctionTest {
     void insertToBeginningTest() {
         function.insert(0.5, 5.0);
 
-        Assertions.assertEquals(5, function.getCount());
-        Assertions.assertEquals(0.5, function.getX(0), PRECISION);
-        Assertions.assertEquals(5.0, function.getY(0), PRECISION);
+        assertEquals(5, function.getCount());
+        assertEquals(0.5, function.getX(0), PRECISION);
+        assertEquals(5.0, function.getY(0), PRECISION);
     }
 
     @Test
@@ -206,11 +207,11 @@ class ArrayTabulatedFunctionTest {
     void insertToEndTest() {
         function.insert(6.0, 60.0);
 
-        Assertions.assertEquals(5, function.getCount());
-        Assertions.assertEquals(5.0, function.getX(3), PRECISION);
-        Assertions.assertEquals(50.0, function.getY(3), PRECISION);
-        Assertions.assertEquals(6.0, function.getX(4), PRECISION);
-        Assertions.assertEquals(60.0, function.getY(4), PRECISION);
+        assertEquals(5, function.getCount());
+        assertEquals(5.0, function.getX(3), PRECISION);
+        assertEquals(50.0, function.getY(3), PRECISION);
+        assertEquals(6.0, function.getX(4), PRECISION);
+        assertEquals(60.0, function.getY(4), PRECISION);
     }
 
     @Test
@@ -218,13 +219,13 @@ class ArrayTabulatedFunctionTest {
     void insertBetweenExistingValuesTest() {
         function.insert(3.0, 30.0);
 
-        Assertions.assertEquals(5, function.getCount());
-        Assertions.assertEquals(2.0, function.getX(1), PRECISION);
-        Assertions.assertEquals(20.0, function.getY(1), PRECISION);
-        Assertions.assertEquals(3.0, function.getX(2), PRECISION);
-        Assertions.assertEquals(30.0, function.getY(2), PRECISION);
-        Assertions.assertEquals(4.0, function.getX(3), PRECISION);
-        Assertions.assertEquals(40.0, function.getY(3), PRECISION);
+        assertEquals(5, function.getCount());
+        assertEquals(2.0, function.getX(1), PRECISION);
+        assertEquals(20.0, function.getY(1), PRECISION);
+        assertEquals(3.0, function.getX(2), PRECISION);
+        assertEquals(30.0, function.getY(2), PRECISION);
+        assertEquals(4.0, function.getX(3), PRECISION);
+        assertEquals(40.0, function.getY(3), PRECISION);
     }
 
     @Test
@@ -234,13 +235,13 @@ class ArrayTabulatedFunctionTest {
         function.insert(0.0, 0.0);
         function.insert(2.5, 25.0);
 
-        Assertions.assertEquals(7, function.getCount());
-        Assertions.assertEquals(0.0, function.getX(0));
-        Assertions.assertEquals(0.0, function.getY(0));
-        Assertions.assertEquals(2.5, function.getX(3));
-        Assertions.assertEquals(25.0, function.getY(3));
-        Assertions.assertEquals(3.0, function.getX(4));
-        Assertions.assertEquals(30.0, function.getY(4));
+        assertEquals(7, function.getCount());
+        assertEquals(0.0, function.getX(0));
+        assertEquals(0.0, function.getY(0));
+        assertEquals(2.5, function.getX(3));
+        assertEquals(25.0, function.getY(3));
+        assertEquals(3.0, function.getX(4));
+        assertEquals(30.0, function.getY(4));
     }
 
     @Test
@@ -250,17 +251,17 @@ class ArrayTabulatedFunctionTest {
         function.insert(0.0, 0.0);
 
         // проверяем, что функция продолжает корректно работать
-        Assertions.assertEquals(0.0, function.apply(0.0), PRECISION);
-        Assertions.assertEquals(15.0, function.apply(1.5), PRECISION);
-        Assertions.assertEquals(30.0, function.apply(3.0), PRECISION);
-        Assertions.assertEquals(-10.0, function.apply(-1.0), PRECISION);
-        Assertions.assertEquals(70.0, function.apply(7.0), PRECISION);
+        assertEquals(0.0, function.apply(0.0), PRECISION);
+        assertEquals(15.0, function.apply(1.5), PRECISION);
+        assertEquals(30.0, function.apply(3.0), PRECISION);
+        assertEquals(-10.0, function.apply(-1.0), PRECISION);
+        assertEquals(70.0, function.apply(7.0), PRECISION);
 
         // проверяем поиск индексов
-        Assertions.assertEquals(0, function.indexOfX(0.0));
-        Assertions.assertEquals(3, function.indexOfX(3.0));
-        Assertions.assertEquals(0, function.indexOfY(0.0));
-        Assertions.assertEquals(3, function.indexOfY(30.0));
+        assertEquals(0, function.indexOfX(0.0));
+        assertEquals(3, function.indexOfX(3.0));
+        assertEquals(0, function.indexOfY(0.0));
+        assertEquals(3, function.indexOfY(30.0));
     }
     @Test
     void removeFirstElementTest() {
@@ -270,14 +271,14 @@ class ArrayTabulatedFunctionTest {
 
         function.remove(0);
 
-        Assertions.assertEquals(3, function.getCount());
-        Assertions.assertEquals(2.0, function.getX(0), PRECISION);
-        Assertions.assertEquals(3.0, function.getX(1), PRECISION);
-        Assertions.assertEquals(4.0, function.getX(2), PRECISION);
-        Assertions.assertEquals(20.0, function.getY(0), PRECISION);
-        Assertions.assertEquals(30.0, function.getY(1), PRECISION);
-        Assertions.assertEquals(40.0, function.getY(2), PRECISION);
-        Assertions.assertEquals(2.0, function.leftBound(), PRECISION);
+        assertEquals(3, function.getCount());
+        assertEquals(2.0, function.getX(0), PRECISION);
+        assertEquals(3.0, function.getX(1), PRECISION);
+        assertEquals(4.0, function.getX(2), PRECISION);
+        assertEquals(20.0, function.getY(0), PRECISION);
+        assertEquals(30.0, function.getY(1), PRECISION);
+        assertEquals(40.0, function.getY(2), PRECISION);
+        assertEquals(2.0, function.leftBound(), PRECISION);
     }
 
     @Test
@@ -288,14 +289,14 @@ class ArrayTabulatedFunctionTest {
 
         function.remove(3);
 
-        Assertions.assertEquals(3, function.getCount());
-        Assertions.assertEquals(1.0, function.getX(0), PRECISION);
-        Assertions.assertEquals(2.0, function.getX(1), PRECISION);
-        Assertions.assertEquals(3.0, function.getX(2), PRECISION);
-        Assertions.assertEquals(10.0, function.getY(0), PRECISION);
-        Assertions.assertEquals(20.0, function.getY(1), PRECISION);
-        Assertions.assertEquals(30.0, function.getY(2), PRECISION);
-        Assertions.assertEquals(3.0, function.rightBound(), PRECISION);
+        assertEquals(3, function.getCount());
+        assertEquals(1.0, function.getX(0), PRECISION);
+        assertEquals(2.0, function.getX(1), PRECISION);
+        assertEquals(3.0, function.getX(2), PRECISION);
+        assertEquals(10.0, function.getY(0), PRECISION);
+        assertEquals(20.0, function.getY(1), PRECISION);
+        assertEquals(30.0, function.getY(2), PRECISION);
+        assertEquals(3.0, function.rightBound(), PRECISION);
     }
 
     @Test
@@ -306,13 +307,13 @@ class ArrayTabulatedFunctionTest {
 
         function.remove(1);
 
-        Assertions.assertEquals(3, function.getCount());
-        Assertions.assertEquals(1.0, function.getX(0), PRECISION);
-        Assertions.assertEquals(3.0, function.getX(1), PRECISION);
-        Assertions.assertEquals(4.0, function.getX(2), PRECISION);
-        Assertions.assertEquals(10.0, function.getY(0), PRECISION);
-        Assertions.assertEquals(30.0, function.getY(1), PRECISION);
-        Assertions.assertEquals(40.0, function.getY(2), PRECISION);
+        assertEquals(3, function.getCount());
+        assertEquals(1.0, function.getX(0), PRECISION);
+        assertEquals(3.0, function.getX(1), PRECISION);
+        assertEquals(4.0, function.getX(2), PRECISION);
+        assertEquals(10.0, function.getY(0), PRECISION);
+        assertEquals(30.0, function.getY(1), PRECISION);
+        assertEquals(40.0, function.getY(2), PRECISION);
     }
 
     @Test
@@ -324,13 +325,13 @@ class ArrayTabulatedFunctionTest {
         function.remove(2); // удаляем элемент 3.0
         function.remove(1); // удаляем элемент 2.0 (теперь он на позиции 1 после первого удаления)
 
-        Assertions.assertEquals(3, function.getCount());
-        Assertions.assertEquals(1.0, function.getX(0), PRECISION);
-        Assertions.assertEquals(4.0, function.getX(1), PRECISION);
-        Assertions.assertEquals(5.0, function.getX(2), PRECISION);
-        Assertions.assertEquals(10.0, function.getY(0), PRECISION);
-        Assertions.assertEquals(40.0, function.getY(1), PRECISION);
-        Assertions.assertEquals(50.0, function.getY(2), PRECISION);
+        assertEquals(3, function.getCount());
+        assertEquals(1.0, function.getX(0), PRECISION);
+        assertEquals(4.0, function.getX(1), PRECISION);
+        assertEquals(5.0, function.getX(2), PRECISION);
+        assertEquals(10.0, function.getY(0), PRECISION);
+        assertEquals(40.0, function.getY(1), PRECISION);
+        assertEquals(50.0, function.getY(2), PRECISION);
     }
 
     @Test
@@ -341,11 +342,11 @@ class ArrayTabulatedFunctionTest {
 
         function.remove(0);
 
-        Assertions.assertEquals(1, function.getCount());
-        Assertions.assertEquals(2.0, function.getX(0), PRECISION);
-        Assertions.assertEquals(20.0, function.getY(0), PRECISION);
-        Assertions.assertEquals(2.0, function.leftBound(), PRECISION);
-        Assertions.assertEquals(2.0, function.rightBound(), PRECISION);
+        assertEquals(1, function.getCount());
+        assertEquals(2.0, function.getX(0), PRECISION);
+        assertEquals(20.0, function.getY(0), PRECISION);
+        assertEquals(2.0, function.leftBound(), PRECISION);
+        assertEquals(2.0, function.rightBound(), PRECISION);
     }
 
     @Test
@@ -383,9 +384,9 @@ class ArrayTabulatedFunctionTest {
         function.remove(1); // Удаляем точку (2.0, 20.0)
 
         // проверяем интерполяцию между оставшимися точками
-        Assertions.assertEquals(15.0, function.apply(1.5), PRECISION); // между 1.0 и 3.0
-        Assertions.assertEquals(25.0, function.apply(2.5), PRECISION); // между 1.0 и 3.0
-        Assertions.assertEquals(35.0, function.apply(3.5), PRECISION); // между 3.0 и 4.0
+        assertEquals(15.0, function.apply(1.5), PRECISION); // между 1.0 и 3.0
+        assertEquals(25.0, function.apply(2.5), PRECISION); // между 1.0 и 3.0
+        assertEquals(35.0, function.apply(3.5), PRECISION); // между 3.0 и 4.0
     }
 
     @Test
@@ -397,12 +398,12 @@ class ArrayTabulatedFunctionTest {
         function.remove(0); // Удаляем первую точку
 
         // проверяем экстраполяцию слева
-        Assertions.assertEquals(0.0, function.apply(0.0), PRECISION);
+        assertEquals(0.0, function.apply(0.0), PRECISION);
 
         function.remove(function.getCount() - 1); // Удаляем последнюю точку
 
         // проверяем экстраполяцию справа
-        Assertions.assertEquals(50.0, function.apply(5.0), PRECISION);
+        assertEquals(50.0, function.apply(5.0), PRECISION);
     }
 
     @Test
@@ -414,15 +415,15 @@ class ArrayTabulatedFunctionTest {
         function.remove(1); // Удаляем точку 2.0
 
         // проверяем floorIndexOfX после удаления
-        Assertions.assertEquals(0, function.floorIndexOfX(0.5));  // до первого
-        Assertions.assertEquals(0, function.floorIndexOfX(1.0));  // точно первый
-        Assertions.assertEquals(0, function.floorIndexOfX(1.5));  // между 1 и 3
-        Assertions.assertEquals(0, function.floorIndexOfX(2.0));  // между 1 и 3
-        Assertions.assertEquals(0, function.floorIndexOfX(2.5));  // между 1 и 3
-        Assertions.assertEquals(1, function.floorIndexOfX(3.0));  // точно второй
-        Assertions.assertEquals(1, function.floorIndexOfX(3.5));  // между 3 и 4
-        Assertions.assertEquals(2, function.floorIndexOfX(4.0));  // точно третий
-        Assertions.assertEquals(3, function.floorIndexOfX(5.0));  // после последнего
+        assertEquals(0, function.floorIndexOfX(0.5));  // до первого
+        assertEquals(0, function.floorIndexOfX(1.0));  // точно первый
+        assertEquals(0, function.floorIndexOfX(1.5));  // между 1 и 3
+        assertEquals(0, function.floorIndexOfX(2.0));  // между 1 и 3
+        assertEquals(0, function.floorIndexOfX(2.5));  // между 1 и 3
+        assertEquals(1, function.floorIndexOfX(3.0));  // точно второй
+        assertEquals(1, function.floorIndexOfX(3.5));  // между 3 и 4
+        assertEquals(2, function.floorIndexOfX(4.0));  // точно третий
+        assertEquals(3, function.floorIndexOfX(5.0));  // после последнего
     }
 
     @Test
@@ -434,15 +435,15 @@ class ArrayTabulatedFunctionTest {
         function.remove(1); // удаляем точку (2.0, 20.0)
 
         // проверяем поиск индексов после удаления
-        Assertions.assertEquals(0, function.indexOfX(1.0));
-        Assertions.assertEquals(1, function.indexOfX(3.0));
-        Assertions.assertEquals(2, function.indexOfX(4.0));
-        Assertions.assertEquals(-1, function.indexOfX(2.0)); // удаленная точка
+        assertEquals(0, function.indexOfX(1.0));
+        assertEquals(1, function.indexOfX(3.0));
+        assertEquals(2, function.indexOfX(4.0));
+        assertEquals(-1, function.indexOfX(2.0)); // удаленная точка
 
-        Assertions.assertEquals(0, function.indexOfY(10.0));
-        Assertions.assertEquals(1, function.indexOfY(30.0));
-        Assertions.assertEquals(2, function.indexOfY(40.0));
-        Assertions.assertEquals(-1, function.indexOfY(20.0)); // удаленное значение
+        assertEquals(0, function.indexOfY(10.0));
+        assertEquals(1, function.indexOfY(30.0));
+        assertEquals(2, function.indexOfY(40.0));
+        assertEquals(-1, function.indexOfY(20.0)); // удаленное значение
     }
 
     @Test
@@ -454,9 +455,9 @@ class ArrayTabulatedFunctionTest {
         function.remove(0); // удаляем первую точку
         function.remove(0); // удаляем новую первую точку (бывшую вторую)
 
-        Assertions.assertEquals(1, function.getCount());
-        Assertions.assertEquals(3.0, function.getX(0), PRECISION);
-        Assertions.assertEquals(30.0, function.getY(0), PRECISION);
+        assertEquals(1, function.getCount());
+        assertEquals(3.0, function.getX(0), PRECISION);
+        assertEquals(30.0, function.getY(0), PRECISION);
 
         // проверяем, что нельзя удалить последнюю точку
         assertThrows(IllegalStateException.class, () -> {
@@ -532,6 +533,86 @@ class ArrayTabulatedFunctionTest {
         // корректные значения для интервала [1, 5]
         assertDoesNotThrow(() -> arrayFunc.interpolate(3.0, 1));
     }
+    @Test
+    void testIteratorWhile(){
+        double[] xValues = {0.0, 1.0, 5.0, 10.0};
+        double[] yValues = {0.0, 1.0, 25.0, 100.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues,yValues);
+
+        Iterator<Point> iterator = function.iterator();
+        int i = 0;
+        while (iterator.hasNext()){
+            Point point = iterator.next();
+            // проверяем корректность точек
+            assertEquals(xValues[i], point.x, PRECISION);
+            assertEquals(yValues[i], point.y, PRECISION);
+            i++;
+        }
+        // проверяем, что прошли все точки
+        assertEquals(xValues.length, i);
+    }
+    @Test
+    void testIteratorForEach() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        int i = 0;
+
+        for (Point point : function) {
+            // проверяем корректность точек
+            assertEquals(xValues[i], point.x, PRECISION);
+            assertEquals(yValues[i], point.y, PRECISION);
+            i++;
+        }
+
+        // проверяем, что прошли все точки
+        assertEquals(xValues.length, i);
+    }
+    @Test
+    void testArrayIterator_EmptyFunction() {
+        double[] xValues = {};
+        double[] yValues = {};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        Iterator<Point> iterator = function.iterator();
+        assertFalse(iterator.hasNext());
+        assertThrows(NoSuchElementException.class, iterator::next);
+    }
+    @Test
+    void testIterator_WithDecimalValues() {
+        double[] xValues = {0.1, 0.2, 0.3};
+        double[] yValues = {0.01, 0.04, 0.09};
+
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        int i = 0;
+        for (Point point : function) {
+            assertEquals(xValues[i], point.x, PRECISION );
+            assertEquals(yValues[i], point.y, PRECISION);
+            i++;
+        }
+    }
+    @Test
+    void testArrayIterator_MultipleCallsToHasNext() {
+        double[] xValues = {1.0, 2.0};
+        double[] yValues = {10.0, 20.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        Iterator<Point> iterator = function.iterator();
+        // итератор не должен сдвигаться
+        assertTrue(iterator.hasNext());
+        assertTrue(iterator.hasNext());
+        assertTrue(iterator.hasNext());
+
+        Point point = iterator.next();
+        assertEquals(1.0, point.x, 1e-10);
+        assertEquals(10.0, point.y, 1e-10);
+
+        assertTrue(iterator.hasNext());
+        assertTrue(iterator.hasNext());
+    }
+
 
 
 

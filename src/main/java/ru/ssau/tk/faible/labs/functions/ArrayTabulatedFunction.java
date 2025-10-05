@@ -4,6 +4,7 @@ import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable,Removable{
@@ -57,7 +58,29 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     }
     @Override
     public Iterator<Point> iterator(){
-        throw new UnsupportedOperationException();
+        return new Iterator<Point>() { // анонимный класс
+            public int i = 0;
+
+
+            @Override
+            public boolean hasNext(){
+                return (i<count); // след. элем. сущ., если индекс меньше кол-ва
+            }
+            @Override
+            public Point next(){
+                if (!hasNext()){ // если нет элементов
+                    throw new NoSuchElementException(); // бросаем исключение
+                }
+                Point point = new Point(getX(i),getY(i)); // создаем точку из массиов
+                i++;
+                return point;
+
+
+            }
+
+        };
+
+
     }
 
     @Override
