@@ -1,15 +1,21 @@
 package ru.ssau.tk.faible.labs.operations;
 
 import org.junit.jupiter.api.Test;
+import ru.ssau.tk.faible.labs.exceptions.InconsistentFunctionsException;
 import ru.ssau.tk.faible.labs.functions.ArrayTabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.Point;
+import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
+import ru.ssau.tk.faible.labs.functions.factory.ArrayTabulatedFunctionFactory;
+import ru.ssau.tk.faible.labs.functions.factory.LinkedListTabulatedFunctionFactory;
+import ru.ssau.tk.faible.labs.functions.factory.TabulatedFunctionFactory;
+import ru.ssau.tk.faible.labs.functions.LinkedListTabulatedFunction;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class TabulatedFunctionOperationServiceTest {
     private final double PRESICION = 1e-10;
     @Test
-    void testAsPoints(){
+    void testAssPoints(){
         double[] xValues = {1.0, 2.0, 3.0};
         double[] yValues = {10.0, 20.0, 30.0};
 
@@ -44,4 +50,120 @@ class TabulatedFunctionOperationServiceTest {
         assertEquals(2.0, points[4].x, PRESICION);
         assertEquals(4.0, points[4].y, PRESICION);
     }
+    @Test
+    void testAdd_SameTypeFunctions() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction func1 = new ArrayTabulatedFunction(xValues1, yValues1);
+
+        double[] xValues2 = {1.0, 2.0, 3.0};
+        double[] yValues2 = {5.0, 15.0, 25.0};
+        ArrayTabulatedFunction func2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        TabulatedFunction result = service.add(func1, func2);
+
+        assertEquals(3, result.getCount());
+        assertEquals(15.0, result.getY(0), PRESICION);
+        assertEquals(35.0, result.getY(1), PRESICION);
+        assertEquals(55.0, result.getY(2), PRESICION);
+    }
+
+    @Test
+    void testAdd_DifferentTypeFunctions() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction func1 = new ArrayTabulatedFunction(xValues1, yValues1);
+
+        double[] xValues2 = {1.0, 2.0, 3.0};
+        double[] yValues2 = {5.0, 15.0, 25.0};
+        LinkedListTabulatedFunction func2 = new LinkedListTabulatedFunction(xValues2, yValues2);
+
+        TabulatedFunction result = service.add(func1, func2);
+
+        assertEquals(3, result.getCount());
+        assertEquals(15.0, result.getY(0), PRESICION);
+        assertEquals(35.0, result.getY(1), PRESICION);
+        assertEquals(55.0, result.getY(2), PRESICION);
+    }
+
+    @Test
+    void testSubtract_SameTypeFunctions() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {20.0, 30.0, 40.0};
+        LinkedListTabulatedFunction func1 = new LinkedListTabulatedFunction(xValues1, yValues1);
+
+        double[] xValues2 = {1.0, 2.0, 3.0};
+        double[] yValues2 = {5.0, 15.0, 25.0};
+        LinkedListTabulatedFunction func2 = new LinkedListTabulatedFunction(xValues2, yValues2);
+
+        TabulatedFunction result = service.subtract(func1, func2);
+
+        assertEquals(3, result.getCount());
+        assertEquals(15.0, result.getY(0), PRESICION);
+        assertEquals(15.0, result.getY(1), PRESICION);
+        assertEquals(15.0, result.getY(2), PRESICION);
+    }
+
+
+    @Test
+    void testAdd_DifferentCountException() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction func1 = new ArrayTabulatedFunction(xValues1, yValues1);
+
+        double[] xValues2 = {1.0, 2.0}; // Разное количество точек
+        double[] yValues2 = {5.0, 15.0};
+        ArrayTabulatedFunction func2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        assertThrows(InconsistentFunctionsException.class, () -> service.add(func1, func2));
+    }
+
+    @Test
+    void testAdd_DifferentXValuesException() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {10.0, 20.0, 30.0};
+        ArrayTabulatedFunction func1 = new ArrayTabulatedFunction(xValues1, yValues1);
+
+        double[] xValues2 = {1.0, 2.5, 3.0}; // Разные x-значения
+        double[] yValues2 = {5.0, 15.0, 25.0};
+        ArrayTabulatedFunction func2 = new ArrayTabulatedFunction(xValues2, yValues2);
+
+        assertThrows(InconsistentFunctionsException.class, () -> service.add(func1, func2));
+    }
+    @Test
+    void testDefaultConstructor() {
+        // создаем фабрику с конструктором по умолчанию
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        // проверяем, что фабрика установлена корректно
+        assertNotNull(service.getFactory(), "Фабрика не должна быть null");
+        assertTrue(service.getFactory() instanceof ArrayTabulatedFunctionFactory,
+                "По умолчанию должна использоваться ArrayTabulatedFunctionFactory");
+    }
+    @Test
+    void testConstructorWithFactory() {
+
+        TabulatedFunctionFactory customFactory = new LinkedListTabulatedFunctionFactory();
+
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService(customFactory);
+
+        // проверяем, что фабрика установлена корректно
+        assertNotNull(service.getFactory(), "Фабрика не должна быть null");
+        assertEquals(customFactory, service.getFactory(),
+                "Фабрика должна совпадать с переданной в конструктор");
+        assertTrue(service.getFactory() instanceof LinkedListTabulatedFunctionFactory,
+                "Фабрика должна быть экземпляром LinkedListTabulatedFunctionFactory");
+    }
+
+
 }
