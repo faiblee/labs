@@ -29,7 +29,7 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
     }
 
     protected double interpolate(double x, double leftX, double rightX, double leftY, double rightY) {
-        if (leftX == rightX) {
+        if (Math.abs(leftX - rightX) <= 1e-6) {
             throw new IllegalArgumentException("Левая и правая границы интервала не могут совпадать");
         }
 

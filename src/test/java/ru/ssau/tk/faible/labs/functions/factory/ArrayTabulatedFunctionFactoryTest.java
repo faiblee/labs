@@ -2,7 +2,6 @@ package ru.ssau.tk.faible.labs.functions.factory;
 
 import org.junit.jupiter.api.Test;
 import ru.ssau.tk.faible.labs.functions.ArrayTabulatedFunction;
-import ru.ssau.tk.faible.labs.functions.LinkedListTabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
 
 import static org.junit.jupiter.api.Assertions.*;
