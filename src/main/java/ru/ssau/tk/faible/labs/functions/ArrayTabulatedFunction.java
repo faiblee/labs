@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable,Removable{
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
 
     private double[] xValues; // массив значений аргумента
     private double[] yValues; // массив значений функции

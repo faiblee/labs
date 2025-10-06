@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LinkedListTabulatedFunctionTest {
     private LinkedListTabulatedFunction function;
-    private final double PRECISION = 1e-6;
+    private final static double PRECISION = 1e-6;
 
     private final double[] xValues = new double[]{1.0, 2.0, 3.0, 4.0, 5.0};
     private final double[] yValues = new double[]{2.0, 4.0, 6.0, 8.0, 10.0};
@@ -471,6 +471,14 @@ class LinkedListTabulatedFunctionTest {
     }
 
     @Test
+    void removeAndInsertInEmptyListTest() {
+        for (int i = 0; i < function.getCount(); ) {
+            function.remove(i);
+        }
+        function.insert(0.0, 0.0);
+    }
+
+    @Test
     void FirstConstructorExceptionTest() {
         assertThrows(IllegalArgumentException.class,
                 () -> new LinkedListTabulatedFunction(new double[]{}, new double[]{}));
@@ -527,7 +535,7 @@ class LinkedListTabulatedFunctionTest {
         Iterator<Point> iterator = func.iterator();
 
         int index = 0;
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             Point point = iterator.next();
 
             assertEquals(xValues[index], point.x, PRECISION);
