@@ -44,7 +44,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         }
 
         // если границы совпадают
-        if (xFrom == xTo) {
+        if (Math.abs(xFrom - xTo) <= 1e-10) {
             Arrays.fill(xValues, xFrom);
             double yValue = source.apply(xFrom);
             Arrays.fill(yValues, yValue);

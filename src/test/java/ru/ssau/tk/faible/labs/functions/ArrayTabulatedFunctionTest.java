@@ -3,6 +3,7 @@ package ru.ssau.tk.faible.labs.functions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.ssau.tk.faible.labs.exceptions.DifferentLengthOfArraysException;
 import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -153,7 +154,7 @@ class ArrayTabulatedFunctionTest {
         double[] xValues = new double[]{1.0, 2.0};
         double[] yValues = new double[]{3.0, 4.0, 5.0};
 
-        assertThrows(IllegalArgumentException.class, () -> new ArrayTabulatedFunction(xValues, yValues));
+        assertThrows(DifferentLengthOfArraysException.class, () -> new ArrayTabulatedFunction(xValues, yValues));
     }
 
     @Test

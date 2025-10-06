@@ -41,8 +41,9 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         return Math.abs(first - second) <= 1e-6;
     }
 
-    public LinkedListTabulatedFunction(double[] xValues, double[] yValues) {// первый конструктор для двух массивов
+    public LinkedListTabulatedFunction(double[] xValues, double[] yValues) { // первый конструктор для двух массивов
         AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues);
+        if (xValues.length < 2) throw new IllegalArgumentException("Длина таблицы не может быть меньше 2");
         AbstractTabulatedFunction.checkSorted(xValues);
         for (int i = 0; i < xValues.length; i++) {
             addNode(xValues[i], yValues[i]);
@@ -51,6 +52,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     // второй конструктор для математической функции
     public LinkedListTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
+        if (count < 2) throw new IllegalArgumentException("Длина таблицы не может быть меньше 2");
         if (xFrom > xTo) { // если xFrom > xTo, меняем местами
             double temp = xFrom;
             xFrom = xTo;
@@ -73,6 +75,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     public void remove(int index) {
+        if (index < 0 || index >= count) {
+            throw new IllegalArgumentException("Индекс выходит за границы длины таблицы");
+        }
+
         Node removable = getNode(index);
 
         if (count == 1) { // если элемент единственный, очищаем голову
@@ -166,6 +172,9 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     }
 
     private Node getNode(int index) { // метод для получения узла по индексу
+        if (index < 0 || index >= count) {
+            throw new IllegalArgumentException("Индекс выходит за границы длины таблицы");
+        }
         Node currentNode = head;
         if (index <= count / 2) {
             for (int i = 0; i < index; i++) {
@@ -223,16 +232,25 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     public double getX(int index) { // нахождение x по индексу
+        if (index < 0 || index >= count) {
+            throw new IllegalArgumentException("Индекс выходит за границы длины таблицы");
+        }
         return getNode(index).x;
     }
 
     @Override
     public double getY(int index) { // нахождение y по индексу
+        if (index < 0 || index >= count) {
+            throw new IllegalArgumentException("Индекс выходит за границы длины таблицы");
+        }
         return getNode(index).y;
     }
 
     @Override
     public void setY(int index, double value) { // сеттер для y по индексу
+        if (index < 0 || index >= count) {
+            throw new IllegalArgumentException("Индекс выходит за границы длины таблицы");
+        }
         getNode(index).y = value;
     }
 
@@ -258,8 +276,8 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     protected int floorIndexOfX(double x) { // нахождение промежутка для x по значению
-        if (x < getX(0)) { // если x меньше первого элемента => меньше всех
-            return 0;
+        if (x < getX(0)) { // если x меньше левой границы
+            throw new IllegalArgumentException("X меньше левой границы");
         }
         if (x > getX(count - 1)) { // если x больше всех элементов
             return count;
@@ -281,7 +299,6 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     protected double interpolate(double x, int floorIndex) { // интерполяция для промежутка
-        if (count == 1) return getY(0);
         // границы интервала
         double leftX = getX(floorIndex);
         double rightX = getX(floorIndex + 1);
@@ -294,13 +311,11 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     @Override
     protected double extrapolateLeft(double x) { // экстраполяция слева <=> интерполяция от самого левого промежутка
-        if (count == 1) return getY(0);
         return interpolate(x, getX(0), getX(1), getY(0), getY(1));
     }
 
     @Override
     protected double extrapolateRight(double x) { // экстраполяция справа <=> интерполяция от самого правого промежутка
-        if (count == 1) return getY(0);
         return interpolate(x, getX(count - 2), getX(count - 1), getY(count - 2), getY(count - 1));
     }
 }

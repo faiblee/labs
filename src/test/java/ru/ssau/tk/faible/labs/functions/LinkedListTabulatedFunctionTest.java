@@ -2,6 +2,7 @@ package ru.ssau.tk.faible.labs.functions;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.ssau.tk.faible.labs.exceptions.DifferentLengthOfArraysException;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -473,7 +474,7 @@ class LinkedListTabulatedFunctionTest {
     void FirstConstructorExceptionTest() {
         assertThrows(IllegalArgumentException.class,
                 () -> new LinkedListTabulatedFunction(new double[]{}, new double[]{}));
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(DifferentLengthOfArraysException.class,
                 () -> new LinkedListTabulatedFunction(new double[]{1.0, 2.0, 3.0}, new double[]{10.0, 20.0}));
     }
 
