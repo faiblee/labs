@@ -2,7 +2,7 @@ package ru.ssau.tk.faible.labs.functions;
 
 import java.util.Iterator;
 
-interface TabulatedFunction extends MathFunction, Iterable<Point> {
+public interface TabulatedFunction extends MathFunction, Iterable<Point> {
     int getCount();
     double getX(int index);
     double getY(int index);
