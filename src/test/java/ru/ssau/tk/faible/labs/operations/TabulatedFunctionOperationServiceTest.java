@@ -146,9 +146,8 @@ class TabulatedFunctionOperationServiceTest {
         TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
 
         // проверяем, что фабрика установлена корректно
-        assertNotNull(service.getFactory(), "Фабрика не должна быть null");
-        assertTrue(service.getFactory() instanceof ArrayTabulatedFunctionFactory,
-                "По умолчанию должна использоваться ArrayTabulatedFunctionFactory");
+        assertNotNull(service.getFactory());
+        assertInstanceOf(ArrayTabulatedFunctionFactory.class, service.getFactory());
     }
     @Test
     void testConstructorWithFactory() {
@@ -158,11 +157,27 @@ class TabulatedFunctionOperationServiceTest {
         TabulatedFunctionOperationService service = new TabulatedFunctionOperationService(customFactory);
 
         // проверяем, что фабрика установлена корректно
-        assertNotNull(service.getFactory(), "Фабрика не должна быть null");
-        assertEquals(customFactory, service.getFactory(),
-                "Фабрика должна совпадать с переданной в конструктор");
-        assertTrue(service.getFactory() instanceof LinkedListTabulatedFunctionFactory,
-                "Фабрика должна быть экземпляром LinkedListTabulatedFunctionFactory");
+        assertNotNull(service.getFactory());
+        assertEquals(customFactory, service.getFactory());
+        assertInstanceOf(LinkedListTabulatedFunctionFactory.class, service.getFactory());
+    }
+    @Test
+    void testSetFactory() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+
+        TabulatedFunctionFactory originalFactory = service.getFactory();
+
+        // создаем новую фабрику для установки
+        TabulatedFunctionFactory newFactory = new LinkedListTabulatedFunctionFactory();
+
+        // устанавливаем новую фабрику
+        service.setFactory(newFactory);
+
+        // проверяем, что фабрика изменилась
+        assertEquals(newFactory, service.getFactory());
+        assertNotEquals(originalFactory, service.getFactory());
+        assertInstanceOf(LinkedListTabulatedFunctionFactory.class, service.getFactory());
     }
 
 
