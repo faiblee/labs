@@ -140,6 +140,49 @@ class TabulatedFunctionOperationServiceTest {
 
         assertThrows(InconsistentFunctionsException.class, () -> service.add(func1, func2));
     }
+
+    @Test
+    void testMultiplication() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues1 = {1.0, 2.0, 3.0};
+        double[] yValues1 = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction func1 = new LinkedListTabulatedFunction(xValues1, yValues1);
+
+        double[] xValues2 = {1.0, 2.0, 3.0};
+        double[] yValues2 = {2.0, 4.0, 6.0};
+        LinkedListTabulatedFunction func2 = new LinkedListTabulatedFunction(xValues2, yValues2);
+
+        TabulatedFunction result = service.multiplication(func1, func2);
+
+        assertEquals(3, result.getCount());
+        assertEquals(20.0, result.getY(0), PRESICION);
+        assertEquals(80.0, result.getY(1), PRESICION);
+        assertEquals(180.0, result.getY(2), PRESICION);
+    }
+
+    @Test
+    void testDivision() {
+        TabulatedFunctionOperationService service = new TabulatedFunctionOperationService();
+
+        double[] xValues2 = {0.0, 1.0, 2.0, 3.0};
+        double[] yValues2 = {1.0, 2.0, 3.0, 4.0};
+        LinkedListTabulatedFunction func1 = new LinkedListTabulatedFunction(xValues2, yValues2);
+
+        double[] xValues1 = {0.0, 1.0, 2.0, 3.0};
+        double[] yValues1 = {0.0, 10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction func2 = new LinkedListTabulatedFunction(xValues1, yValues1);
+
+        TabulatedFunction result = service.division(func1, func2);
+
+        assertEquals(4, result.getCount());
+        assertEquals(Double.POSITIVE_INFINITY, result.getY(0), PRESICION);
+        assertEquals(0.2, result.getY(1), PRESICION);
+        assertEquals(3.0/20.0, result.getY(2), PRESICION);
+        assertEquals(4.0/30.0, result.getY(3), PRESICION);
+    }
+
+
     @Test
     void testDefaultConstructor() {
         // создаем фабрику с конструктором по умолчанию
