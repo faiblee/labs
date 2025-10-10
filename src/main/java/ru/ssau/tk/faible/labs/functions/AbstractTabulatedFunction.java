@@ -19,6 +19,17 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
             throw new DifferentLengthOfArraysException("Длины массивов не совпадают"); // выбрасываем исключение
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder string = new StringBuilder();
+        string.append(getClass().getSimpleName()).append(" size = ").append(getCount()).append('\n');
+        for (Point point : this) {
+            string.append("[").append(point.x).append("; ").append(point.y).append("]\n");
+        }
+        return string.toString();
+    }
+
     static void checkSorted(double[] xValues){ // метод, который проверяет массив на отсортированность
         for(int j = 1; j < xValues.length; j++){
             if (xValues[j] <= xValues[j-1]){

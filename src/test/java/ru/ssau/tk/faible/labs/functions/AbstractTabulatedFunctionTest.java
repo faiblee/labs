@@ -8,12 +8,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AbstractTabulatedFunctionTest {
     @Test
-    void testTrueCheckLengthIsTheSame(){
+    void testTrueCheckLengthIsTheSame() {
         // не должно быть исключений
         double[] xValues = {1.0, 2.0, 3.0};
-        double[] yValues = {10.0,20.0,30.0};
-        assertDoesNotThrow(() -> AbstractTabulatedFunction.checkLengthIsTheSame(xValues,yValues));
+        double[] yValues = {10.0, 20.0, 30.0};
+        assertDoesNotThrow(() -> AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues));
     }
+
     @Test
     void testCheckLengthIsTheSameWithDifferentLengthX() {
         //  xValues длиннее yValues
@@ -22,6 +23,7 @@ class AbstractTabulatedFunctionTest {
         assertThrows(DifferentLengthOfArraysException.class,
                 () -> AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues));
     }
+
     @Test
     void testCheckLengthIsTheSameWithDifferentLengthY() {
         //  yValues длиннее xValues
@@ -31,6 +33,7 @@ class AbstractTabulatedFunctionTest {
         assertThrows(DifferentLengthOfArraysException.class, () ->
                 AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues));
     }
+
     @Test
     void testCheckLengthIsTheSameWithEmpty() {
         // оба массива пустые
@@ -39,6 +42,7 @@ class AbstractTabulatedFunctionTest {
         assertDoesNotThrow(() ->
                 AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues));
     }
+
     @Test
     void testCheckLengthIsTheSame_WithSingleElement() {
         // оба массива с одним элементом
@@ -47,13 +51,15 @@ class AbstractTabulatedFunctionTest {
         assertDoesNotThrow(() ->
                 AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues));
     }
+
     @Test
     void testCheckSortedWithVerySmallDifferenceFalse() {
-        // маленькая разница,не отсортированы
+        // маленькая разница, не отсортированы
         double[] xValues = {1.0000000002, 1.0000000001, 1.0};
         assertThrows(ArrayIsNotSortedException.class, () ->
                 AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
     void testCheckSorted_WithVerySmallDifferenceTrue() {
         // очень маленькая разница между элементами
@@ -63,42 +69,46 @@ class AbstractTabulatedFunctionTest {
     }
 
 
-
     @Test
-    void testTrueCheckSorted(){
-        // не должно быть искоючений
+    void testTrueCheckSorted() {
+        // не должно быть исключений
         double[] xValues = {1.0, 2.0, 3.0, 4.0};
         assertDoesNotThrow(()
                 -> AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
-    void testFalseCheckSorted_FirstElements(){
-        //исключение, неотсортированны два первых элемента
+    void testFalseCheckSorted_FirstElements() {
+        //исключение, не отсортированы два первых элемента
         double[] xValues = {2.0, 1.0, 4.0, 5.0};
         assertThrows(ArrayIsNotSortedException.class,
-                () ->AbstractTabulatedFunction.checkSorted(xValues));
+                () -> AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
-    void testFalseCheckSorted_MiddleElement(){
+    void testFalseCheckSorted_MiddleElement() {
         //исключение, неотсортированны элемент в середине
         double[] xValues = {1.0, 2.0, 7.0, 4.0, 5.0};
         assertThrows(ArrayIsNotSortedException.class,
-                () ->AbstractTabulatedFunction.checkSorted(xValues));
+                () -> AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
-    void testFalseCheckSorted_LastElement(){
+    void testFalseCheckSorted_LastElement() {
         //исключение, неотсортированны два последних элемента
         double[] xValues = {1.0, 2.0, 3.0, 5.0, 4.0};
         assertThrows(ArrayIsNotSortedException.class,
-                () ->AbstractTabulatedFunction.checkSorted(xValues));
+                () -> AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
-    void testFalseCheckSorted_WithDublicateElements(){
+    void testFalseCheckSorted_WithDublicateElements() {
         // исключение, два одинаковых элемента
         double[] xValues = {1.0, 2.0, 3.0, 3.0, 4.0, 5.0};
         assertThrows(ArrayIsNotSortedException.class,
-                () ->AbstractTabulatedFunction.checkSorted(xValues));
+                () -> AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
     void testCheckSortedWithOneleElement() {
         // массив с одним элементом
@@ -106,6 +116,7 @@ class AbstractTabulatedFunctionTest {
         assertDoesNotThrow(() ->
                 AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
     void testCheckSorted_WithEmptyArray() {
         // пустой массив
@@ -113,6 +124,7 @@ class AbstractTabulatedFunctionTest {
         assertDoesNotThrow(() ->
                 AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
     void testCheckSorted_WithAllDuplicateValues() {
         // все элементы одинаковые
@@ -120,6 +132,7 @@ class AbstractTabulatedFunctionTest {
         assertThrows(ArrayIsNotSortedException.class, () ->
                 AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
     void testCheckSorted_WithDescendingArray() {
         // убывающий массив
@@ -127,6 +140,7 @@ class AbstractTabulatedFunctionTest {
         assertThrows(ArrayIsNotSortedException.class, () ->
                 AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
     void testCheckSorted_WithNegativeNumbers_Sorted() {
         // отрицательные числа, отсортированны
@@ -134,6 +148,7 @@ class AbstractTabulatedFunctionTest {
         assertDoesNotThrow(() ->
                 AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
     void testCheckSorted_WithNegativeNumbers_Unsorted() {
         // отрицательные числа, не отсортированы
@@ -141,6 +156,7 @@ class AbstractTabulatedFunctionTest {
         assertThrows(ArrayIsNotSortedException.class, () ->
                 AbstractTabulatedFunction.checkSorted(xValues));
     }
+
     @Test
     void testCheckSorted_WithLargeSortedArray() {
         // большой отсортированный массив
@@ -152,5 +168,26 @@ class AbstractTabulatedFunctionTest {
                 AbstractTabulatedFunction.checkSorted(xValues));
     }
 
+    @Test
+    void testToStringWithArrayTabulated() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
 
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        String result = "ArrayTabulatedFunction size = 3\n[1.0; 10.0]\n[2.0; 20.0]\n[3.0; 30.0]\n";
+        assertEquals(result, function.toString());
+    }
+
+    @Test
+    public void testToStringWithLinkedList() {
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {1.0, 4.0, 9.0, 16.0};
+
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // Ожидаемая строка
+        String result = "LinkedListTabulatedFunction size = 4\n[1.0; 1.0]\n[2.0; 4.0]\n[3.0; 9.0]\n[4.0; 16.0]\n";
+
+        assertEquals(result, function.toString());
+    }
 }
