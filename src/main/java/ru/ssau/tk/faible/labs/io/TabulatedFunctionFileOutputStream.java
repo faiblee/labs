@@ -17,13 +17,16 @@ public class TabulatedFunctionFileOutputStream {
         TabulatedFunction arrayFunction = new ArrayTabulatedFunction(xValues, yValues);
         TabulatedFunction linkedListFunction = new LinkedListTabulatedFunction(xValues, yValues);
 
-        try (FileOutputStream arrayFos = new FileOutputStream("output/array function.bin");
-             FileOutputStream linkedListFos = new FileOutputStream("output/linked list function.bin");
-             BufferedOutputStream arrayBof = new BufferedOutputStream(arrayFos);
-             BufferedOutputStream linkedListBof = new BufferedOutputStream(linkedListFos)) {
+        try (
+                FileOutputStream arrayFos = new FileOutputStream("output/array function.bin");
+                FileOutputStream linkedListFos = new FileOutputStream("output/linked list function.bin");
+                BufferedOutputStream arrayBof = new BufferedOutputStream(arrayFos);
+                BufferedOutputStream linkedListBof = new BufferedOutputStream(linkedListFos)
+        ) {
 
             FunctionsIO.writeTabulatedFunction(arrayBof, arrayFunction);
             FunctionsIO.writeTabulatedFunction(linkedListBof, linkedListFunction);
+
         } catch (IOException e) {
             e.printStackTrace();
         }

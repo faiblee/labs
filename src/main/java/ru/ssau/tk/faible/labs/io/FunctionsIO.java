@@ -4,12 +4,7 @@ import ru.ssau.tk.faible.labs.functions.Point;
 import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.factory.TabulatedFunctionFactory;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
@@ -42,6 +37,22 @@ public final class FunctionsIO {
             printWriter.printf("%f %f\n", point.x, point.y);
         }
         printWriter.flush();
+    }
+
+    public static TabulatedFunction readTabulatedFunction(BufferedInputStream inputStream, TabulatedFunctionFactory factory) throws IOException {
+        DataInputStream dis = new DataInputStream(inputStream);
+
+        int count = dis.readInt();
+
+        double[] xValues = new double[count];
+        double[] yValues = new double[count];
+
+        for (int i = 0; i < count; i++) {
+            xValues[i] = dis.readDouble();
+            yValues[i] = dis.readDouble();
+        }
+
+        return factory.create(xValues, yValues);
     }
 
     public static TabulatedFunction readTabulatedFunction(BufferedReader reader, TabulatedFunctionFactory factory) throws IOException {
