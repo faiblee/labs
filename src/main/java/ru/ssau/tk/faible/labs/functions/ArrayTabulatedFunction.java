@@ -7,16 +7,15 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable{
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
 
     private double[] xValues; // массив значений аргумента
     private double[] yValues; // массив значений функции
     private int count; // количество точек
 
 
-
     public ArrayTabulatedFunction(double[] xValues, double[] yValues) {
-        AbstractTabulatedFunction.checkLengthIsTheSame(xValues,yValues);
+        AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues);
         if (xValues.length < 2) {
             throw new IllegalArgumentException("Длина массива не может быть меньше 2");
         }
@@ -59,22 +58,24 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
             }
         }
     }
+
     @Override
-    public Iterator<Point> iterator(){
+    public Iterator<Point> iterator() {
         return new Iterator<Point>() { // анонимный класс
             public int i = 0;
 
 
             @Override
-            public boolean hasNext(){
-                return (i<count); // след. элем. сущ., если индекс меньше кол-ва
+            public boolean hasNext() {
+                return (i < count); // след. элем. сущ., если индекс меньше кол-ва
             }
+
             @Override
-            public Point next(){
-                if (!hasNext()){ // если нет элементов
+            public Point next() {
+                if (!hasNext()) { // если нет элементов
                     throw new NoSuchElementException(); // бросаем исключение
                 }
-                Point point = new Point(getX(i),getY(i)); // создаем точку из массиов
+                Point point = new Point(getX(i), getY(i)); // создаем точку из массиов
                 i++;
                 return point;
 
@@ -175,6 +176,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     public double rightBound() {
         return xValues[count - 1];
     }
+
     @Override
     public void remove(int index) {
         if (index < 0 || index >= count) {
@@ -230,9 +232,9 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         if (count == 1) return getY(0);
         // границы интервала
         double leftX = getX(floorIndex);
-        double rightX = getX(floorIndex +1);
+        double rightX = getX(floorIndex + 1);
 
-        if (x < leftX || x > rightX){
+        if (x < leftX || x > rightX) {
             throw new InterpolationException("x вне зоны интерполяции"); // бросаем исключение
         }
 

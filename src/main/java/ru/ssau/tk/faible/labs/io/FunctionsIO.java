@@ -4,18 +4,33 @@ import ru.ssau.tk.faible.labs.functions.Point;
 import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.factory.TabulatedFunctionFactory;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 
 public final class FunctionsIO {
-    private  FunctionsIO(){
+    private FunctionsIO() {
         throw new UnsupportedOperationException();
     }
+
+    public static void writeTabulatedFunction(BufferedOutputStream outputStream, TabulatedFunction function) throws IOException {
+        DataOutputStream dos = new DataOutputStream(outputStream);
+        // записываем количество точек
+        dos.writeInt(function.getCount());
+        // записываем все точки
+        for (Point point : function) {
+            dos.writeDouble(point.x);
+            dos.writeDouble(point.y);
+        }
+        dos.flush();
+    }
+
     public static void writeTabulatedFunction(BufferedWriter writer, TabulatedFunction function){
         PrintWriter printWriter = new PrintWriter(writer);
 
@@ -28,6 +43,7 @@ public final class FunctionsIO {
         }
         printWriter.flush();
     }
+
     public static TabulatedFunction readTabulatedFunction(BufferedReader reader, TabulatedFunctionFactory factory) throws IOException {
         try {
             // читаем первую строку
