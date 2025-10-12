@@ -2,14 +2,21 @@ package ru.ssau.tk.faible.labs.functions;
 
 import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Serializable {
+    @Serial
+    private static final long serialVersionUID = -1061918492758652804L;
     protected int count;
     private Node head;
 
-    static class Node { // вложенный класс узла Node
+
+    static class Node implements Serializable{
+        @Serial
+        private static final long serialVersionUID = -9053548425726401795L; // вложенный класс узла Node
         public Node next;
         public Node prev;
         public double x;
@@ -187,33 +194,41 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         }
         return currentNode;
     }
+    // поменяли анонимный класс на обычный вложенный для возможности сериализации
+    private class LinkedListIterator implements Iterator<Point>, Serializable {
+        @Serial
+        private static final long serialVersionUID = 3636938937326097390L;
+
+        private Node node;
+
+        public LinkedListIterator() {
+            node = head;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return node != null;
+        }
+
+        @Override
+        public Point next() {
+            if (!hasNext()) throw new NoSuchElementException("В таблице не осталось элементов");
+
+            Point point = new Point(node.x, node.y); // создаем объект Point
+
+            if (node.next == head) { // если текущий элемент последний
+                node = null;
+            } else {
+                node = node.next;
+            }
+            return point;
+        }
+    }
 
     @Override
     public Iterator<Point> iterator() {
-        return new Iterator<Point>() {
-            private Node node = head;
-
-            @Override
-            public boolean hasNext() {
-                return node != null;
-            }
-
-            @Override
-            public Point next() {
-                if (!hasNext()) throw new NoSuchElementException("В таблице не осталось элементов");
-
-                Point point = new Point(node.x, node.y); // создаем объект Point
-
-                if (node.next == head) { // если текущий элемент последний
-                    node = null;
-                } else {
-                    node = node.next;
-                }
-                return point;
-            }
-        };
+        return new LinkedListIterator();
     }
-
 
     @Override
     public int getCount() { // геттер для count

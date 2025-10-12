@@ -13,7 +13,7 @@ public class TabulatedFunctionFileInputStream {
         // 1 часть: считываем функцию из файла .bin
         try (
                 FileInputStream fileIS = new FileInputStream("input/binary function.bin"); // оборачиваем файл во входной байтовый поток
-                BufferedInputStream bufferedIS = new BufferedInputStream(fileIS); // а затем оборачиваем в буферизированный
+                BufferedInputStream bufferedIS = new BufferedInputStream(fileIS) // а затем оборачиваем в буферизированный
         ) {
 
             TabulatedFunctionFactory factory = new ArrayTabulatedFunctionFactory(); // фабрика array функции
