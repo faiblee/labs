@@ -11,7 +11,7 @@ public class LinkedListTabulatedFunctionSerialization {
     public static void main(String[] args) {
         try (
                 FileOutputStream fileOS = new FileOutputStream("output/serialized linked list functions.bin"); // байтовый поток вывода
-                BufferedOutputStream bufferedOS = new BufferedOutputStream(fileOS); // оборачиваем в буферизированный
+                BufferedOutputStream bufferedOS = new BufferedOutputStream(fileOS) // оборачиваем в буферизированный
         ) {
             double[] xValues = {0.0, 1.0, 2.0, 3.0, 4.0};
             double[] yValues = {0.0, 1.0, 4.0, 9.0, 16.0};
@@ -35,7 +35,7 @@ public class LinkedListTabulatedFunctionSerialization {
 
         try (
                 FileInputStream fileIS = new FileInputStream("output/serialized linked list functions.bin"); // байтовый поток ввода
-                BufferedInputStream bufferedOS = new BufferedInputStream(fileIS); // оборачиваем в буферизированный
+                BufferedInputStream bufferedOS = new BufferedInputStream(fileIS) // оборачиваем в буферизированный
         ) {
             // десериализуем три функции
             TabulatedFunction function = FunctionsIO.deserialize(bufferedOS);
