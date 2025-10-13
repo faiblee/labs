@@ -2,13 +2,17 @@ package ru.ssau.tk.faible.labs.functions;
 
 import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
-
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Serializable {
+    private static final long seriaVersion = 1L;
     private double[] xValues; // массив значений аргумента
     private double[] yValues; // массив значений функции
     private int count; // количество точек

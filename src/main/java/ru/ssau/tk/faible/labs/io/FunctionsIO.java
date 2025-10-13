@@ -14,6 +14,19 @@ public final class FunctionsIO {
         throw new UnsupportedOperationException();
     }
 
+    public static void serialize(BufferedOutputStream stream, TabulatedFunction function) throws IOException {
+
+        // создаем ObjectOutputStream для сериализации объектов
+        ObjectOutputStream objectStream = new ObjectOutputStream(stream);
+
+        // сериализуем функцию в поток
+        objectStream.writeObject(function);
+
+        // сбрасываем буфер
+        objectStream.flush();
+    }
+
+
     public static void writeTabulatedFunction(BufferedOutputStream outputStream, TabulatedFunction function) throws IOException {
         DataOutputStream dos = new DataOutputStream(outputStream);
         // записываем количество точек
