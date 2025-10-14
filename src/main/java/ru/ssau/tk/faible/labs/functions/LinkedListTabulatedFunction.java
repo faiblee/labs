@@ -14,7 +14,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     private Node head;
 
 
-    static class Node implements Serializable{
+    static class Node implements Serializable {
         @Serial
         private static final long serialVersionUID = -9053548425726401795L; // вложенный класс узла Node
         public Node next;
@@ -194,40 +194,31 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         }
         return currentNode;
     }
-    // поменяли анонимный класс на обычный вложенный для возможности сериализации
-    private class LinkedListIterator implements Iterator<Point>, Serializable {
-        @Serial
-        private static final long serialVersionUID = 3636938937326097390L;
-
-        private Node node;
-
-        public LinkedListIterator() {
-            node = head;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return node != null;
-        }
-
-        @Override
-        public Point next() {
-            if (!hasNext()) throw new NoSuchElementException("В таблице не осталось элементов");
-
-            Point point = new Point(node.x, node.y); // создаем объект Point
-
-            if (node.next == head) { // если текущий элемент последний
-                node = null;
-            } else {
-                node = node.next;
-            }
-            return point;
-        }
-    }
 
     @Override
     public Iterator<Point> iterator() {
-        return new LinkedListIterator();
+        return new Iterator<Point>() {
+            private Node node = head;
+
+            @Override
+            public boolean hasNext() {
+                return node != null;
+            }
+
+            @Override
+            public Point next() {
+                if (!hasNext()) throw new NoSuchElementException("В таблице не осталось элементов");
+
+                Point point = new Point(node.x, node.y); // создаем объект Point
+
+                if (node.next == head) { // если текущий элемент последний
+                    node = null;
+                } else {
+                    node = node.next;
+                }
+                return point;
+            }
+        };
     }
 
     @Override
