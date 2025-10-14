@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
 
 
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Serializable {
-    private static final long seriaVersion = 1L;
+
     @Serial
     private static final long serialVersionUID = -6906250891256385040L;
     private double[] xValues; // массив значений аргумента
