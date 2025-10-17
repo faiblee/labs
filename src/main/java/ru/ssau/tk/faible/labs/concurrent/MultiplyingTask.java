@@ -7,7 +7,7 @@ public class MultiplyingTask implements Runnable{
     private final TabulatedFunction function; // приватное поле
 
     // конструтор
-    private MultiplyingTask(TabulatedFunction function){
+    public MultiplyingTask(TabulatedFunction function){
         this.function = function;
     }
 
@@ -15,9 +15,11 @@ public class MultiplyingTask implements Runnable{
     public void run(){
         // проходимся циклом по записям табулированной функции
         for (int i = 0; i < function.getCount(); i++){
-            double currentY = function.getY(i);
-            // увеличиваем y в 2 раза
-            function.setY(i,currentY*2);
+            synchronized (function) {
+                double currentY = function.getY(i);
+                // увеличиваем y в 2 раза
+                function.setY(i, currentY * 2);
+            }
         }
         // выводим информацию в консоль о том, что поток закончил выполнение задачи
         System.out.println("Поток " + Thread.currentThread().getName() +
