@@ -6,7 +6,7 @@ public class MultiplyingTask implements Runnable{
 
     private final TabulatedFunction function; // приватное поле
 
-    // конструтор
+    // конструктор
     public MultiplyingTask(TabulatedFunction function){
         this.function = function;
     }
