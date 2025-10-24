@@ -101,6 +101,79 @@ class SynchronizedTabulatedFunctionTest {
         syncFunction.setY(2, 10.0);
         assertEquals(syncFunction.apply(3.0), 10.0);
     }
+    @Test
+    public void testDoSynchronouslyWithDoubleOperation() {
+        // создаем функцию с 5 точками, где все y = 1.0
+        TabulatedFunction innerFunction = new LinkedListTabulatedFunction(new UnitFunction(), 1, 5, 5);
+        SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(innerFunction);
+
+        // создаем операцию
+        SynchronizedTabulatedFunction.Operation<Double> aOperation =
+                new SynchronizedTabulatedFunction.Operation<Double>() {
+                    @Override
+                    public Double apply(SynchronizedTabulatedFunction func) {
+                        double sum = 0;
+
+                        for (int i = 0; i < func.getCount(); i++) {
+                            sum += func.getY(i);
+                        }
+
+                        return sum / func.getCount();
+                    }
+                };
+
+
+        Double result = syncFunction.doSynchronously(aOperation);
+
+
+        assertEquals(result, 1.0);
+    }
+
+    @Test
+    public void testDoSynchronouslyWithVoidOperation() {
+
+        TabulatedFunction innerFunction = new LinkedListTabulatedFunction(new UnitFunction(), 1, 3, 3);
+        SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(innerFunction);
+
+        // операция не возвращает результата
+        SynchronizedTabulatedFunction.Operation<Void> multiplyOperation =
+                new SynchronizedTabulatedFunction.Operation<Void>() {
+                    @Override
+                    public Void apply(SynchronizedTabulatedFunction func) {
+                        // Умножаем все значения Y на 2
+                        for (int i = 0; i < func.getCount(); i++) {
+                            func.setY(i, func.getY(i) * 2);
+                        }
+                        // возвращаем null для Void
+                        return null;
+                    }
+                };
+
+        // результат должен быть null
+        Void result = syncFunction.doSynchronously(multiplyOperation);
+        assertNull(result);
+    }
+
+    @Test
+    public void testDoSynchronouslyWithStringOperation() {
+        TabulatedFunction innerFunction = new LinkedListTabulatedFunction(new UnitFunction(), 1, 3, 3);
+        SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(innerFunction);
+
+        // Используем лямбда-выражение вместо класса
+        SynchronizedTabulatedFunction.Operation<String> infoOperation =
+                func -> {
+
+                    return String.format("Points: %d, Range: [%.1f, %.1f]",
+                            func.getCount(),        // читаем количество точек
+                            func.leftBound(),       // читаем левую границу
+                            func.rightBound());     // читаем правую границу
+                };
+
+        String result = syncFunction.doSynchronously(infoOperation);
+
+
+        assertEquals(result, "Points: 3, Range: [1,0, 3,0]");
+    }
 
 
 }
