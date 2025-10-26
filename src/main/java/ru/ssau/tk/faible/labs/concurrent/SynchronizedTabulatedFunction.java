@@ -8,10 +8,23 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
     private final TabulatedFunction function;
     private final Object lock = new Object();
 
+    @FunctionalInterface // внутренний публичный интерфейс
+    public interface Operation<T>{
+        T apply(SynchronizedTabulatedFunction function);
+    }
+
     // конструктор
     public SynchronizedTabulatedFunction(TabulatedFunction function){
         this.function = function;
     }
+
+    public <T> T doSynchronously(Operation<? extends T> operation){
+        synchronized (lock){
+            return operation.apply(this);
+        }
+
+    }
+
 
     @Override
     public int getCount() {
