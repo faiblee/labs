@@ -1,11 +1,8 @@
 package ru.ssau.tk.faible.labs.concurrent;
 import ru.ssau.tk.faible.labs.functions.Point;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
-
-import static java.util.Arrays.asList;
 
 public class SynchronizedTabulatedFunction implements TabulatedFunction {
     private final TabulatedFunction function;
@@ -87,12 +84,7 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
     @Override
     public Iterator<Point> iterator() {
         synchronized (lock) {
-            // Создаем копию точек для безопасной итерации
-            Point[] points = new Point[function.getCount()];
-            for (int i = 0; i < function.getCount(); i++) {
-                points[i] = new Point(function.getX(i), function.getY(i));
-            }
-            return asList(points).iterator();
+            return function.iterator();
         }
     }
 

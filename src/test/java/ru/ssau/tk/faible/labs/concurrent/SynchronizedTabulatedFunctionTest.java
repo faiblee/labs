@@ -16,7 +16,7 @@ class SynchronizedTabulatedFunctionTest {
 
         SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(function);
 
-        assertEquals(syncFunction.getCount(),10);
+        assertEquals(10, syncFunction.getCount());
     }
 
     @Test
@@ -25,9 +25,9 @@ class SynchronizedTabulatedFunctionTest {
 
         SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(function);
 
-        assertEquals(syncFunction.getX(0),1);
-        assertEquals(syncFunction.getX(2),3);
-        assertEquals(syncFunction.getX(8),9);
+        assertEquals(1, syncFunction.getX(0));
+        assertEquals(3, syncFunction.getX(2));
+        assertEquals(9, syncFunction.getX(8));
     }
 
 
@@ -37,12 +37,12 @@ class SynchronizedTabulatedFunctionTest {
 
         SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(function);
 
-        assertEquals(syncFunction.getY(0),1);
-        assertEquals(syncFunction.getY(2),1);
+        assertEquals(1, syncFunction.getY(0));
+        assertEquals(1, syncFunction.getY(2));
 
         syncFunction.setY(1,52); // меняем значение
 
-        assertEquals(syncFunction.getY(1),52);
+        assertEquals(52, syncFunction.getY(1));
     }
 
     @Test
@@ -51,8 +51,8 @@ class SynchronizedTabulatedFunctionTest {
 
         SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(innerFunction);
 
-        assertEquals(syncFunction.indexOfX(3.0), 2);   // значение существует
-        assertEquals(syncFunction.indexOfX(20.0), -1); // значение несуществует
+        assertEquals(2, syncFunction.indexOfX(3.0));   // значение существует
+        assertEquals(-1, syncFunction.indexOfX(20.0)); // значение несуществует
     }
 
     @Test
@@ -61,11 +61,11 @@ class SynchronizedTabulatedFunctionTest {
 
         SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(innerFunction);
 
-        assertEquals(syncFunction.indexOfY(1.0), 0);
+        assertEquals(0, syncFunction.indexOfY(1.0));
 
         syncFunction.setY(1, 2.0); // меняем значение
 
-        assertEquals(syncFunction.indexOfY(2.0), 1);
+        assertEquals(1, syncFunction.indexOfY(2.0));
     }
 
     @Test
@@ -74,8 +74,8 @@ class SynchronizedTabulatedFunctionTest {
 
         SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(innerFunction);
 
-        assertEquals(syncFunction.leftBound(), 3.0);  // Левая граница
-        assertEquals(syncFunction.rightBound(), 52.0); // Правая граница
+        assertEquals(3.0, syncFunction.leftBound());  // Левая граница
+        assertEquals(52.0, syncFunction.rightBound()); // Правая граница
     }
 
 
@@ -86,10 +86,10 @@ class SynchronizedTabulatedFunctionTest {
 
         int count = 0;
         for (Point point : syncFunction) {
-            assertEquals(point.y, 1.0);
+            assertEquals(1.0, point.y);
             count++;
         }
-        assertEquals(count, 3);
+        assertEquals(3, count);
     }
 
     @Test
@@ -97,9 +97,9 @@ class SynchronizedTabulatedFunctionTest {
         TabulatedFunction innerFunction = new LinkedListTabulatedFunction(new UnitFunction(), 1, 5, 5);
         SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(innerFunction);
 
-        assertEquals(syncFunction.apply(3.0), 1.0);
+        assertEquals(1.0, syncFunction.apply(3.0));
         syncFunction.setY(2, 10.0);
-        assertEquals(syncFunction.apply(3.0), 10.0);
+        assertEquals(10.0, syncFunction.apply(3.0));
     }
     @Test
     public void testDoSynchronouslyWithDoubleOperation() {
@@ -126,7 +126,7 @@ class SynchronizedTabulatedFunctionTest {
         Double result = syncFunction.doSynchronously(aOperation);
 
 
-        assertEquals(result, 1.0);
+        assertEquals(1.0, result);
     }
 
     @Test
@@ -172,8 +172,22 @@ class SynchronizedTabulatedFunctionTest {
         String result = syncFunction.doSynchronously(infoOperation);
 
 
-        assertEquals(result, "Points: 3, Range: [1,0, 3,0]");
+        assertEquals("Points: 3, Range: [1,0, 3,0]", result);
     }
 
+    @Test
+    void toStringTest() {
+        TabulatedFunction function = new LinkedListTabulatedFunction(new UnitFunction(), 1, 5, 5);
+        SynchronizedTabulatedFunction synchronizedFunction = new SynchronizedTabulatedFunction(function);
 
+        assertEquals("LinkedListTabulatedFunction size = 5\n[1.0; 1.0]\n[2.0; 1.0]\n[3.0; 1.0]\n[4.0; 1.0]\n[5.0; 1.0]\n", synchronizedFunction.toString());
+    }
+
+    @Test
+    void getLock() {
+        TabulatedFunction function = new LinkedListTabulatedFunction(new UnitFunction(), 1, 5, 5);
+        SynchronizedTabulatedFunction synchronizedFunction = new SynchronizedTabulatedFunction(function);
+
+        assertInstanceOf(Object.class, synchronizedFunction.getLock());
+    }
 }
