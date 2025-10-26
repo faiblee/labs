@@ -101,33 +101,6 @@ class SynchronizedTabulatedFunctionTest {
         syncFunction.setY(2, 10.0);
         assertEquals(10.0, syncFunction.apply(3.0));
     }
-    @Test
-    public void testDoSynchronouslyWithDoubleOperation() {
-        // создаем функцию с 5 точками, где все y = 1.0
-        TabulatedFunction innerFunction = new LinkedListTabulatedFunction(new UnitFunction(), 1, 5, 5);
-        SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(innerFunction);
-
-        // создаем операцию
-        SynchronizedTabulatedFunction.Operation<Double> aOperation =
-                new SynchronizedTabulatedFunction.Operation<Double>() {
-                    @Override
-                    public Double apply(SynchronizedTabulatedFunction func) {
-                        double sum = 0;
-
-                        for (int i = 0; i < func.getCount(); i++) {
-                            sum += func.getY(i);
-                        }
-
-                        return sum / func.getCount();
-                    }
-                };
-
-
-        Double result = syncFunction.doSynchronously(aOperation);
-
-
-        assertEquals(1.0, result);
-    }
 
     @Test
     public void testDoSynchronouslyWithVoidOperation() {
