@@ -85,11 +85,11 @@ class SynchronizedTabulatedFunctionTest {
         SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(innerFunction);
 
         int count = 0;
-        for (Point point : syncFunction) {
+        for (Point point : syncFunction) { // проходимся итератором по всем точкам функции
             assertEquals(1.0, point.y);
             count++;
         }
-        assertEquals(3, count);
+        assertEquals(3, count); // сравниваем количество пройденных итераций с количеством точек
     }
 
     @Test
