@@ -5,6 +5,7 @@ import ru.ssau.tk.faible.labs.functions.LinkedListTabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.Point;
 import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.UnitFunction;
+import ru.ssau.tk.faible.labs.operations.TabulatedDifferentialOperator;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -154,6 +155,62 @@ class SynchronizedTabulatedFunctionTest {
         SynchronizedTabulatedFunction synchronizedFunction = new SynchronizedTabulatedFunction(function);
 
         assertEquals("LinkedListTabulatedFunction size = 5\n[1.0; 1.0]\n[2.0; 1.0]\n[3.0; 1.0]\n[4.0; 1.0]\n[5.0; 1.0]\n", synchronizedFunction.toString());
+    }
+
+    @Test
+    public void testDeriveSynchronouslyWithRegularFunction() {
+
+        TabulatedFunction function = new LinkedListTabulatedFunction(new UnitFunction(), 0, 4, 5);
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+
+        TabulatedFunction result = operator.deriveSynchronously(function);
+
+        assertNotNull(result);
+        assertEquals(5, result.getCount());
+    }
+
+    @Test
+    public void testDeriveSynchronouslyWithConstantFunction() {
+        // создаем константную функцию
+        TabulatedFunction function = new LinkedListTabulatedFunction(new UnitFunction(), 0, 4, 5);
+
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+        TabulatedFunction result = operator.deriveSynchronously(function);
+
+        // проверяем что все производные = 0
+        for (int i = 0; i < result.getCount(); i++) {
+            assertEquals(0.0, result.getY(i), 1e-10);
+        }
+    }
+
+    @Test
+    public void testDeriveSynchronouslyWithLinearFunc() {
+
+        double[] xValues = {0, 1, 2, 3};
+        double[] yValues = {1, 3, 5, 7};
+        TabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+        TabulatedFunction result = operator.deriveSynchronously(function);
+
+        // проверяем производную
+        assertEquals(2.0, result.getY(0), 1e-10);
+        assertEquals(2.0, result.getY(1), 1e-10);
+    }
+
+    @Test
+    public void testDeriveSynchronouslyDoesNotWrapSyncFunction() {
+
+        TabulatedFunction innerFunction = new LinkedListTabulatedFunction(new UnitFunction(), 0, 4, 5);
+        SynchronizedTabulatedFunction syncFunction = new SynchronizedTabulatedFunction(innerFunction);
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+
+        TabulatedFunction result1 = operator.deriveSynchronously(syncFunction);
+        TabulatedFunction result2 = operator.deriveSynchronously(syncFunction);
+
+        assertNotNull(result1);
+        assertNotNull(result2);
+
     }
 
 }

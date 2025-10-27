@@ -26,3 +26,4 @@ public class MultiplyingTask implements Runnable{
                 "закончил выполнение задачи.");
     }
 }
+

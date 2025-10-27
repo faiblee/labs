@@ -1,5 +1,6 @@
 package ru.ssau.tk.faible.labs.operations;
 
+import ru.ssau.tk.faible.labs.concurrent.SynchronizedTabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.Point;
 import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.factory.ArrayTabulatedFunctionFactory;
@@ -57,6 +58,16 @@ public class TabulatedDifferentialOperator implements DifferentialOperator<Tabul
         }
 
         return factory.create(xValues, yValues);
+    }
+    public TabulatedFunction deriveSynchronously(TabulatedFunction function) {
+        // проверка, что функция является уже синхронизированной
+        SynchronizedTabulatedFunction syncFunction;
+        if (function instanceof SynchronizedTabulatedFunction){
+            syncFunction = (SynchronizedTabulatedFunction) function;
+        } else{
+            syncFunction = new SynchronizedTabulatedFunction(function);
+        }
+        return syncFunction.doSynchronously(this::derive); // ссылка на метод
     }
 
 }
