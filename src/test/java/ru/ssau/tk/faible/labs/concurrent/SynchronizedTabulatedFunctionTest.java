@@ -156,11 +156,4 @@ class SynchronizedTabulatedFunctionTest {
         assertEquals("LinkedListTabulatedFunction size = 5\n[1.0; 1.0]\n[2.0; 1.0]\n[3.0; 1.0]\n[4.0; 1.0]\n[5.0; 1.0]\n", synchronizedFunction.toString());
     }
 
-    @Test
-    void getLock() {
-        TabulatedFunction function = new LinkedListTabulatedFunction(new UnitFunction(), 1, 5, 5);
-        SynchronizedTabulatedFunction synchronizedFunction = new SynchronizedTabulatedFunction(function);
-
-        assertInstanceOf(Object.class, synchronizedFunction.getLock());
-    }
 }

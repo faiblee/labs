@@ -9,7 +9,6 @@ import ru.ssau.tk.faible.labs.operations.TabulatedFunctionOperationService;
 
 public class SynchronizedTabulatedFunction implements TabulatedFunction {
     private final TabulatedFunction function;
-    private final Object lock = new Object();
 
     @FunctionalInterface // внутренний публичный интерфейс
     public interface Operation<T>{
@@ -22,72 +21,71 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
     }
 
     public <T> T doSynchronously(Operation<? extends T> operation){
-        synchronized (lock){
+        synchronized (function){
             return operation.apply(this);
         }
 
     }
 
-
     @Override
     public int getCount() {
-        synchronized (lock) {
+        synchronized (function) {
             return function.getCount();
         }
     }
 
     @Override
     public double getX(int index) {
-        synchronized (lock) {
+        synchronized (function) {
             return function.getX(index);
         }
     }
 
     @Override
     public double getY(int index) {
-        synchronized (lock) {
+        synchronized (function) {
             return function.getY(index);
         }
     }
 
     @Override
     public void setY(int index, double value) {
-        synchronized (lock) {
+        synchronized (function) {
             function.setY(index, value);
         }
     }
 
     @Override
     public int indexOfX(double x) {
-        synchronized (lock) {
+        synchronized (function) {
             return function.indexOfX(x);
         }
     }
 
     @Override
     public int indexOfY(double y) {
-        synchronized (lock) {
+        synchronized (function) {
             return function.indexOfY(y);
         }
     }
 
     @Override
     public double leftBound() {
-        synchronized (lock) {
+        synchronized (function) {
             return function.leftBound();
         }
     }
 
     @Override
     public double rightBound() {
-        synchronized (lock) {
+        synchronized (function) {
             return function.rightBound();
         }
     }
 
     @Override
     public Iterator<Point> iterator() {
-        synchronized (lock) {
+        synchronized (function) {
             Point[] points = TabulatedFunctionOperationService.asPoints(function); // создаем копию точек из функции
             return new Iterator<Point>() { // возвращаем анонимный итератор
                 private int currentIndex = 0;
@@ -108,18 +106,14 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
 
     @Override
     public double apply(double x) {
-        synchronized (lock) {
+        synchronized (function) {
             return function.apply(x);
         }
     }
 
-    public Object getLock() {
-        return lock;
-    }
-
     @Override
     public String toString() {
-        synchronized (lock) {
+        synchronized (function) {
             return function.toString();
         }
     }
