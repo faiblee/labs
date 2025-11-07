@@ -4,9 +4,14 @@ import ru.ssau.tk.faible.labs.functions.ArrayTabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
 import ru.ssau.tk.faible.labs.operations.TabulatedDifferentialOperator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
 public class ArrayTabulatedFunctionSerialization {
+    private final static Logger log = LoggerFactory.getLogger(ArrayTabulatedFunctionSerialization.class);
+
     public static void main(String[] args) throws IOException {
 
         double[] xValues = {1.0, 2.0, 3.0, 4.0, 5.0};
@@ -32,6 +37,7 @@ public class ArrayTabulatedFunctionSerialization {
             FunctionsIO.serialize(bufferedOut, SecondDerivat);
 
         } catch (IOException e) {
+            log.error("Выброшено исключение IOException");
             e.printStackTrace();
         }
 
@@ -48,7 +54,8 @@ public class ArrayTabulatedFunctionSerialization {
             System.out.println(deserializedFirstDeriv.toString());
             System.out.println(deserializedSecondDeriv.toString());
 
-        } catch (IOException | ClassNotFoundException e){
+        } catch (IOException | ClassNotFoundException e) {
+            log.error("Выброшены исключения IOException или ClassNotFoundException");
             e.printStackTrace();
         }
 

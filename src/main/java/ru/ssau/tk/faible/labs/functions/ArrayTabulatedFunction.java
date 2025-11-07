@@ -1,5 +1,7 @@
 package ru.ssau.tk.faible.labs.functions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
 import java.io.*;
@@ -9,6 +11,8 @@ import java.util.NoSuchElementException;
 
 
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Serializable {
+
+    private static final Logger log = LoggerFactory.getLogger(ArrayTabulatedFunction.class);
 
     @Serial
     private static final long serialVersionUID = -6906250891256385040L;
@@ -20,6 +24,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     public ArrayTabulatedFunction(double[] xValues, double[] yValues) {
         AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues);
         if (xValues.length < 2) {
+            log.error("В конструктор ArrayTabulatedFunction передан массив длины < 2");
             throw new IllegalArgumentException("Длина массива не может быть меньше 2");
         }
         AbstractTabulatedFunction.checkSorted(xValues);
@@ -32,6 +37,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     public ArrayTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
         if (count < 2) { // проверка минимального количества точек
+            log.error("В конструктор ArrayTabulatedFunction передано количество точек < 2");
             throw new IllegalArgumentException("Количество точек должно быть не менее 2");
         }
 
@@ -67,22 +73,20 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         return new Iterator<Point>() { // анонимный класс
             public int i = 0;
 
-
             @Override
             public boolean hasNext() {
-                return (i < count); // след. элем. сущ., если индекс меньше кол-ва
+                return (i < count); // след элем сущ, если индекс меньше кол-ва
             }
 
             @Override
             public Point next() {
                 if (!hasNext()) { // если нет элементов
+                    log.error("Вызван метод next() когда элементы закончились");
                     throw new NoSuchElementException(); // бросаем исключение
                 }
                 Point point = new Point(getX(i), getY(i)); // создаем точку из массиов
                 i++;
                 return point;
-
-
             }
         };
     }
@@ -123,12 +127,13 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     @Override
     public int getCount() {
-        return count; //
+        return count;
     }
 
     @Override // метод проверки границ x
     public double getX(int index) {
         if (index < 0 || index >= count) {
+            log.error("Вызван метод getX для некорректного индекса");
             throw new IllegalArgumentException("Индекс вне диапазона: " + index);
         }
         return xValues[index];
@@ -137,6 +142,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override // метод проверки границ y
     public double getY(int index) {
         if (index < 0 || index >= count) {
+            log.error("Вызван метод getY для некорректного индекса");
             throw new IllegalArgumentException("Индекс вне диапазона: " + index);
         }
         return yValues[index];
@@ -145,6 +151,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     public void setY(int index, double value) {
         if (index < 0 || index >= count) {
+            log.error("Вызван метод setY для некорректного индекса");
             throw new IllegalArgumentException("Индекс вне диапазона: " + index);
         }
         yValues[index] = value;
@@ -183,17 +190,19 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     public void remove(int index) {
         if (index < 0 || index >= count) {
+            log.error("Вызван метод remove для некорректного индекса");
             throw new IllegalArgumentException("Индекс вне диапазона: " + index);
         }
         if (count == 1) {
+            log.error("Вызван метод remove для последнего элемента");
             throw new IllegalStateException("Нельзя удалить последнюю точку");
         }
 
-        // cоздаем новые массивы уменьшенного размера
+        // создаем новые массивы уменьшенного размера
         double[] newXValues = new double[count - 1];
         double[] newYValues = new double[count - 1];
 
-        // rопируем элементы до удаляемого индекса
+        // копируем элементы до удаляемого индекса
         System.arraycopy(xValues, 0, newXValues, 0, index);
         System.arraycopy(yValues, 0, newYValues, 0, index);
 
@@ -210,6 +219,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     protected int floorIndexOfX(double x) {
         if (x < getX(0)) { // если x меньше первого элемента
+            log.error("вызван метод floorIndexOfX для некорректного x (меньше левой границы)");
             throw new IllegalArgumentException("x меньше левой границы");
         }
         if (x > getX(count - 1)) { // если x больше всех элементов
@@ -238,6 +248,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         double rightX = getX(floorIndex + 1);
 
         if (x < leftX || x > rightX) {
+            log.error("вызван метод interpolate для некорректного x (вне зоны интерполяции)");
             throw new InterpolationException("x вне зоны интерполяции"); // бросаем исключение
         }
 
@@ -246,13 +257,17 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     @Override
     protected double extrapolateLeft(double x) { // интерполяция от самого левого промежутка
-        if (count == 1) return getY(0);
+        if (count == 1) {
+            return getY(0);
+        }
         return interpolate(x, getX(0), getX(1), getY(0), getY(1));
     }
 
     @Override
     protected double extrapolateRight(double x) { // интерполяция от самого правого промежутка
-        if (count == 1) return getY(0);
+        if (count == 1) {
+            return getY(0);
+        }
         return interpolate(x, getX(count - 2), getX(count - 1), getY(count - 2), getY(count - 1));
     }
 }

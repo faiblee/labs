@@ -1,10 +1,12 @@
 package ru.ssau.tk.faible.labs.functions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.ssau.tk.faible.labs.exceptions.ArrayIsNotSortedException;
 import ru.ssau.tk.faible.labs.exceptions.DifferentLengthOfArraysException;
 
 public abstract class AbstractTabulatedFunction implements TabulatedFunction {
-
+    private static final Logger log = LoggerFactory.getLogger(AbstractTabulatedFunction.class);
 
     protected abstract int floorIndexOfX(double x);
 
@@ -15,7 +17,8 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
     protected abstract double interpolate(double x, int floorIndex);
 
     static void checkLengthIsTheSame(double[]xValues, double[] yValues){ // метод, который проверяет, одинаковая ли длина массивов
-        if (xValues.length != yValues.length){
+        if (xValues.length != yValues.length) {
+            log.error("Длины массивов не совпадают");
             throw new DifferentLengthOfArraysException("Длины массивов не совпадают"); // выбрасываем исключение
         }
     }
@@ -33,6 +36,7 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
     static void checkSorted(double[] xValues){ // метод, который проверяет массив на отсортированность
         for(int j = 1; j < xValues.length; j++){
             if (xValues[j] <= xValues[j-1]){
+                log.error("Массив не отсортирован");
                 throw new ArrayIsNotSortedException("Массив не отсортирован");
             }
 
@@ -41,6 +45,7 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
 
     protected double interpolate(double x, double leftX, double rightX, double leftY, double rightY) {
         if (Math.abs(leftX - rightX) <= 1e-6) {
+            log.error("Левая и правая границы интервала совпали");
             throw new IllegalArgumentException("Левая и правая границы интервала не могут совпадать");
         }
 

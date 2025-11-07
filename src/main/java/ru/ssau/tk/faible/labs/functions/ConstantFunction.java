@@ -4,7 +4,6 @@ package ru.ssau.tk.faible.labs.functions;
 public class ConstantFunction implements MathFunction {
     private final double constant; // константное значение
 
-
     public ConstantFunction(double constant) { // конструктор
         this.constant = constant;
     }

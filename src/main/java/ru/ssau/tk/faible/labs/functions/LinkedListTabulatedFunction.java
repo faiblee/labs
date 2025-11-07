@@ -1,5 +1,7 @@
 package ru.ssau.tk.faible.labs.functions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
 import java.io.Serial;
@@ -8,6 +10,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Serializable {
+    private static final Logger log = LoggerFactory.getLogger(LinkedListTabulatedFunction.class);
+
     @Serial
     private static final long serialVersionUID = -1061918492758652804L;
     protected int count;
@@ -50,7 +54,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     public LinkedListTabulatedFunction(double[] xValues, double[] yValues) { // первый конструктор для двух массивов
         AbstractTabulatedFunction.checkLengthIsTheSame(xValues, yValues);
-        if (xValues.length < 2) throw new IllegalArgumentException("Длина таблицы не может быть меньше 2");
+        if (xValues.length < 2) {
+            log.error("В конструктор LinkedListTabulatedFunction передан массив xValues длины <2");
+            throw new IllegalArgumentException("Длина таблицы не может быть меньше 2");
+        }
         AbstractTabulatedFunction.checkSorted(xValues);
         for (int i = 0; i < xValues.length; i++) {
             addNode(xValues[i], yValues[i]);
@@ -59,7 +66,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     // второй конструктор для математической функции
     public LinkedListTabulatedFunction(MathFunction source, double xFrom, double xTo, int count) {
-        if (count < 2) throw new IllegalArgumentException("Длина таблицы не может быть меньше 2");
+        if (count < 2) {
+            log.error("В конструктор LinkedListTabulatedFunction передано число точек <2");
+            throw new IllegalArgumentException("Длина таблицы не может быть меньше 2");
+        }
         if (xFrom > xTo) { // если xFrom > xTo, меняем местами
             double temp = xFrom;
             xFrom = xTo;
@@ -83,6 +93,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     @Override
     public void remove(int index) {
         if (index < 0 || index >= count) {
+            log.error("Вызван метод remove для некорректного индекса");
             throw new IllegalArgumentException("Индекс выходит за границы длины таблицы");
         }
 
@@ -118,6 +129,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
             if (isEqual(currentNode.x, x)) {
                 // если нашли узел с таким x, обновляем y и выходим
                 currentNode.y = y;
+                log.debug("метод insert изменил уже существующее значение x");
                 return;
             }
         }
@@ -180,6 +192,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
     private Node getNode(int index) { // метод для получения узла по индексу
         if (index < 0 || index >= count) {
+            log.error("Вызван метод getNode для некорректного индекса");
             throw new IllegalArgumentException("Индекс выходит за границы длины таблицы");
         }
         Node currentNode = head;
@@ -207,8 +220,10 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
 
             @Override
             public Point next() {
-                if (!hasNext()) throw new NoSuchElementException("В таблице не осталось элементов");
-
+                if (!hasNext()) {
+                    log.error("Вызван метод next когда элементов не осталось");
+                    throw new NoSuchElementException("В таблице не осталось элементов");
+                }
                 Point point = new Point(node.x, node.y); // создаем объект Point
 
                 if (node.next == head) { // если текущий элемент последний
@@ -239,6 +254,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     @Override
     public double getX(int index) { // нахождение x по индексу
         if (index < 0 || index >= count) {
+            log.error("Вызван метод getX для некорректного индекса");
             throw new IllegalArgumentException("Индекс выходит за границы длины таблицы");
         }
         return getNode(index).x;
@@ -247,6 +263,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     @Override
     public double getY(int index) { // нахождение y по индексу
         if (index < 0 || index >= count) {
+            log.error("Вызван метод getY для некорректного индекса");
             throw new IllegalArgumentException("Индекс выходит за границы длины таблицы");
         }
         return getNode(index).y;
@@ -255,6 +272,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     @Override
     public void setY(int index, double value) { // сеттер для y по индексу
         if (index < 0 || index >= count) {
+            log.error("Вызван метод setY для некорректного индекса");
             throw new IllegalArgumentException("Индекс выходит за границы длины таблицы");
         }
         getNode(index).y = value;
@@ -283,6 +301,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
     @Override
     protected int floorIndexOfX(double x) { // нахождение промежутка для x по значению
         if (x < getX(0)) { // если x меньше левой границы
+            log.error("Вызван метод floorIndexOfX для некорректного x");
             throw new IllegalArgumentException("X меньше левой границы");
         }
         if (x > getX(count - 1)) { // если x больше всех элементов
@@ -310,6 +329,7 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         double rightX = getX(floorIndex + 1);
 
         if (x < leftX || x > rightX) {
+            log.error("Вызван метод interpolate для некорректного x (вне зоны интерполяции)");
             throw new InterpolationException("x вне зоны интерполяции"); // бросаем исключение
         }
         return interpolate(x, getX(floorIndex), getX(floorIndex + 1), getY(floorIndex), getY(floorIndex + 1));

@@ -1,5 +1,7 @@
 package ru.ssau.tk.faible.labs.concurrent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.ssau.tk.faible.labs.functions.LinkedListTabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.MathFunction;
 import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
@@ -9,8 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MultiplyingTaskExecutor {
+    private static final Logger log = LoggerFactory.getLogger(MultiplyingTaskExecutor.class);
+
     public static void main(String[] args){
 
+        log.info("Thread {} was started", Thread.currentThread().getName());
         MathFunction unitfunction = new UnitFunction();
         double xFrom = 1;
         double xTo = 1000;
@@ -40,10 +45,12 @@ public class MultiplyingTaskExecutor {
         try {
             Thread.sleep(2000);
         }catch (InterruptedException e){ // исключение при прерывании потока
+            log.error("Thread {} was interrupted while sleeping", Thread.currentThread().getName());
             e.printStackTrace();
         }
         // вывод функции
         System.out.println(tabulatedFunction);
 
+        log.info("Thread {} was started", Thread.currentThread().getName());
     }
 }

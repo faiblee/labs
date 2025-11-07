@@ -24,7 +24,6 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
         synchronized (function){
             return operation.apply(this);
         }
-
     }
 
     @Override

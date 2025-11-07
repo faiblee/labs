@@ -1,5 +1,7 @@
 package ru.ssau.tk.faible.labs.operations;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.ssau.tk.faible.labs.exceptions.InconsistentFunctionsException;
 import ru.ssau.tk.faible.labs.functions.Point;
 import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
@@ -7,6 +9,8 @@ import ru.ssau.tk.faible.labs.functions.factory.ArrayTabulatedFunctionFactory;
 import ru.ssau.tk.faible.labs.functions.factory.TabulatedFunctionFactory;
 
 public class TabulatedFunctionOperationService {
+    private static final Logger log = LoggerFactory.getLogger(TabulatedFunctionOperationService.class);
+
     private TabulatedFunctionFactory factory;
 
     public TabulatedFunctionOperationService(TabulatedFunctionFactory factory) {
@@ -24,7 +28,8 @@ public class TabulatedFunctionOperationService {
 
     private TabulatedFunction doOperation(TabulatedFunction a, TabulatedFunction b, BiOperation operation) {
         if (a.getCount() != b.getCount()) {
-            throw new InconsistentFunctionsException("Количество записей в первой функции не равно количеству записей во второй функции ");
+            log.error("Количество записей в первой функции не равно количеству записей во второй функции");
+            throw new InconsistentFunctionsException("Количество записей в первой функции не равно количеству записей во второй функции");
         }
         Point[] pointsA = asPoints(a);
         Point[] pointsB = asPoints(b);
@@ -34,6 +39,7 @@ public class TabulatedFunctionOperationService {
 
         for (int i = 0; i < count; i++) {
             if (Math.abs(pointsA[i].x - pointsB[i].x) > 1e-10) {
+                log.error("Значения x функций не совпадают");
                 throw new InconsistentFunctionsException("Значения x функций не совпадают");
             }
             xValues[i] = pointsA[i].x;
@@ -68,7 +74,8 @@ public class TabulatedFunctionOperationService {
 
 
     public static Point[] asPoints(TabulatedFunction tabulatedFunction) {
-        // создаем массив точек, размером что и функция
+        log.info("Запущен метод asPoints");
+        // создаем массив точек, размером, что и функция
         Point[] points = new Point[tabulatedFunction.getCount()];
 
         int i = 0;
@@ -77,8 +84,7 @@ public class TabulatedFunctionOperationService {
             i++; // увеличиваем индекс
 
         }
+        log.info("Метод asPoints завершен");
         return points; // возвращаем заполненный массив
     }
-
-
 }

@@ -1,5 +1,7 @@
 package ru.ssau.tk.faible.labs.operations;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.ssau.tk.faible.labs.concurrent.SynchronizedTabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.Point;
 import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
@@ -7,6 +9,7 @@ import ru.ssau.tk.faible.labs.functions.factory.ArrayTabulatedFunctionFactory;
 import ru.ssau.tk.faible.labs.functions.factory.TabulatedFunctionFactory;
 
 public class TabulatedDifferentialOperator implements DifferentialOperator<TabulatedFunction> {
+    private static final Logger log = LoggerFactory.getLogger(TabulatedDifferentialOperator.class);
 
     private TabulatedFunctionFactory factory;
 
@@ -28,6 +31,7 @@ public class TabulatedDifferentialOperator implements DifferentialOperator<Tabul
 
     @Override
     public TabulatedFunction derive(TabulatedFunction function) {
+        log.info("Метод derive запущен");
         Point[] points = TabulatedFunctionOperationService.asPoints(function);
         int count = points.length;
         double[] xValues = new double[count];
@@ -57,6 +61,7 @@ public class TabulatedDifferentialOperator implements DifferentialOperator<Tabul
             }
         }
 
+        log.info("Метод derive завершен");
         return factory.create(xValues, yValues);
     }
     public TabulatedFunction deriveSynchronously(TabulatedFunction function) {

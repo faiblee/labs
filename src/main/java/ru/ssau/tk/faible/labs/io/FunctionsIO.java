@@ -1,5 +1,7 @@
 package ru.ssau.tk.faible.labs.io;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.ssau.tk.faible.labs.functions.Point;
 import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
 import ru.ssau.tk.faible.labs.functions.factory.TabulatedFunctionFactory;
@@ -10,12 +12,14 @@ import java.text.ParseException;
 import java.util.Locale;
 
 public final class FunctionsIO {
+    private final static Logger log = LoggerFactory.getLogger(FunctionsIO.class);
+
     private FunctionsIO() {
         throw new UnsupportedOperationException();
     }
 
     public static void serialize(BufferedOutputStream stream, TabulatedFunction function) throws IOException {
-
+        log.info("Запущена сериализация");
         // создаем ObjectOutputStream для сериализации объектов
         ObjectOutputStream objectStream = new ObjectOutputStream(stream);
 
@@ -24,6 +28,8 @@ public final class FunctionsIO {
 
         // сбрасываем буфер
         objectStream.flush();
+
+        log.info("Сериализация завершена");
     }
 
 
@@ -42,7 +48,7 @@ public final class FunctionsIO {
     public static void writeTabulatedFunction(BufferedWriter writer, TabulatedFunction function){
         PrintWriter printWriter = new PrintWriter(writer);
 
-        // записывваем количество точек
+        // записываем количество точек
         printWriter.println(function.getCount());
 
         // записываем все точки функции
@@ -101,6 +107,7 @@ public final class FunctionsIO {
 
         } catch (ParseException e) {
             // оборачиваем ParseException в IOException
+            log.error("Выброшено ParseException");
             throw new IOException("Ошибка парсинга чисел", e);
         }
     }
