@@ -1,0 +1,1 @@
+UPDATE users SET factory_type = ? WHERE id = ?;

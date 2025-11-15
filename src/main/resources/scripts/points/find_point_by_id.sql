@@ -1,0 +1,1 @@
+select * from points where id = ?;

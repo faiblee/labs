@@ -1,0 +1,1 @@
+update points set x_value = ?, y_value = ? where id = ?;

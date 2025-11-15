@@ -1,0 +1,1 @@
+INSERT INTO functions (name, owner_id, type) VALUES (?, ?, ?);

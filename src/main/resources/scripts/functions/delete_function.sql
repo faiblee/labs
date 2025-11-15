@@ -1,0 +1,1 @@
+delete from functions where id = ?;
