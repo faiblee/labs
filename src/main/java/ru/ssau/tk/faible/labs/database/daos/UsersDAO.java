@@ -1,8 +1,8 @@
 package ru.ssau.tk.faible.labs.database.daos;
 
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.ssau.tk.faible.labs.database.models.User;
 import ru.ssau.tk.faible.labs.database.utils.SqlHelper;
 
@@ -10,16 +10,13 @@ import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 
+@Getter
+@Slf4j
 public class UsersDAO {
-    private static final Logger log = LoggerFactory.getLogger(UsersDAO.class);
     private final Connection connection;
 
     public UsersDAO(Connection connection) {
         this.connection = connection;
-    }
-
-    public Connection getConnection() {
-        return connection;
     }
 
     public List<String> selectAllUsernames() {
@@ -96,14 +93,22 @@ public class UsersDAO {
 
     public int insertUser(String username, String password, String factory_type, String role) {
         log.info("Пытаемся добавить пользователя");
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/insert_user.sql"))) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(
+                SqlHelper.loadSqlFromFile("scripts/users/insert_user.sql"),
+                Statement.RETURN_GENERATED_KEYS)
+            ) {
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, SqlHelper.hashPassword(password));
             preparedStatement.setString(3, factory_type);
             preparedStatement.setString(4, role);
             int changedRows = preparedStatement.executeUpdate();
             log.info("user успешно добавлен");
-            return changedRows;
+
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            generatedKeys.next();
+            int generatedId = generatedKeys.getInt(1);
+            log.info("Сгенерированный id успешно получен");
+            return generatedId;
         } catch (SQLException e) {
             log.error("Ошибка при добавлении user");
             throw new RuntimeException(e);
@@ -191,4 +196,15 @@ public class UsersDAO {
         }
     }
 
+    public int deleteAllUsers() {
+        log.info("Пытаемся удалить все записи в таблице users");
+        try (Statement statement = connection.createStatement()) {
+            int changedRows = statement.executeUpdate(SqlHelper.loadSqlFromFile("scripts/users/delete_all_users.sql"));
+            log.info("Все записи в таблице users успешно удалены");
+            return changedRows;
+        } catch (SQLException e) {
+            log.error("Ошибка при удалении всех записей в таблице users");
+            throw new RuntimeException(e);
+        }
+    }
 }
