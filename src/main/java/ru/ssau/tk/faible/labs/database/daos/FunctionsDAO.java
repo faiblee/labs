@@ -3,6 +3,7 @@ package ru.ssau.tk.faible.labs.database.daos;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import ru.ssau.tk.faible.labs.database.models.Function;
+import ru.ssau.tk.faible.labs.database.models.User;
 import ru.ssau.tk.faible.labs.database.utils.SqlHelper;
 
 import java.sql.*;
@@ -60,6 +61,28 @@ public class FunctionsDAO {
             log.error("Ошибка при получении всех function по owner_id = {}", owner_id);
             throw new RuntimeException(e);
         }
+    }
+
+    public List<Function> getAllFunctions() {
+        List<Function> functions = new LinkedList<>();
+        log.info("Пытаемся получить все записи в таблице functions");
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(SqlHelper.loadSqlFromFile("scripts/functions/get_all_functions.sql"))
+        ) {
+            log.info("ResultSet для users успешно получен");
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String name = resultSet.getString("name");
+                int owner_id = resultSet.getInt("owner_id");
+                String type = resultSet.getString("type");
+                functions.add(new Function(id, name, owner_id, type));
+            }
+        } catch (SQLException e) {
+            log.error("Ошибка при получении всех записей в functions");
+            e.printStackTrace();
+        }
+        log.info("Все записи в functions успешно получены");
+        return functions;
     }
 
     public int insertFunction(String name, int owner_id, String type) {

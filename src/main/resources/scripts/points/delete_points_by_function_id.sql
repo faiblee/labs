@@ -1,1 +1,0 @@
-delete from points where function_id = ?;

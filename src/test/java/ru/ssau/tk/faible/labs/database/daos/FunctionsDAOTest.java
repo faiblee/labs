@@ -82,4 +82,12 @@ class FunctionsDAOTest {
         assertEquals(ids.getFirst(), function.getOwner_id());
         assertEquals("tabulated", function.getType());
     }
+
+    @Test
+    void getAllFunctions() {
+        List<Function> functions = functionsDAO.getAllFunctions();
+        assertEquals(firstFunctionId, functions.getFirst().getId());
+        assertEquals(secondFunctionId, functions.get(1).getId());
+        assertEquals(thirdFunctionId, functions.get(2).getId());
+    }
 }
