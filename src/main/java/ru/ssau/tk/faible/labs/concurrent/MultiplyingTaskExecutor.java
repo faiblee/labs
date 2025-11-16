@@ -9,6 +9,7 @@ import ru.ssau.tk.faible.labs.functions.UnitFunction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class MultiplyingTaskExecutor {
     private static final Logger log = LoggerFactory.getLogger(MultiplyingTaskExecutor.class);
@@ -26,6 +27,7 @@ public class MultiplyingTaskExecutor {
 
 
         List<Thread> threads = new ArrayList<>(); // список List потоков
+
 
         int threadsCount = 10; // количество потоков
 
