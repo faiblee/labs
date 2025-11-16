@@ -22,8 +22,9 @@ public class UsersDAO {
     public List<String> selectAllUsernames() {
         List<String> usernames = new LinkedList<>();
         log.info("Пытаемся получить все username в таблице users");
-        try (Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(SqlHelper.loadSqlFromFile("scripts/users/select_all_usernames.sql"));
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(SqlHelper.loadSqlFromFile("scripts/users/select_all_usernames.sql"))
+            ) {
             log.info("ResultSet успешно получен");
             while (resultSet.next()) {
                 usernames.add(resultSet.getString("username"));
@@ -41,16 +42,17 @@ public class UsersDAO {
         log.info("Пытаемся получить user по id = {}", id);
         try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/find_user_by_id.sql"))) {
             preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            user = new User();
-            resultSet.next();
-            user.setId(resultSet.getInt("id"));
-            user.setUsername(resultSet.getString("username"));
-            user.setPassword_hash(resultSet.getString("password_hash"));
-            user.setFactory_type(resultSet.getString("factory_type"));
-            user.setRole(resultSet.getString("role"));
-            log.info("Успешно получен User с id = {}", id);
-            return user;
+            try(ResultSet resultSet = preparedStatement.executeQuery()) {
+                user = new User();
+                resultSet.next();
+                user.setId(resultSet.getInt("id"));
+                user.setUsername(resultSet.getString("username"));
+                user.setPassword_hash(resultSet.getString("password_hash"));
+                user.setFactory_type(resultSet.getString("factory_type"));
+                user.setRole(resultSet.getString("role"));
+                log.info("Успешно получен User с id = {}", id);
+                return user;
+            }
         } catch (SQLException e) {
             log.error("Ошибка при получении user по id = {}", id);
             throw new RuntimeException(e);
@@ -62,16 +64,17 @@ public class UsersDAO {
         log.info("Пытаемся получить user по username = {}", username);
         try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/find_user_by_username.sql"))) {
             preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            user = new User();
-            resultSet.next();
-            user.setId(resultSet.getInt("id"));
-            user.setUsername(resultSet.getString("username"));
-            user.setPassword_hash(resultSet.getString("password_hash"));
-            user.setFactory_type(resultSet.getString("factory_type"));
-            user.setRole(resultSet.getString("role"));
-            log.info("Успешно получен User с username = {}", username);
-            return user;
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                user = new User();
+                resultSet.next();
+                user.setId(resultSet.getInt("id"));
+                user.setUsername(resultSet.getString("username"));
+                user.setPassword_hash(resultSet.getString("password_hash"));
+                user.setFactory_type(resultSet.getString("factory_type"));
+                user.setRole(resultSet.getString("role"));
+                log.info("Успешно получен User с username = {}", username);
+                return user;
+            }
         } catch (SQLException e) {
             log.error("Ошибка при получении user по username = {}", username);
             throw new RuntimeException(e);
@@ -104,11 +107,12 @@ public class UsersDAO {
             int changedRows = preparedStatement.executeUpdate();
             log.info("user успешно добавлен");
 
-            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            generatedKeys.next();
-            int generatedId = generatedKeys.getInt(1);
-            log.info("Сгенерированный id успешно получен");
-            return generatedId;
+            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+                generatedKeys.next();
+                int generatedId = generatedKeys.getInt(1);
+                log.info("Сгенерированный id успешно получен");
+                return generatedId;
+            }
         } catch (SQLException e) {
             log.error("Ошибка при добавлении user");
             throw new RuntimeException(e);
@@ -134,11 +138,12 @@ public class UsersDAO {
         log.info("Пытаемся получить password_hash по id = {}", id);
         try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/get_password_hash_by_id.sql"))) {
             preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            resultSet.next();
-            String password_hash = resultSet.getString("password_hash");
-            log.info("Успешно получен password у user с id = {}", id);
-            return password_hash;
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSet.next();
+                String password_hash = resultSet.getString("password_hash");
+                log.info("Успешно получен password у user с id = {}", id);
+                return password_hash;
+            }
         } catch (SQLException e) {
             log.error("Ошибка при получении password у user с id = {}", id);
             throw new RuntimeException(e);
@@ -149,11 +154,12 @@ public class UsersDAO {
         log.info("Пытаемся получить username по id = {}", id);
         try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/get_username_by_id.sql"))) {
             preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            resultSet.next();
-            String username = resultSet.getString("username");
-            log.info("Успешно получен username у user с id = {}", id);
-            return username;
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSet.next();
+                String username = resultSet.getString("username");
+                log.info("Успешно получен username у user с id = {}", id);
+                return username;
+            }
         } catch (SQLException e) {
             log.error("Ошибка при получении username у user с id = {}", id);
             throw new RuntimeException(e);
@@ -194,6 +200,29 @@ public class UsersDAO {
             log.error("Ошибка при изменении username у user с id = {}", id);
             throw new RuntimeException(e);
         }
+    }
+
+    public List<User> selectAllUsers() {
+        List<User> users = new LinkedList<>();
+        log.info("Пытаемся получить все записи в таблице users");
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(SqlHelper.loadSqlFromFile("scripts/users/get_all_users.sql"))
+            ) {
+            log.info("ResultSet для users успешно получен");
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String username = resultSet.getString("username");
+                String password_hash = resultSet.getString("password_hash");
+                String factory_type = resultSet.getString("factory_type");
+                String role = resultSet.getString("role");
+                users.add(new User(id, username, password_hash, factory_type, role));
+            }
+        } catch (SQLException e) {
+            log.error("Ошибка при получении всех записей в users");
+            e.printStackTrace();
+        }
+        log.info("Все записи в users успешно получены");
+        return users;
     }
 
     public int deleteAllUsers() {

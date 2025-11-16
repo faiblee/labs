@@ -3,12 +3,10 @@ package ru.ssau.tk.faible.labs.database.daos;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import ru.ssau.tk.faible.labs.database.models.User;
 import ru.ssau.tk.faible.labs.database.utils.DBConnector;
 import ru.ssau.tk.faible.labs.database.utils.SqlHelper;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -88,5 +86,13 @@ class UsersDAOTest {
     void updateUsername() {
         assertEquals(1, usersDAO.updateUsername("John", TomId));
         assertEquals("John", usersDAO.getUsernameById(TomId));
+    }
+
+    @Test
+    void selectAllUsers() {
+        List<User> users = usersDAO.selectAllUsers();
+        assertEquals("Tom", users.get(0).getUsername());
+        assertEquals("Bob", users.get(1).getUsername());
+        assertEquals("Steve", users.get(2).getUsername());
     }
 }

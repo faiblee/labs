@@ -1,0 +1,1 @@
+update functions set name = ? where id = ?;

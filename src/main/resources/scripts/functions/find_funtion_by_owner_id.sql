@@ -1,1 +1,0 @@
-select * from functions where owner_id = ?

@@ -1,1 +1,0 @@
-update functions set name = ?;

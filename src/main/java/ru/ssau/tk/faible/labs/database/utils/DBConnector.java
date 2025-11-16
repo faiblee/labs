@@ -2,7 +2,6 @@ package ru.ssau.tk.faible.labs.database.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.ssau.tk.faible.labs.database.daos.UsersDAO;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

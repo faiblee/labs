@@ -6,11 +6,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 
-public final class SqlHelper {
+public class SqlHelper {
 
     private static final Logger log = LoggerFactory.getLogger(SqlHelper.class);
-
-    private SqlHelper() {}
 
     // статический метод для конвертирования .sql файла из папки resources в строку
     public static String loadSqlFromFile(String filePath){

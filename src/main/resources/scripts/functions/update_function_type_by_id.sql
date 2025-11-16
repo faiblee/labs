@@ -1,0 +1,1 @@
+update functions set type = ? where id = ?;
