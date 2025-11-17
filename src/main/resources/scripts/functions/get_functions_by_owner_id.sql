@@ -1,1 +1,1 @@
-select * from functions where owner_id = ?;
+select * from functions where owner_id = ? order by name;

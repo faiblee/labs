@@ -3,7 +3,7 @@ package ru.ssau.tk.faible.labs.database.daos;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import ru.ssau.tk.faible.labs.database.models.Function;
-import ru.ssau.tk.faible.labs.database.models.User;
+import ru.ssau.tk.faible.labs.database.models.Point;
 import ru.ssau.tk.faible.labs.database.utils.SqlHelper;
 
 import java.sql.*;
@@ -40,11 +40,11 @@ public class FunctionsDAO {
         }
     }
 
-    public List<Function> getFunctionsByOwnerId(int owner_id) {
+    public List<Function> getFunctionsByType(String type) {
         List<Function> functions = new LinkedList<>();
-        log.info("Пытаемся получить все function по owner_id = {}", owner_id);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/functions/get_functions_by_owner_id.sql"))) {
-            preparedStatement.setInt(1, owner_id);
+        log.info("Пытаемся получить все function по type = {}", type);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/functions/get_functions_by_type.sql"))) {
+            preparedStatement.setString(1, type);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while(resultSet.next()) {
                     Function function = new Function();
@@ -54,11 +54,34 @@ public class FunctionsDAO {
                     function.setType(resultSet.getString("type"));
                     functions.add(function);
                 }
-                log.info("Успешно получены все function с owner_id = {}", owner_id);
+                log.info("Успешно получены все function с type = {}", type);
                 return functions;
             }
         } catch (SQLException e) {
-            log.error("Ошибка при получении всех function по owner_id = {}", owner_id);
+            log.error("Ошибка при получении всех function по type = {}", type);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Point> getPointsById(int id) {
+        List<Point> points = new LinkedList<>();
+        log.info("Пытаемся получить все points функции по id = {}", id);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/points/find_point_by_function_id.sql"))) {
+            preparedStatement.setInt(1, id);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while(resultSet.next()) {
+                    Point point = new Point();
+                    point.setId(resultSet.getInt("id"));
+                    point.setX_value(resultSet.getDouble("x_value"));
+                    point.setY_value(resultSet.getDouble("y_value"));
+                    point.setFunction_id(resultSet.getInt("function_id"));
+                    points.add(point);
+                }
+                log.info("Успешно получены все points функции с id = {}", id);
+                return points;
+            }
+        } catch (SQLException e) {
+            log.error("Ошибка при получении всех points функции по id = {}", id);
             throw new RuntimeException(e);
         }
     }

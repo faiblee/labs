@@ -58,15 +58,6 @@ class FunctionsDAOTest {
     }
 
     @Test
-    void getFunctionsByOwnerId() {
-        List<Function> functions = functionsDAO.getFunctionsByOwnerId(ids.getFirst());
-        Function firstFunction = functions.getFirst();
-        assertEquals(firstFunctionId, firstFunction.getId());
-        assertEquals("y=1", firstFunction.getName());
-        assertEquals(ids.getFirst(), firstFunction.getOwner_id());
-    }
-
-    @Test
     void updateName() {
         functionsDAO.updateName("y=3", firstFunctionId);
         Function function = functionsDAO.getFunctionById(firstFunctionId);

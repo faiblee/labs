@@ -1,14 +1,13 @@
 package ru.ssau.tk.faible.labs.database.utils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+@Slf4j
 public class DBConnector {
-    private static final Logger log = LoggerFactory.getLogger(DBConnector.class);
 
     private static final String url = "jdbc:postgresql://localhost:5432/functions_db";
     private static final String user = "postgres";

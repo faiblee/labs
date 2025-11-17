@@ -1,15 +1,12 @@
 package ru.ssau.tk.faible.labs.database.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 
+@Slf4j
 public class SqlHelper {
-
-    private static final Logger log = LoggerFactory.getLogger(SqlHelper.class);
-
     // статический метод для конвертирования .sql файла из папки resources в строку
     public static String loadSqlFromFile(String filePath){
         log.info("Пытаемся спарсить sql-запрос");

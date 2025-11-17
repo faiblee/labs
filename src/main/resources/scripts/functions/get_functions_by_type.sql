@@ -1,0 +1,1 @@
+select * from functions where type = ? order by name;

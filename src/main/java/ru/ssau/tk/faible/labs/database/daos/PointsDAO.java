@@ -2,7 +2,6 @@ package ru.ssau.tk.faible.labs.database.daos;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import ru.ssau.tk.faible.labs.database.models.Function;
 import ru.ssau.tk.faible.labs.database.models.Point;
 import ru.ssau.tk.faible.labs.database.utils.SqlHelper;
 
@@ -82,11 +81,13 @@ public class PointsDAO {
         }
     }
 
-    public List<Point> getPointsByFunctionId(int function_id) {
+    public List<Point> getPointsByFunctionIdAndBetweenXValue(int function_id, double xStart, double xEnd) {
         List<Point> points = new LinkedList<>();
-        log.info("Пытаемся получить все points по function_id = {}", function_id);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/points/find_point_by_function_id.sql"))) {
+        log.info("Пытаемся получить все points по function_id = {} и x от {} до {}", function_id, xStart, xEnd);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/points/find_point_by_function_id_and_between_x_value.sql"))) {
             preparedStatement.setInt(1, function_id);
+            preparedStatement.setDouble(2, xStart);
+            preparedStatement.setDouble(3, xEnd);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while(resultSet.next()) {
                     Point point = new Point();
@@ -96,11 +97,11 @@ public class PointsDAO {
                     point.setFunction_id(resultSet.getInt("function_id"));
                     points.add(point);
                 }
-                log.info("Успешно получены все points с function_id = {}", function_id);
+                log.info("Успешно получены все points по function_id = {} и x от {} до {}", function_id, xStart, xEnd);
                 return points;
             }
         } catch (SQLException e) {
-            log.error("Ошибка при получении всех points по function_id = {}", function_id);
+            log.error("Ошибка при получении всех points по function_id = {} и x от {} до {}", function_id, xStart, xEnd);
             throw new RuntimeException(e);
         }
     }

@@ -1,1 +1,1 @@
-select * from points where function_id = ?;
+select * from points where function_id = ? order by x_value;

@@ -18,11 +18,13 @@ class PointsDAOTest {
     int firstDotFirstFunctionId;
     int firstDotSecondFunctionId;
     int firstDotThirdFunctionId;
+    FunctionsDAO functionsDAO;
+
     @BeforeEach
     void setUp() {
         pointsDAO = new PointsDAO(DBConnector.initConnect());
         pointsDAO.deleteAllPoints();
-        FunctionsDAO functionsDAO = new FunctionsDAO(DBConnector.initConnect());
+        functionsDAO = new FunctionsDAO(pointsDAO.getConnection());
         List<Function> functions = functionsDAO.getAllFunctions();
         functions_ids.add(functions.get(0).getId());
         functions_ids.add(functions.get(1).getId());
@@ -62,7 +64,7 @@ class PointsDAOTest {
 
     @Test
     void getPointsByFunctionId() {
-        List<Point> points = pointsDAO.getPointsByFunctionId(functions_ids.getFirst());
+        List<Point> points = functionsDAO.getPointsById(functions_ids.getFirst());
         assertEquals(firstDotFirstFunctionId, points.getFirst().getId());
         assertEquals(1.0, points.getFirst().getX_value());
         assertEquals(2.0, points.get(1).getX_value());
@@ -78,5 +80,15 @@ class PointsDAOTest {
         Point point = pointsDAO.getPointById(firstDotFirstFunctionId);
         assertEquals(0.0, point.getX_value());
         assertEquals(1.0, point.getY_value());
+    }
+
+    @Test
+    void deletePointById() {
+        int pointId = pointsDAO.insertPoint(0.0, 1.0, functions_ids.getFirst());
+        List<Point> points = functionsDAO.getPointsById(functions_ids.getFirst());
+        assertEquals(4, points.size());
+        pointsDAO.deletePointById(pointId);
+        List<Point> new_points = functionsDAO.getPointsById(functions_ids.getFirst());
+        assertEquals(3, new_points.size());
     }
 }

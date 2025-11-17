@@ -3,6 +3,7 @@ package ru.ssau.tk.faible.labs.database.daos;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.ssau.tk.faible.labs.database.models.Function;
 import ru.ssau.tk.faible.labs.database.models.User;
 import ru.ssau.tk.faible.labs.database.utils.DBConnector;
 import ru.ssau.tk.faible.labs.database.utils.SqlHelper;
@@ -17,13 +18,19 @@ class UsersDAOTest {
     int TomId;
     int BobId;
     int SteveId;
+    int firstFunctionId;
     @BeforeEach
     void setUp() {
         usersDAO = new UsersDAO(DBConnector.initConnect());
+        FunctionsDAO functionsDAO = new FunctionsDAO(usersDAO.getConnection());
+        functionsDAO.deleteAllFunctions();
         usersDAO.deleteAllUsers();
         TomId = usersDAO.insertUser("Tom", "123321", "array", "user");
         BobId = usersDAO.insertUser("Bob", "qwerty", "linkedList", "user");
         SteveId = usersDAO.insertUser("Steve", "012362", "array", "admin");
+        firstFunctionId = functionsDAO.insertFunction("y=1", TomId, "constant");
+        functionsDAO.insertFunction("y=2", TomId, "constant");
+        functionsDAO.insertFunction("y=3", TomId, "constant");
     }
 
     @AfterEach
@@ -49,6 +56,15 @@ class UsersDAOTest {
         assertEquals("user", user.getRole());
     }
 
+    @Test
+    void getFunctionsById() {
+        List<Function> functions = usersDAO.getAllFunctionsById(TomId);
+        Function firstFunction = functions.getFirst();
+        assertEquals(3, functions.size());
+        assertEquals(firstFunctionId, firstFunction.getId());
+        assertEquals("y=1", firstFunction.getName());
+        assertEquals(TomId, firstFunction.getOwner_id());
+    }
     @Test
     void getUserByUsername() {
         User user = usersDAO.getUserByUsername("Bob");

@@ -1,1 +1,1 @@
-select * from functions;
+select * from functions order by id;
