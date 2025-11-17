@@ -34,12 +34,14 @@ class QueryBenchmarkTest {
         pointsDAO.deleteAllPoints();
         functionsDAO.deleteAllFunctions();
         usersDAO.deleteAllUsers();
-        int user_id = queryBenchmark.insertInUsersTable(500);
-        int function_id = queryBenchmark.insertInFunctionsTable(500, user_id);
+        int user_id = queryBenchmark.insertInUsersTable(10000);
+        int function_id = queryBenchmark.insertInFunctionsTable(10000, user_id);
+        int point_id = queryBenchmark.insertInPointsTable(10000, function_id, 1.0, 1.0);
         queryBenchmark.findUserById(user_id);
         queryBenchmark.findFunctionsByUserId(user_id);
         queryBenchmark.updateUserUsernameById("new_user", user_id);
         queryBenchmark.findPointsByFunctionId(function_id);
+        queryBenchmark.findPointById(point_id);
         queryBenchmark.deleteUserById(user_id-1);
         queryBenchmark.saveResultsToExcel();
     }

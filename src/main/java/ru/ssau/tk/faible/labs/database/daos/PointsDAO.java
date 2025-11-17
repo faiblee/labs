@@ -18,7 +18,7 @@ public class PointsDAO {
         this.connection = connection;
     }
 
-    int insertPoint(double x_value, double y_value, int function_id) {
+    public int insertPoint(double x_value, double y_value, int function_id) {
         log.info("Пытаемся добавить новую point в таблицу points");
         try (PreparedStatement preparedStatement = connection.prepareStatement(
                 SqlHelper.loadSqlFromFile("scripts/points/insert_point.sql"),
@@ -40,7 +40,7 @@ public class PointsDAO {
                     return pointId;
                 }
             }
-            log.info("Сгенерированный id получить не удалось");
+            log.warn("Сгенерированный id получить не удалось");
             return -1;
         } catch (SQLException e) {
             log.error("Произошла ошибка при добавлении функции в таблицу functions");
