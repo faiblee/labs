@@ -1,5 +1,7 @@
 package ru.ssau.tk.faible.labs.entity;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,28 +11,28 @@ import java.util.List;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(unique = true, nullable = false)
     private String username;
 
     @Column(name = "password_hash", nullable = false)
-    private String password_hash;
+    private String passwordHash;
 
     @Column(name = "factory_type")
     private String factoryType;
 
+    @Column(name = "role")
     private String role;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<FunctionEntity> functions = new ArrayList<>();
 
     public User(){}
 
     public User(String username, String password_hash, String factoryType, String role) {
         this.username = username;
-        this.password_hash = password_hash;
+        this.passwordHash = password_hash ;
         this.factoryType = factoryType;
         this.role = role;
     }
@@ -41,8 +43,8 @@ public class User {
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
-    public String getPassword_hash() { return password_hash; }
-    public void setPassword_hash(String password_hash) { this.password_hash = password_hash; }
+    public String getPassword_hash() { return passwordHash; }
+    public void setPassword_hash(String password_hash) { this.passwordHash = password_hash; }
 
     public String getFactoryType() { return factoryType; }
     public void setFactoryType(String factoryType) { this.factoryType = factoryType; }

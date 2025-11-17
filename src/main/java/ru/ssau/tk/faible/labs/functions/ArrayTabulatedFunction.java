@@ -14,7 +14,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
 
     private static final Logger log = LoggerFactory.getLogger(ArrayTabulatedFunction.class);
 
-    @Serial
+
     private static final long serialVersionUID = -6906250891256385040L;
     private double[] xValues; // массив значений аргумента
     private double[] yValues; // массив значений функции

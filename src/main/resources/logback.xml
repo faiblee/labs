@@ -6,7 +6,14 @@
         </encoder>
     </appender>
 
-    <root level="info">
+    <!-- Logger settings -->
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="OFF"/>
+    <logger name="org.hibernate.type" level="OFF"/>
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="ru.ssau.tk.faible.labs" level="INFO"/>
+
+    <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.ssau.tk.faible.labs.exceptions.InterpolationException;
 
-import java.io.Serial;
+
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -12,14 +12,14 @@ import java.util.NoSuchElementException;
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable, Serializable {
     private static final Logger log = LoggerFactory.getLogger(LinkedListTabulatedFunction.class);
 
-    @Serial
+
     private static final long serialVersionUID = -1061918492758652804L;
     protected int count;
     private Node head;
 
 
     static class Node implements Serializable {
-        @Serial
+
         private static final long serialVersionUID = -9053548425726401795L; // вложенный класс узла Node
         public Node next;
         public Node prev;
