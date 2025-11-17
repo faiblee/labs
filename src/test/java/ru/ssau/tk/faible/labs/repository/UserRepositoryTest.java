@@ -1,93 +1,127 @@
 package ru.ssau.tk.faible.labs.repository;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.transaction.annotation.Transactional;
+import ru.ssau.tk.faible.labs.config.DatabaseConfig;
 import ru.ssau.tk.faible.labs.entity.User;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@ActiveProfiles("test")
+@SpringJUnitConfig(DatabaseConfig.class)
+@Transactional
 class UserRepositoryTest {
-    @Autowired
-    private TestEntityManager entityManager;
 
     @Autowired
     private UserRepository userRepository;
 
-    @Test
-    void testSaveAndFindUser(){
-        User user = new User("tester", "hashed_password", "ARRAY", "ADMIN");
+    private User testUser1;
+    private User testUser2;
+    private User testUser3;
 
-        User savedUser = userRepository.save(user);
+    @BeforeEach
+    void setUp() {
+        // Генерация тестовых данных
+        userRepository.deleteAll();
+        testUser1 = new User("john_doe", "hash123", "ARRAY", "USER");
+        testUser2 = new User("jane_smith", "hash456", "LINKED_LIST", "ADMIN");
+        testUser3 = new User("bob_johnson", "hash789", "ARRAY", "USER");
+
+        userRepository.save(testUser1);
+        userRepository.save(testUser2);
+        userRepository.save(testUser3);
+    }
+
+    @Test
+    void testSaveUser() {
+        User newUser = new User("new_user", "new_hash", "ARRAY", "USER");
+        User savedUser = userRepository.save(newUser);
 
         assertNotNull(savedUser.getId());
-        assertEquals("tester", savedUser.getUsername());
-        assertEquals("ADMIN", savedUser.getRole());
+        assertEquals("new_user", savedUser.getUsername());
+        assertEquals("USER", savedUser.getRole());
     }
 
     @Test
     void testFindById() {
-        // Генерация данных
-        User user = new User("john", "pass123", "LINKED_LIST", "USER");
-        User savedUser = entityManager.persist(user);
-        entityManager.flush();
-
-        // Поиск по ID
-        Optional<User> foundUser = userRepository.findById(savedUser.getId());
-
-        // Проверка
+        Optional<User> foundUser = userRepository.findById(testUser1.getId());
         assertTrue(foundUser.isPresent());
-        assertEquals("john", foundUser.get().getUsername());
-        assertEquals("USER", foundUser.get().getRole());
+        assertEquals("john_doe", foundUser.get().getUsername());
     }
 
     @Test
     void testFindByUsername() {
-        // Генерация данных
-        User user = new User("alice", "password", "ARRAY", "ADMIN");
-        entityManager.persist(user);
-        entityManager.flush();
+        Optional<User> foundUser = userRepository.findByUsername("jane_smith");
+        assertTrue(foundUser.isPresent());
+        assertEquals("ADMIN", foundUser.get().getRole());
+    }
 
-        // Поиск по имени
-        Optional<User> found = userRepository.findByUsername("alice");
-
-        // Проверка
-        assertTrue(found.isPresent());
-        assertEquals("alice", found.get().getUsername());
+    @Test
+    void testExistsByUsername() {
+        boolean exists = userRepository.existsByUsername("john_doe");
+        boolean notExists = userRepository.existsByUsername("non_existent");
+        assertTrue(exists);
+        assertFalse(notExists);
     }
 
     @Test
     void testFindByRole() {
-        // Генерация разнообразных данных
-        User admin1 = new User("admin1", "pass1", "ARRAY", "ADMIN");
-        User admin2 = new User("admin2", "pass2", "LINKED_LIST", "ADMIN");
-        User user1 = new User("user1", "pass3", "ARRAY", "USER");
-
-        entityManager.persist(admin1);
-        entityManager.persist(admin2);
-        entityManager.persist(user1);
-        entityManager.flush();
-
-        // Поиск по роли
-        List<User> admins = userRepository.findByRole("ADMIN");
-
-        // Проверка
-        assertEquals(2, admins.size());
-        assertTrue(admins.stream().allMatch(u -> "ADMIN".equals(u.getRole())));
+        List<User> users = userRepository.findByRoleOrderByUsernameAsc("USER");
+        assertEquals(2, users.size());
+        assertTrue(users.stream().allMatch(user -> "USER".equals(user.getRole())));
     }
 
+    @Test
+    void testFindByFactoryTypeOrderByIdAsc() {
+        List<User> arrayUsers = userRepository.findByFactoryTypeOrderByIdAsc("ARRAY");
+        assertEquals(2, arrayUsers.size());
+        assertTrue(arrayUsers.stream().allMatch(user -> "ARRAY".equals(user.getFactoryType())));
+    }
 
+    @Test
+    void testFindAllUsers() {
+        List<User> allUsers = userRepository.findAll();
+        assertTrue(allUsers.size() >= 3);
+    }
 
+    @Test
+    void testDeleteUser() {
+        User userToDelete = new User("to_delete", "hash", "ARRAY", "USER");
+        User savedUser = userRepository.save(userToDelete);
 
+        userRepository.deleteById(savedUser.getId());
 
+        Optional<User> deletedUser = userRepository.findById(savedUser.getId());
+        assertFalse(deletedUser.isPresent());
+    }
+
+    @Test
+    void testUpdateUser() {
+        User user = userRepository.findByUsername("john_doe").get();
+        user.setRole("SUPER_ADMIN");
+
+        User updatedUser = userRepository.save(user);
+
+        assertEquals("SUPER_ADMIN", updatedUser.getRole());
+        assertEquals("john_doe", updatedUser.getUsername());
+    }
+    @Test
+    void testCreateAndFindUser() {
+
+        User user = new User("test_user_" + System.currentTimeMillis(),
+                "password_hash", "ARRAY", "USER");
+
+        User savedUser = userRepository.save(user);
+
+        assertNotNull(savedUser.getId());
+
+        Optional<User> foundUser = userRepository.findById(savedUser.getId());
+        assertTrue(foundUser.isPresent());
+        assertEquals(savedUser.getUsername(), foundUser.get().getUsername());
+    }
 }

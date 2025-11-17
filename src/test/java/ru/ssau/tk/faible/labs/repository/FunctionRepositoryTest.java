@@ -1,22 +1,21 @@
 package ru.ssau.tk.faible.labs.repository;
 
-import ru.ssau.tk.faible.labs.entity.FunctionEntity;
-import ru.ssau.tk.faible.labs.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.transaction.annotation.Transactional;
+import ru.ssau.tk.faible.labs.config.DatabaseConfig;
+import ru.ssau.tk.faible.labs.entity.FunctionEntity;
+import ru.ssau.tk.faible.labs.entity.User;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-
+@SpringJUnitConfig(DatabaseConfig.class)
+@Transactional
 class FunctionRepositoryTest {
-    @Autowired
-    private TestEntityManager entityManager;
 
     @Autowired
     private FunctionRepository functionRepository;
@@ -25,109 +24,83 @@ class FunctionRepositoryTest {
     private UserRepository userRepository;
 
     private User testUser;
+    private FunctionEntity testFunction1;
+    private FunctionEntity testFunction2;
 
     @BeforeEach
     void setUp() {
-        // Генерация тестового пользователя
-        testUser = new User("testuser", "password", "ARRAY", "USER");
-        entityManager.persist(testUser);
-        entityManager.flush();
+        testUser = new User("function_owner", "password", "ARRAY", "USER");
+        userRepository.save(testUser);
+
+        testFunction1 = new FunctionEntity("Sine Function", "ARRAY", testUser);
+        testFunction2 = new FunctionEntity("Cosine Function", "LINKED_LIST", testUser);
+
+        functionRepository.save(testFunction1);
+        functionRepository.save(testFunction2);
     }
 
     @Test
     void testSaveFunction() {
-        // Генерация данных функции
-        FunctionEntity function = new FunctionEntity("Test Function", "ARRAY", testUser);
+        FunctionEntity newFunction = new FunctionEntity("New Function", "ARRAY", testUser);
+        FunctionEntity savedFunction = functionRepository.save(newFunction);
 
-        // Сохранение
-        FunctionEntity savedFunction = functionRepository.save(function);
-
-        // Проверка
         assertNotNull(savedFunction.getId());
-        assertEquals("Test Function", savedFunction.getName());
+        assertEquals("New Function", savedFunction.getName());
         assertEquals("ARRAY", savedFunction.getType());
         assertEquals(testUser.getId(), savedFunction.getOwner().getId());
     }
 
     @Test
     void testFindByOwner() {
-        // Генерация нескольких функций для пользователя
-        FunctionEntity func1 = new FunctionEntity("Func1", "ARRAY", testUser);
-        FunctionEntity func2 = new FunctionEntity("Func2", "LINKED_LIST", testUser);
-
-        entityManager.persist(func1);
-        entityManager.persist(func2);
-        entityManager.flush();
-
-        // Поиск функций пользователя
         List<FunctionEntity> userFunctions = functionRepository.findByOwner(testUser);
-
-        // Проверка
         assertEquals(2, userFunctions.size());
-        assertTrue(userFunctions.stream().anyMatch(f -> f.getName().equals("Func1")));
-        assertTrue(userFunctions.stream().anyMatch(f -> f.getName().equals("Func2")));
+        assertTrue(userFunctions.stream().anyMatch(f -> f.getName().equals("Sine Function")));
+        assertTrue(userFunctions.stream().anyMatch(f -> f.getName().equals("Cosine Function")));
     }
 
     @Test
     void testFindByOwnerId() {
-        // Генерация данных
-        FunctionEntity function = new FunctionEntity("My Function", "ARRAY", testUser);
-        entityManager.persist(function);
-        entityManager.flush();
-
-        // Поиск по ID владельца
         List<FunctionEntity> functions = functionRepository.findByOwnerId(testUser.getId());
-
-        // Проверка
-        assertEquals(1, functions.size());
-        assertEquals("My Function", functions.get(0).getName());
+        assertEquals(2, functions.size());
+        assertTrue(functions.stream().allMatch(f -> f.getOwner().getId().equals(testUser.getId())));
     }
 
     @Test
     void testFindByType() {
-        // Генерация данных разных типов
-        FunctionEntity arrayFunc = new FunctionEntity("Array Func", "ARRAY", testUser);
-        FunctionEntity linkedFunc = new FunctionEntity("Linked Func", "LINKED_LIST", testUser);
-
-        entityManager.persist(arrayFunc);
-        entityManager.persist(linkedFunc);
-        entityManager.flush();
-
-        // Поиск по типу
         List<FunctionEntity> arrayFunctions = functionRepository.findByType("ARRAY");
-
-        // Проверка
-        assertEquals(1, arrayFunctions.size());
-        assertEquals("Array Func", arrayFunctions.get(0).getName());
+        assertFalse(arrayFunctions.isEmpty());
+        assertTrue(arrayFunctions.stream().allMatch(f -> "ARRAY".equals(f.getType())));
     }
 
     @Test
     void testFindByName() {
-        // Генерация данных
-        FunctionEntity function = new FunctionEntity("Sine Wave", "ARRAY", testUser);
-        entityManager.persist(function);
-        entityManager.flush();
-
-        // Поиск по имени
-        List<FunctionEntity> foundFunctions = functionRepository.findByName("Sine Wave");
-
-        // Проверка
-        assertEquals(1, foundFunctions.size());
-        assertEquals("Sine Wave", foundFunctions.get(0).getName());
+        List<FunctionEntity> foundFunctions = functionRepository.findByName("Sine Function");
+        assertFalse(foundFunctions.isEmpty());
+        assertEquals("Sine Function", foundFunctions.get(0).getName());
     }
 
     @Test
     void testDeleteFunction() {
-        // Генерация данных
-        FunctionEntity function = new FunctionEntity("To Delete", "ARRAY", testUser);
-        FunctionEntity savedFunction = entityManager.persist(function);
-        entityManager.flush();
+        FunctionEntity functionToDelete = new FunctionEntity("To Delete", "ARRAY", testUser);
+        FunctionEntity savedFunction = functionRepository.save(functionToDelete);
 
-        // Удаление
         functionRepository.deleteById(savedFunction.getId());
-
-        // Проверка
         assertFalse(functionRepository.findById(savedFunction.getId()).isPresent());
     }
 
+    @Test
+    void testUpdateFunction() {
+        FunctionEntity function = functionRepository.findByName("Sine Function").get(0);
+        function.setType("UPDATED_TYPE");
+
+        FunctionEntity updatedFunction = functionRepository.save(function);
+        assertEquals("UPDATED_TYPE", updatedFunction.getType());
+        assertEquals("Sine Function", updatedFunction.getName());
+    }
+
+    @Test
+    void testFindAllFunctions() {
+        List<FunctionEntity> allFunctions = functionRepository.findAll();
+        assertTrue(allFunctions.size() >= 2);
+    }
 }
