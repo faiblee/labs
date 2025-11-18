@@ -17,7 +17,6 @@ public class ExcelWriter {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Benchmark Results");
 
-            // Стиль для заголовка
             CellStyle headerStyle = workbook.createCellStyle();
             headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -26,13 +25,11 @@ public class ExcelWriter {
             headerFont.setBold(true);
             headerStyle.setFont(headerFont);
 
-            // Создаем заголовок
             Row headerRow = sheet.createRow(0);
             createCell(headerRow, 0, "Query Name", headerStyle);
             createCell(headerRow, 1, "Duration (ms)", headerStyle);
             createCell(headerRow, 2, "Records Count", headerStyle);
 
-            // Заполняем данные
             int rowNum = 1;
             for (BenchmarkResult result : results) {
                 Row row = sheet.createRow(rowNum++);
@@ -41,12 +38,10 @@ public class ExcelWriter {
                 row.createCell(2).setCellValue(result.getRecordsCount());
             }
 
-            // Авто-размер колонок
             for (int i = 0; i < 3; i++) {
                 sheet.autoSizeColumn(i);
             }
 
-            // Сохраняем файл
             try (FileOutputStream fos = new FileOutputStream(filename)) {
                 workbook.write(fos);
             }

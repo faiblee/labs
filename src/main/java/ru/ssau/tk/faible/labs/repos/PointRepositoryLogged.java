@@ -22,37 +22,25 @@ public class PointRepositoryLogged {
     @Autowired
     private FunctionRepository functionRepository;
 
-    /**
-     * Одиночный поиск: точка по ID
-     */
     public Optional<PointEntity> findPointById(long pointId) {
         log.debug("Одиночный поиск: точка с ID {}", pointId);
         return pointRepository.findById(pointId);
     }
 
-    /**
-     * Множественный поиск: все точки функции по ID функции
-     */
     public List<PointEntity> findPointsByFunctionId(Long functionId) {
         log.debug("Множественный поиск: точки функции ID={}", functionId);
         return pointRepository.findByFunctionId(functionId);
     }
-
 
     public List<PointEntity> findAllPoints() {
         log.debug("Получение всех записей: точки");
         return pointRepository.findAll();
     }
 
-    /**
-     * Множественный поиск: точки по диапазону X значений
-     */
     public List<PointEntity> findPointsByXValueBetween(double minX, double maxX) {
         log.debug("Множественный поиск: точки с X от {} до {}", minX, maxX);
         return pointRepository.findByxValueBetween(minX, maxX);
     }
-
-
 
     public List<PointEntity> findPointsByFunctionId(long functionId) {
         log.debug("Множественный поиск: точки функции с ID {}", functionId);

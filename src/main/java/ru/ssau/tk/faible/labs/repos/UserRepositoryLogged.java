@@ -15,35 +15,27 @@ public class UserRepositoryLogged {
     private static final Logger log = LoggerFactory.getLogger(UserRepositoryLogged.class);
 
     @Autowired
-    private UserRepository userRepository;
+    public UserRepositoryLogged(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
-    /**
-     * Одиночный поиск: пользователь по ID
-     */
+    private final UserRepository userRepository;
+
     public Optional<User> findUserById(long userId) {
         log.debug("Одиночный поиск: пользователь с ID {}", userId);
         return userRepository.findById(userId);
     }
 
-    /**
-     * Одиночный поиск: пользователь по имени
-     */
     public Optional<User> findUserByUsername(String username) {
         log.debug("Одиночный поиск: пользователь с именем {}", username);
         return userRepository.findByUsername(username);
     }
 
-    /**
-     * Множественный поиск: все пользователи с определенной ролью
-     */
     public List<User> findByRoleOrderByUsernameAsc(String role) {
         log.debug("Множественный поиск: пользователи с ролью {}", role);
         return userRepository.findByRoleOrderByUsernameAsc(role);
     }
 
-    /**
-     * Множественный поиск: все пользователи с определенным типом фабрики
-     */
     public List<User> findByFactoryTypeOrderByIdAsc(String factoryType) {
         log.debug("Множественный поиск: пользователи с фабрикой {}", factoryType);
         return userRepository.findByFactoryTypeOrderByIdAsc(factoryType);
@@ -59,18 +51,15 @@ public class UserRepositoryLogged {
         return userRepository.existsById(userId);
     }
 
-
     public List<User> findUsersByUsernameContaining(String username) {
         log.debug("Поиск по шаблону: пользователи с именем содержащим {}", username);
         return userRepository.findByUsernameContaining(username);
     }
 
-
     public List<User> findAllAdmins() {
         log.debug("Множественный поиск: все администраторы");
         return findByRoleOrderByUsernameAsc("ADMIN");
     }
-
 
     public List<User> findAllRegularUsers() {
         log.debug("Множественный поиск: все обычные пользователи");
