@@ -40,36 +40,13 @@ public class FunctionsDAO {
         }
     }
 
-    public List<Function> getFunctionsByType(String type) {
-        List<Function> functions = new LinkedList<>();
-        log.info("Пытаемся получить все function по type = {}", type);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/functions/get_functions_by_type.sql"))) {
-            preparedStatement.setString(1, type);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while(resultSet.next()) {
-                    Function function = new Function();
-                    function.setId(resultSet.getInt("id"));
-                    function.setName(resultSet.getString("name"));
-                    function.setOwner_id(resultSet.getInt("owner_id"));
-                    function.setType(resultSet.getString("type"));
-                    functions.add(function);
-                }
-                log.info("Успешно получены все function с type = {}", type);
-                return functions;
-            }
-        } catch (SQLException e) {
-            log.error("Ошибка при получении всех function по type = {}", type);
-            throw new RuntimeException(e);
-        }
-    }
-
     public List<Point> getPointsById(int id) {
         List<Point> points = new LinkedList<>();
         log.info("Пытаемся получить все points функции по id = {}", id);
         try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/points/find_point_by_function_id.sql"))) {
             preparedStatement.setInt(1, id);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while(resultSet.next()) {
+                while (resultSet.next()) {
                     Point point = new Point();
                     point.setId(resultSet.getInt("id"));
                     point.setX_value(resultSet.getDouble("x_value"));

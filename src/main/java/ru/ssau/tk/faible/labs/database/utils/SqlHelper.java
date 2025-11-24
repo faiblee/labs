@@ -7,6 +7,7 @@ import java.io.InputStream;
 
 @Slf4j
 public class SqlHelper {
+
     // статический метод для конвертирования .sql файла из папки resources в строку
     public static String loadSqlFromFile(String filePath){
         log.info("Пытаемся спарсить sql-запрос");

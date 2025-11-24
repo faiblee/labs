@@ -56,7 +56,7 @@ public class QueryBenchmark {
         long duration = endTime - startTime;
         BenchmarkResult result = new BenchmarkResult(duration, "insertInFunctionsTable", records_count);
         results.add(result);
-        return function_ids.getFirst();
+        return function_ids.get(0);
     }
 
     public BenchmarkResult findUserById(int id) {
@@ -139,7 +139,7 @@ public class QueryBenchmark {
         Point point = pointsDAO.getPointById(id);
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
-        BenchmarkResult result = new BenchmarkResult(duration, "findUserById", 1);
+        BenchmarkResult result = new BenchmarkResult(duration, "findPointById", 1);
         results.add(result);
         return result;
     }

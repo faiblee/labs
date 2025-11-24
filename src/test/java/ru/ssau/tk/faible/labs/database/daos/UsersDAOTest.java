@@ -59,7 +59,7 @@ class UsersDAOTest {
     @Test
     void getFunctionsById() {
         List<Function> functions = usersDAO.getAllFunctionsById(TomId);
-        Function firstFunction = functions.getFirst();
+        Function firstFunction = functions.get(0);
         assertEquals(3, functions.size());
         assertEquals(firstFunctionId, firstFunction.getId());
         assertEquals("y=1", firstFunction.getName());

@@ -64,6 +64,29 @@ public class UsersDAO {
         }
     }
 
+    public List<User> selectAllUsers() {
+        List<User> users = new LinkedList<>();
+        log.info("Пытаемся получить все записи в таблице users");
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(SqlHelper.loadSqlFromFile("scripts/users/get_all_users.sql"))
+        ) {
+            log.info("ResultSet для users успешно получен");
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String username = resultSet.getString("username");
+                String password_hash = resultSet.getString("password_hash");
+                String factory_type = resultSet.getString("factory_type");
+                String role = resultSet.getString("role");
+                users.add(new User(id, username, password_hash, factory_type, role));
+            }
+        } catch (SQLException e) {
+            log.error("Ошибка при получении всех записей в users");
+            e.printStackTrace();
+        }
+        log.info("Все записи в users успешно получены");
+        return users;
+    }
+
     public List<User> getUsersByRole(String role) {
         List<User> users = new LinkedList<>();
         log.info("Пытаемся получить users по role = {}", role);
@@ -84,6 +107,38 @@ public class UsersDAO {
             }
         } catch (SQLException e) {
             log.error("Ошибка при получении user по role = {}", role);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getPasswordHashById(int id) {
+        log.info("Пытаемся получить password_hash по id = {}", id);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/get_password_hash_by_id.sql"))) {
+            preparedStatement.setInt(1, id);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSet.next();
+                String password_hash = resultSet.getString("password_hash");
+                log.info("Успешно получен password у user с id = {}", id);
+                return password_hash;
+            }
+        } catch (SQLException e) {
+            log.error("Ошибка при получении password у user с id = {}", id);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getUsernameById(int id) {
+        log.info("Пытаемся получить username по id = {}", id);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/get_username_by_id.sql"))) {
+            preparedStatement.setInt(1, id);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSet.next();
+                String username = resultSet.getString("username");
+                log.info("Успешно получен username у user с id = {}", id);
+                return username;
+            }
+        } catch (SQLException e) {
+            log.error("Ошибка при получении username у user с id = {}", id);
             throw new RuntimeException(e);
         }
     }
@@ -110,19 +165,6 @@ public class UsersDAO {
         }
     }
 
-    public int deleteUserById(int id) {
-        log.info("Пытаемся удалить user по id = {}", id);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/delete_user_by_id.sql"))) {
-            preparedStatement.setInt(1, id);
-            int changedRows = preparedStatement.executeUpdate();
-            log.info("user с id = {} успешно удален", id);
-            return changedRows;
-        } catch (SQLException e) {
-            log.error("Ошибка при удалении user по id = {}", id);
-            throw new RuntimeException(e);
-        }
-    }
-
     public int insertUser(String username, String password, String factory_type, String role) {
         log.info("Пытаемся добавить пользователя");
         try (PreparedStatement preparedStatement = connection.prepareStatement(
@@ -144,6 +186,31 @@ public class UsersDAO {
             }
         } catch (SQLException e) {
             log.error("Ошибка при добавлении user");
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int insertUser(User user) {
+        log.info("Пытаемся добавить пользователя User");
+        try (PreparedStatement preparedStatement = connection.prepareStatement(
+                SqlHelper.loadSqlFromFile("scripts/users/insert_user.sql"),
+                Statement.RETURN_GENERATED_KEYS)
+        ) {
+            preparedStatement.setString(1, user.getUsername());
+            preparedStatement.setString(2, user.getPassword_hash());
+            preparedStatement.setString(3, user.getFactory_type());
+            preparedStatement.setString(4, user.getRole());
+            int changedRows = preparedStatement.executeUpdate();
+            log.info("User успешно добавлен");
+
+            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+                generatedKeys.next();
+                int generatedId = generatedKeys.getInt(1);
+                log.info("Сгенерированный Id успешно получен");
+                return generatedId;
+            }
+        } catch (SQLException e) {
+            log.error("Ошибка при добавлении User");
             throw new RuntimeException(e);
         }
     }
@@ -186,38 +253,6 @@ public class UsersDAO {
         }
     }
 
-    public String getPasswordHashById(int id) {
-        log.info("Пытаемся получить password_hash по id = {}", id);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/get_password_hash_by_id.sql"))) {
-            preparedStatement.setInt(1, id);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                resultSet.next();
-                String password_hash = resultSet.getString("password_hash");
-                log.info("Успешно получен password у user с id = {}", id);
-                return password_hash;
-            }
-        } catch (SQLException e) {
-            log.error("Ошибка при получении password у user с id = {}", id);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String getUsernameById(int id) {
-        log.info("Пытаемся получить username по id = {}", id);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/get_username_by_id.sql"))) {
-            preparedStatement.setInt(1, id);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                resultSet.next();
-                String username = resultSet.getString("username");
-                log.info("Успешно получен username у user с id = {}", id);
-                return username;
-            }
-        } catch (SQLException e) {
-            log.error("Ошибка при получении username у user с id = {}", id);
-            throw new RuntimeException(e);
-        }
-    }
-
     public int updatePassword(String old_password, String new_password, int id) {
         log.info("Пытаемся обновить password у пользователя с id = {}", id);
         try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/update_user_password.sql"))) {
@@ -239,6 +274,21 @@ public class UsersDAO {
         }
     }
 
+    public int updateRole(String role, int id) {
+        log.info("Пытаемся обновить role у пользователя с id = {}", id);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/update_role_by_id.sql"))) {
+            preparedStatement.setString(1, role);
+            preparedStatement.setInt(2, id);
+
+            int changedRows = preparedStatement.executeUpdate();
+            log.info("Успешно обновлен role у user с id = {}", id);
+            return changedRows;
+        } catch (SQLException e) {
+            log.error("Ошибка при изменении role у user с id = {}", id);
+            throw new RuntimeException(e);
+        }
+    }
+
     public int updateUsername(String username, int id) {
         log.info("Пытаемся обновить username у пользователя с id = {}", id);
         try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/update_user_username.sql"))) {
@@ -254,27 +304,17 @@ public class UsersDAO {
         }
     }
 
-    public List<User> selectAllUsers() {
-        List<User> users = new LinkedList<>();
-        log.info("Пытаемся получить все записи в таблице users");
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(SqlHelper.loadSqlFromFile("scripts/users/get_all_users.sql"))
-            ) {
-            log.info("ResultSet для users успешно получен");
-            while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String username = resultSet.getString("username");
-                String password_hash = resultSet.getString("password_hash");
-                String factory_type = resultSet.getString("factory_type");
-                String role = resultSet.getString("role");
-                users.add(new User(id, username, password_hash, factory_type, role));
-            }
+    public int deleteUserById(int id) {
+        log.info("Пытаемся удалить user по id = {}", id);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/delete_user_by_id.sql"))) {
+            preparedStatement.setInt(1, id);
+            int changedRows = preparedStatement.executeUpdate();
+            log.info("user с id = {} успешно удален", id);
+            return changedRows;
         } catch (SQLException e) {
-            log.error("Ошибка при получении всех записей в users");
-            e.printStackTrace();
+            log.error("Ошибка при удалении user по id = {}", id);
+            throw new RuntimeException(e);
         }
-        log.info("Все записи в users успешно получены");
-        return users;
     }
 
     public int deleteAllUsers() {
