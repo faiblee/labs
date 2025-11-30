@@ -11,7 +11,7 @@ public class SqlHelper {
     // статический метод для конвертирования .sql файла из папки resources в строку
     public static String loadSqlFromFile(String filePath){
         log.info("Пытаемся спарсить sql-запрос");
-        try (InputStream inputStream = ClassLoader.getSystemResourceAsStream(filePath)) {
+        try (InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(filePath)) {
             if (inputStream == null) throw new IOException();
             String sql = new String(inputStream.readAllBytes());
             log.info("Парсинг прошел успешно");

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Point {
     private int id;
-    private double x_value;
-    private double y_value;
+    private Double x_value;
+    private Double y_value;
     private int function_id;
 }

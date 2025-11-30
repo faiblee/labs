@@ -3,7 +3,6 @@ package ru.ssau.tk.faible.labs.database.daos;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.ssau.tk.faible.labs.database.models.Function;
 import ru.ssau.tk.faible.labs.database.models.User;
 import ru.ssau.tk.faible.labs.database.utils.DBConnector;
 import ru.ssau.tk.faible.labs.database.utils.SqlHelper;
@@ -56,15 +55,6 @@ class UsersDAOTest {
         assertEquals("user", user.getRole());
     }
 
-    @Test
-    void getFunctionsById() {
-        List<Function> functions = usersDAO.getAllFunctionsById(TomId);
-        Function firstFunction = functions.get(0);
-        assertEquals(3, functions.size());
-        assertEquals(firstFunctionId, firstFunction.getId());
-        assertEquals("y=1", firstFunction.getName());
-        assertEquals(TomId, firstFunction.getOwner_id());
-    }
     @Test
     void getUserByUsername() {
         User user = usersDAO.getUserByUsername("Bob");

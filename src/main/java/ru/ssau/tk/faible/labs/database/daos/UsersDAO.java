@@ -3,7 +3,6 @@ package ru.ssau.tk.faible.labs.database.daos;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
-import ru.ssau.tk.faible.labs.database.models.Function;
 import ru.ssau.tk.faible.labs.database.models.User;
 import ru.ssau.tk.faible.labs.database.utils.SqlHelper;
 
@@ -211,29 +210,6 @@ public class UsersDAO {
             }
         } catch (SQLException e) {
             log.error("Ошибка при добавлении User");
-            throw new RuntimeException(e);
-        }
-    }
-
-    public List<Function> getAllFunctionsById(int id) {
-        List<Function> functions = new LinkedList<>();
-        log.info("Пытаемся получить все function по owner_id = {}", id);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/functions/get_functions_by_owner_id.sql"))) {
-            preparedStatement.setInt(1, id);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while(resultSet.next()) {
-                    Function function = new Function();
-                    function.setId(resultSet.getInt("id"));
-                    function.setName(resultSet.getString("name"));
-                    function.setOwner_id(resultSet.getInt("owner_id"));
-                    function.setType(resultSet.getString("type"));
-                    functions.add(function);
-                }
-                log.info("Успешно получены все function с owner_id = {}", id);
-                return functions;
-            }
-        } catch (SQLException e) {
-            log.error("Ошибка при получении всех function по owner_id = {}", id);
             throw new RuntimeException(e);
         }
     }

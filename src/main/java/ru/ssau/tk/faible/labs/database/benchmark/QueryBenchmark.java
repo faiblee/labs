@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 public class QueryBenchmark {
     private final Connection connection;
-    private List<BenchmarkResult> results;
+    private final List<BenchmarkResult> results;
 
     public QueryBenchmark(Connection connection) {
         this.connection = connection;
@@ -97,8 +97,8 @@ public class QueryBenchmark {
 
     public BenchmarkResult findFunctionsByUserId(int user_id) {
         long startTime = System.currentTimeMillis();
-        UsersDAO usersDAO = new UsersDAO(connection);
-        List<Function> functions = usersDAO.getAllFunctionsById(user_id);
+        FunctionsDAO functionsDAO = new FunctionsDAO(connection);
+        List<Function> functions = functionsDAO.getAllFunctionsByOwnerId(user_id);
         long entTime = System.currentTimeMillis();
 
         long duration = entTime - startTime;
@@ -109,8 +109,8 @@ public class QueryBenchmark {
 
     public BenchmarkResult findPointsByFunctionId(int function_id) {
         long startTime = System.currentTimeMillis();
-        FunctionsDAO functionsDAO = new FunctionsDAO(connection);
-        List<Point> points = functionsDAO.getPointsById(function_id);
+        PointsDAO pointsDAO = new PointsDAO(connection);
+        List<Point> points = pointsDAO.getPointsByFunctionId(function_id);
         long entTime = System.currentTimeMillis();
 
         long duration = entTime - startTime;

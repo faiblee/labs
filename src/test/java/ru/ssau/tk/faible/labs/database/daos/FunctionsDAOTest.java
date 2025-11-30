@@ -24,6 +24,13 @@ class FunctionsDAOTest {
         functionsDAO.deleteAllFunctions();
         UsersDAO usersDAO = new UsersDAO(DBConnector.initConnect());
         List<User> users = usersDAO.selectAllUsers();
+        if (users.size() < 3) {
+            usersDAO.deleteAllUsers();
+            usersDAO.insertUser("Tom", "123321", "array", "user");
+            usersDAO.insertUser("Bob", "qwerty", "linkedList", "user");
+            usersDAO.insertUser("Steve", "012362", "array", "admin");
+        }
+        users = usersDAO.selectAllUsers();
         ids.add(users.get(0).getId());
         ids.add(users.get(1).getId());
         ids.add(users.get(2).getId());
@@ -50,6 +57,16 @@ class FunctionsDAOTest {
         assertEquals(firstFunctionId, function.getId());
         assertEquals("y=1", function.getName());
         assertEquals(ids.get(0), function.getOwner_id());
+    }
+
+    @Test
+    void getFunctionsById() {
+        List<Function> functions = functionsDAO.getAllFunctionsByOwnerId(ids.get(0));
+        Function firstFunction = functions.get(0);
+        assertEquals(1, functions.size());
+        assertEquals(firstFunctionId, firstFunction.getId());
+        assertEquals("y=1", firstFunction.getName());
+        assertEquals(ids.get(0), firstFunction.getOwner_id());
     }
 
     @Test

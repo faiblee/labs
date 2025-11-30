@@ -64,7 +64,7 @@ class PointsDAOTest {
 
     @Test
     void getPointsByFunctionId() {
-        List<Point> points = functionsDAO.getPointsById(functions_ids.get(0));
+        List<Point> points = pointsDAO.getPointsByFunctionId(functions_ids.get(0));
         assertEquals(firstDotFirstFunctionId, points.get(0).getId());
         assertEquals(1.0, points.get(0).getX_value());
         assertEquals(2.0, points.get(1).getX_value());
@@ -85,10 +85,10 @@ class PointsDAOTest {
     @Test
     void deletePointById() {
         int pointId = pointsDAO.insertPoint(0.0, 1.0, functions_ids.get(0));
-        List<Point> points = functionsDAO.getPointsById(functions_ids.get(0));
+        List<Point> points = pointsDAO.getPointsByFunctionId(functions_ids.get(0));
         assertEquals(4, points.size());
         pointsDAO.deletePointById(pointId);
-        List<Point> new_points = functionsDAO.getPointsById(functions_ids.get(0));
+        List<Point> new_points = pointsDAO.getPointsByFunctionId(functions_ids.get(0));
         assertEquals(3, new_points.size());
     }
 }

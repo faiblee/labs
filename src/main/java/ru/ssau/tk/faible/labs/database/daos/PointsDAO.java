@@ -106,6 +106,29 @@ public class PointsDAO {
         }
     }
 
+    public List<Point> getPointsByFunctionId(int FunctionId) {
+        List<Point> points = new LinkedList<>();
+        log.info("Пытаемся получить все points функции по id = {}", FunctionId);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/points/find_point_by_function_id.sql"))) {
+            preparedStatement.setInt(1, FunctionId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Point point = new Point();
+                    point.setId(resultSet.getInt("id"));
+                    point.setX_value(resultSet.getDouble("x_value"));
+                    point.setY_value(resultSet.getDouble("y_value"));
+                    point.setFunction_id(resultSet.getInt("function_id"));
+                    points.add(point);
+                }
+                log.info("Успешно получены все points функции с id = {}", FunctionId);
+                return points;
+            }
+        } catch (SQLException e) {
+            log.error("Ошибка при получении всех points функции по id = {}", FunctionId);
+            throw new RuntimeException(e);
+        }
+    }
+
     public Point getPointById(int id) {
         Point point;
         log.info("Пытаемся получить point по id = {}", id);

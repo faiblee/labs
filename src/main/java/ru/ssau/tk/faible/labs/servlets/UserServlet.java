@@ -10,11 +10,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import ru.ssau.tk.faible.labs.database.daos.UsersDAO;
 import ru.ssau.tk.faible.labs.database.models.User;
-import ru.ssau.tk.faible.labs.database.models.UserWithPassword;
 import ru.ssau.tk.faible.labs.database.utils.DBConnector;
+import ru.ssau.tk.faible.labs.database.utils.ServletHelper;
 
 import java.io.*;
 import java.util.List;
+
+import static ru.ssau.tk.faible.labs.database.utils.ServletHelper.sendError;
 
 @Slf4j
 @WebServlet("/api/users/*")
@@ -24,17 +26,6 @@ public class UserServlet extends HttpServlet {
     private static final long serialVersionUID = -9055067694334707718L;
     private UsersDAO usersDAO;
     private ObjectMapper objectMapper;
-
-    private void sendError(HttpServletResponse resp, int statusCode, String message) throws IOException { // Отправка ошибки
-        resp.setStatus(statusCode);
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-        ObjectNode error = objectMapper.createObjectNode();
-        error.put("error", message);
-        PrintWriter out = resp.getWriter();
-        out.print(objectMapper.writeValueAsString(error));
-        out.flush();
-    }
 
     @Override
     public void init() throws ServletException {
@@ -51,110 +42,89 @@ public class UserServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
         log.info("Получен запрос на получение пользователей");
+        User user = ServletHelper.authenticateUser(req, usersDAO);
+        if (user == null) { // пользователь не авторизован
+            sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
+            return;
+        }
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         PrintWriter out = resp.getWriter();
 
         String pathInfo = req.getPathInfo();
 
-        if (pathInfo == null || pathInfo.equals("/")) { // Получение всех пользователей
+        if (pathInfo == null || pathInfo.equals("/")) { // Получение всех пользователей - только admin
+            if (!ServletHelper.isAllowed(user.getRole(), "ADMIN")) {
+                sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
+            }
             // GET /api/users
             log.info("Получен запрос на получение всех пользователей");
             List<User> users = usersDAO.selectAllUsers();
-            users.forEach(user -> user.setPassword_hash(null)); // Удаляем пароль из ответа
+            users.forEach(us -> us.setPassword_hash(null)); // Удаляем пароль из ответа
             out.print(objectMapper.writeValueAsString(users)); // Преобразуем список пользователей в JSON
             log.info("Отправлен список пользователей");
             out.flush(); // Отправляем ответ
-        } else { // Получение пользователя по ID
+        } else { // Получение пользователя по ID - админ или сам пользователь
             // GET /api/users/{id}
             log.info("Получен запрос на получение пользователя по ID");
             pathInfo = pathInfo.substring(1); // Убираем первый символ '/'
             try {
                 int id = Integer.parseInt(pathInfo); // Преобразуем ID в число
                 log.info("ID пользователя: {}", id);
-                User user = usersDAO.getUserById(id); // Получаем пользователя по ID
-                if (user != null) {
-                    user.setPassword_hash(null); // Удаляем пароль из ответа
-                    out.print(objectMapper.writeValueAsString(user)); // Преобразуем пользователя в JSON
+                if (user.getId() != id && !user.getRole().equals("ADMIN")) { // Проверяем, что пользователь не пытается получить данные другого пользователя
+                    log.error("Доступ запрещен юзеру с ролью {}", user.getRole());
+                    sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
+                    return;
+                }
+                User us = usersDAO.getUserById(id); // Получаем пользователя по ID
+                if (us != null) {
+                    us.setPassword_hash(null); // Удаляем пароль из ответа
+                    out.print(objectMapper.writeValueAsString(us)); // Преобразуем пользователя в JSON
                     out.flush(); // Отправляем ответ
                     log.info("Отправлен пользователь с ID: {}", id);
                 } else {
                     log.warn("Пользователь с ID {} не найден", id);
-                    sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Пользователь не найден"); // Отправляем ошибку 404
+                    sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Пользователь не найден", objectMapper); // Отправляем ошибку 404
                 }
             } catch (NumberFormatException e) {
                 log.error("Неверный формат ID");
-                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ID"); // Отправляем ошибку 400
+                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ID", objectMapper); // Отправляем ошибку 400
             }
         }
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            log.info("Получен запрос на добавление пользователя");
-            // POST /api/users
-            resp.setContentType("application/json");
-            resp.setCharacterEncoding("UTF-8");
-            PrintWriter out = resp.getWriter();
-            StringBuilder sb = new StringBuilder();
-            BufferedReader reader = req.getReader();
-            String line;
-            while ((line = reader.readLine()) != null) { // Читаем тело запроса
-                sb.append(line);
-            }
-            log.info("Тело запроса: {}", sb);
-            UserWithPassword user = objectMapper.readValue(sb.toString(), UserWithPassword.class); // Преобразуем JSON в объект UserWithPassword
-            if (user.getUsername() == null || user.getPassword() == null) { // Проверяем, что username и password не null
-                log.error("Неверный формат данных");
-                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат данных"); // Отправляем ошибку 400
-                return;
-            }
-
-            String factoryType = user.getFactory_type() == null ? "array" : user.getFactory_type();
-            String role = user.getRole() == null ? "user" : user.getRole();
-            int userId = usersDAO.insertUser(user.getUsername(), user.getPassword(), factoryType, role); // Добавляем пользователя в базу данных
-
-            User responseUser = new User();
-            responseUser.setId(userId); // Создаем ответ
-            responseUser.setPassword_hash(null); // Удаляем пароль из ответа
-            responseUser.setUsername(user.getUsername()); // Устанавливаем username в ответ
-            responseUser.setFactory_type(factoryType); // Устанавливаем factory_type в ответ
-            responseUser.setRole(role); // Устанавливаем role в ответ
-
-            resp.setStatus(HttpServletResponse.SC_CREATED); // Отправляем ответ 201
-            out.print(objectMapper.writeValueAsString(responseUser)); // Преобразуем ответ в JSON
-            out.flush(); // Отправляем ответ
-            log.info("Пользователь добавлен с ID: {}", userId);
-        } catch (Exception e) {
-            log.error("Ошибка при добавлении пользователя", e);
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат данных"); // Отправляем ошибку 400 по умолчанию
-        }
-    }
-
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // PUT /api/users/{id}
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        // PUT /api/users/{id} - изменение юзера, либо админ, либо сам юзер
         log.info("Получен запрос на обновление пользователя");
+        User user = ServletHelper.authenticateUser(req, usersDAO);
+        if (user == null) { // пользователь не авторизован
+            sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
+            return;
+        }
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/")) {
             log.error("Неверный формат URL");
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат URL"); // Отправляем ошибку 400
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат URL", objectMapper); // Отправляем ошибку 400
         } else {
-            pathInfo = pathInfo.substring(1); // Убираем первый символ '/'
+            pathInfo = pathInfo.substring(1);
             int userId;
             try {
                 userId = Integer.parseInt(pathInfo); // Преобразуем ID в число
             } catch (NumberFormatException e) {
                 log.error("Неверный формат ID");
-                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ID"); // Отправляем ошибку 400
+                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ID", objectMapper); // Отправляем ошибку 400
+                return;
+            }
+            if (user.getId() != userId && !user.getRole().equals("ADMIN")) { // Проверяем, что пользователь не пытается получить данные другого пользователя
+                sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
             if (usersDAO.getUserById(userId) == null) { // Проверяем, что пользователь существует
                 log.warn("Пользователь с ID {} не найден", userId);
-                sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Пользователь не найден"); // Отправляем ошибку 404
+                sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Пользователь не найден", objectMapper); // Отправляем ошибку 404
                 return;
             }
 
@@ -201,19 +171,24 @@ public class UserServlet extends HttpServlet {
                 log.info("Пользователь обновлен с ID: {}", userId);
             } catch (Exception e) {
                 log.error("Ошибка при обновлении пользователя", e);
-                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат данных"); // Отправляем ошибку 400 по умолчанию
+                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат данных", objectMapper); // Отправляем ошибку 400 по умолчанию
             }
         }
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // DELETE /api/users/{id}
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
+        // DELETE /api/users/{id} - либо админ либо сам юзер
         log.info("Получен запрос на удаление пользователя");
+        User user = ServletHelper.authenticateUser(req, usersDAO);
+        if (user == null) { // пользователь не авторизован
+            sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
+            return;
+        }
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/")) {
             log.error("Неверный формат URL");
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат URL"); // Отправляем ошибку 400
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат URL", objectMapper); // Отправляем ошибку 400
         } else {
             pathInfo = pathInfo.substring(1); // Убираем первый символ '/'
             int userId;
@@ -221,7 +196,11 @@ public class UserServlet extends HttpServlet {
                 userId = Integer.parseInt(pathInfo); // Преобразуем ID в число
             } catch (NumberFormatException e) {
                 log.error("Неверный формат ID");
-                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ID"); // Отправляем ошибку 400
+                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ID", objectMapper); // Отправляем ошибку 400
+                return;
+            }
+            if (user.getId() != userId && !user.getRole().equals("ADMIN")) { // Проверяем, что пользователь не пытается удалить другого пользователя
+                sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
             int changedRows = usersDAO.deleteUserById(userId); // Удаляем пользователя
@@ -230,7 +209,7 @@ public class UserServlet extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_NO_CONTENT); // Отправляем ответ 204
             } else {
                 log.warn("Пользователь с ID {} не найден", userId);
-                sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Пользователь не найден"); // Отправляем ошибку 404
+                sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Пользователь не найден", objectMapper); // Отправляем ошибку 404
             }
         }
     }

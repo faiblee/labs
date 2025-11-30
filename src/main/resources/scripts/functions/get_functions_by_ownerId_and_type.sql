@@ -1,0 +1,1 @@
+SELECT * FROM functions WHERE owner_id = ? AND type = ?;
