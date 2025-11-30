@@ -28,7 +28,7 @@ public class FunctionsDAO {
                 resultSet.next();
                 function.setId(resultSet.getInt("id"));
                 function.setName(resultSet.getString("name"));
-                function.setOwner_id(resultSet.getInt("owner_id"));
+                function.setOwnerId(resultSet.getInt("owner_id"));
                 function.setType(resultSet.getString("type"));
                 log.info("Успешно получена function с id = {}", id);
                 return function;
@@ -49,7 +49,7 @@ public class FunctionsDAO {
                     Function function = new Function();
                     function.setId(resultSet.getInt("id"));
                     function.setName(resultSet.getString("name"));
-                    function.setOwner_id(resultSet.getInt("owner_id"));
+                    function.setOwnerId(resultSet.getInt("owner_id"));
                     function.setType(resultSet.getString("type"));
                     functions.add(function);
                 }
@@ -72,7 +72,7 @@ public class FunctionsDAO {
                     Function function = new Function();
                     function.setId(resultSet.getInt("id"));
                     function.setName(resultSet.getString("name"));
-                    function.setOwner_id(resultSet.getInt("owner_id"));
+                    function.setOwnerId(resultSet.getInt("owner_id"));
                     function.setType(resultSet.getString("type"));
                     functions.add(function);
                 }
@@ -96,7 +96,7 @@ public class FunctionsDAO {
                     Function f = new Function();
                     f.setId(rs.getInt("id"));
                     f.setName(rs.getString("name"));
-                    f.setOwner_id(rs.getInt("owner_id"));
+                    f.setOwnerId(rs.getInt("owner_id"));
                     f.setType(rs.getString("type"));
                     functions.add(f);
                 }

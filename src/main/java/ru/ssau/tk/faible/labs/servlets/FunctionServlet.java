@@ -57,18 +57,10 @@ public class FunctionServlet extends HttpServlet {
     // Обработка запросов GET /api/functions
     private void handleGetAllFunctions(HttpServletRequest req, HttpServletResponse resp, PrintWriter out) throws IOException {
         String ownerIdParam = req.getParameter("ownerId");
-        String typeParam = req.getParameter("type");
 
         List<Function> functions;
-        if (ownerIdParam != null && typeParam != null) { // два параметра ownerId и type
-            try {
-                int ownerId = Integer.parseInt(ownerIdParam);
-                functions = functionsDAO.getFunctionsByOwnerAndType(ownerId, typeParam);
-            } catch (NumberFormatException e) {
-                sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ownerId", objectMapper);
-                return;
-            }
-        } else if (ownerIdParam != null) { // сортировка по type
+
+        if (ownerIdParam != null) { // сортировка по ownerId
             try {
                 int ownerId = Integer.parseInt(ownerIdParam);
                 functions = functionsDAO.getAllFunctionsByOwnerId(ownerId);
@@ -76,8 +68,6 @@ public class FunctionServlet extends HttpServlet {
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ownerId", objectMapper);
                 return;
             }
-        } else if (typeParam != null) {
-            functions = functionsDAO.getAllFunctionsByType(typeParam);
         } else {
             functions = functionsDAO.getAllFunctions();
         }
@@ -94,7 +84,7 @@ public class FunctionServlet extends HttpServlet {
                 sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Функция не найдена", objectMapper);
                 return;
             }
-            if (function.getOwner_id() != owner.getId() && !owner.getRole().equals("ADMIN")) { // если юзер - не владелец функции и не админ
+            if (function.getOwnerId() != owner.getId() && !owner.getRole().equals("ADMIN")) { // если юзер - не владелец функции и не админ
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
@@ -116,7 +106,7 @@ public class FunctionServlet extends HttpServlet {
                 return;
             }
 
-            if (function.getOwner_id() != owner.getId() && !owner.getRole().equals("ADMIN")) { // если юзер - не владелец функции и не админ
+            if (function.getOwnerId() != owner.getId() && !owner.getRole().equals("ADMIN")) { // если юзер - не владелец функции и не админ
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
@@ -163,7 +153,7 @@ public class FunctionServlet extends HttpServlet {
 
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
-            // GET /api/functions — фильтрация по ownerId/type
+            // GET /api/functions — фильтрация по ownerId/все функции
             if (!isAllowed(role, "ADMIN")) {
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
@@ -197,7 +187,7 @@ public class FunctionServlet extends HttpServlet {
     }
 
     // Обработка запроса POST /api/functions - создание функции
-    private void handlePostFunction(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    private void handlePostFunction(HttpServletRequest req, HttpServletResponse resp, int ownerId) throws IOException {
         try {
             log.info("Начало обработки POST-запроса для создания функции");
             resp.setContentType("application/json");
@@ -214,21 +204,20 @@ public class FunctionServlet extends HttpServlet {
 
             Function input = objectMapper.readValue(sb.toString(), Function.class);
 
-            if (input.getName() == null || input.getType() == null || input.getOwner_id() <= 0) {
+            if (input.getName() == null || input.getType() == null || ownerId <= 0) {
                 log.error("Отклонён запрос: некорректные данные — name={}, type={}, owner_id={}",
-                        input.getName(), input.getType(), input.getOwner_id());
+                        input.getName(), input.getType(), input.getOwnerId());
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат данных", objectMapper);
                 return;
             }
 
-            log.info("{}, {}, {}", input.getName(), input.getOwner_id(), input.getType());
-            int functionId = functionsDAO.insertFunction(input.getName(), input.getOwner_id(), input.getType());
+            int functionId = functionsDAO.insertFunction(input.getName(), ownerId, input.getType());
             log.info("Функция успешно добавлена в БД с id={}", functionId);
 
             Function response = new Function();
             response.setId(functionId);
             response.setName(input.getName());
-            response.setOwner_id(input.getOwner_id());
+            response.setOwnerId(ownerId);
             response.setType(input.getType());
 
             resp.setStatus(HttpServletResponse.SC_CREATED);
@@ -254,13 +243,13 @@ public class FunctionServlet extends HttpServlet {
                 sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Функция не найдена", objectMapper);
                 return;
             }
-
+            log.info("Функция существует");
             // если юзер - не владелец функции и не админ
-            if (function.getOwner_id() != owner.getId() && !owner.getRole().equals("ADMIN")) {
+            if (function.getOwnerId() != owner.getId() && !owner.getRole().equals("ADMIN")) {
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
-
+            log.info("Доступ разрешен");
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             PrintWriter out = resp.getWriter();
@@ -272,26 +261,31 @@ public class FunctionServlet extends HttpServlet {
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
             }
-
+            log.info("Body успешно считан: {}", sb.toString());
             Point input = objectMapper.readValue(sb.toString(), Point.class);
-            if (input.getX_value() == null || input.getY_value() == null) {
+            log.info("objectMapper успешно считал");
+            if (input.getXValue() == null || input.getYValue() == null) {
+                log.error("x или y - null");
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Требуются x_value и y_value", objectMapper);
                 return;
             }
 
-            int pointId = pointsDAO.insertPoint(input.getX_value(), input.getY_value(), functionId);
+            log.info("{} {}", input.getXValue(), input.getYValue());
+
+            int pointId = pointsDAO.insertPoint(input.getXValue(), input.getYValue(), functionId);
 
             Point response = new Point();
             response.setId(pointId);
-            response.setX_value(input.getX_value());
-            response.setY_value(input.getY_value());
-            response.setFunction_id(functionId);
+            response.setXValue(input.getXValue());
+            response.setYValue(input.getYValue());
+            response.setFunctionId(functionId);
 
             resp.setStatus(HttpServletResponse.SC_CREATED);
             out.print(objectMapper.writeValueAsString(response));
             out.flush();
 
         } catch (Exception e) {
+            log.error("Ошибка при парсинге JSON", e); // ← вот это обязательно!
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат данных", objectMapper);
         }
     }
@@ -306,7 +300,7 @@ public class FunctionServlet extends HttpServlet {
         }
         if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
             // POST /api/functions — создание функции - любой авторизованный
-            handlePostFunction(req, resp);
+            handlePostFunction(req, resp, user.getId());
             return;
         }
 
@@ -357,7 +351,7 @@ public class FunctionServlet extends HttpServlet {
             return;
         }
         // если юзер - не владелец функции и не админ
-        if (function.getOwner_id() != owner.getId() && !owner.getRole().equals("ADMIN")) {
+        if (function.getOwnerId() != owner.getId() && !owner.getRole().equals("ADMIN")) {
             sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
             return;
         }
@@ -424,7 +418,7 @@ public class FunctionServlet extends HttpServlet {
 
         Function function = functionsDAO.getFunctionById(functionId);
         // если юзер - не владелец функции и не админ
-        if (function.getOwner_id() != owner.getId() && !owner.getRole().equals("ADMIN")) {
+        if (function.getOwnerId() != owner.getId() && !owner.getRole().equals("ADMIN")) {
             sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
             return;
         }

@@ -49,37 +49,37 @@ class PointsDAOTest {
     void insertPoint() {
         int pointId = pointsDAO.insertPoint(0.0, 1.0, functions_ids.get(0));
         Point point = pointsDAO.getPointById(pointId);
-        assertEquals(0.0, point.getX_value());
-        assertEquals(1.0, point.getY_value());
-        assertEquals(functions_ids.get(0), point.getFunction_id());
+        assertEquals(0.0, point.getXValue());
+        assertEquals(1.0, point.getYValue());
+        assertEquals(functions_ids.get(0), point.getFunctionId());
     }
 
     @Test
     void getPointById() {
         Point point = pointsDAO.getPointById(firstDotFirstFunctionId);
-        assertEquals(1.0, point.getX_value());
-        assertEquals(1.0, point.getY_value());
-        assertEquals(functions_ids.get(0), point.getFunction_id());
+        assertEquals(1.0, point.getXValue());
+        assertEquals(1.0, point.getYValue());
+        assertEquals(functions_ids.get(0), point.getFunctionId());
     }
 
     @Test
     void getPointsByFunctionId() {
         List<Point> points = pointsDAO.getPointsByFunctionId(functions_ids.get(0));
         assertEquals(firstDotFirstFunctionId, points.get(0).getId());
-        assertEquals(1.0, points.get(0).getX_value());
-        assertEquals(2.0, points.get(1).getX_value());
-        assertEquals(3.0, points.get(2).getX_value());
-        assertEquals(1.0, points.get(0).getY_value());
-        assertEquals(1.0, points.get(1).getY_value());
-        assertEquals(1.0, points.get(2).getY_value());
+        assertEquals(1.0, points.get(0).getXValue());
+        assertEquals(2.0, points.get(1).getXValue());
+        assertEquals(3.0, points.get(2).getXValue());
+        assertEquals(1.0, points.get(0).getYValue());
+        assertEquals(1.0, points.get(1).getYValue());
+        assertEquals(1.0, points.get(2).getYValue());
     }
 
     @Test
     void updatePointById() {
         pointsDAO.updatePointById(firstDotFirstFunctionId, 0.0, 1.0);
         Point point = pointsDAO.getPointById(firstDotFirstFunctionId);
-        assertEquals(0.0, point.getX_value());
-        assertEquals(1.0, point.getY_value());
+        assertEquals(0.0, point.getXValue());
+        assertEquals(1.0, point.getYValue());
     }
 
     @Test

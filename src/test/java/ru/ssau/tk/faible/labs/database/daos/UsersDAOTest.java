@@ -51,7 +51,7 @@ class UsersDAOTest {
         assertEquals(TomId, user.getId());
         assertEquals("Tom", user.getUsername());
         assertTrue(SqlHelper.checkPassword("123321", user.getPassword_hash()));
-        assertEquals("array", user.getFactory_type());
+        assertEquals("array", user.getFactoryType());
         assertEquals("user", user.getRole());
     }
 
@@ -61,7 +61,7 @@ class UsersDAOTest {
         assertEquals(BobId, user.getId());
         assertEquals("Bob", user.getUsername());
         assertTrue(SqlHelper.checkPassword("qwerty", user.getPassword_hash()));
-        assertEquals("linkedList", user.getFactory_type());
+        assertEquals("linkedList", user.getFactoryType());
         assertEquals("user", user.getRole());
     }
 
@@ -79,7 +79,7 @@ class UsersDAOTest {
     void updateFactoryType() {
         assertEquals(1, usersDAO.updateFactoryType("linkedList", TomId));
         User user = usersDAO.getUserById(TomId);
-        assertEquals("linkedList", user.getFactory_type());
+        assertEquals("linkedList", user.getFactoryType());
     }
 
     @Test

@@ -48,7 +48,7 @@ public class UsersDAO {
                     user.setId(resultSet.getInt("id"));
                     user.setUsername(resultSet.getString("username"));
                     user.setPassword_hash(resultSet.getString("password_hash"));
-                    user.setFactory_type(resultSet.getString("factory_type"));
+                    user.setFactoryType(resultSet.getString("factory_type"));
                     user.setRole(resultSet.getString("role"));
                     log.info("Успешно получен User с id = {}", id);
                     return user;
@@ -97,7 +97,7 @@ public class UsersDAO {
                     user.setId(resultSet.getInt("id"));
                     user.setUsername(resultSet.getString("username"));
                     user.setPassword_hash(resultSet.getString("password_hash"));
-                    user.setFactory_type(resultSet.getString("factory_type"));
+                    user.setFactoryType(resultSet.getString("factory_type"));
                     user.setRole(resultSet.getString("role"));
                     users.add(user);
                 }
@@ -153,7 +153,7 @@ public class UsersDAO {
                 user.setId(resultSet.getInt("id"));
                 user.setUsername(resultSet.getString("username"));
                 user.setPassword_hash(resultSet.getString("password_hash"));
-                user.setFactory_type(resultSet.getString("factory_type"));
+                user.setFactoryType(resultSet.getString("factory_type"));
                 user.setRole(resultSet.getString("role"));
                 log.info("Успешно получен User с username = {}", username);
                 return user;
@@ -197,7 +197,7 @@ public class UsersDAO {
         ) {
             preparedStatement.setString(1, user.getUsername());
             preparedStatement.setString(2, user.getPassword_hash());
-            preparedStatement.setString(3, user.getFactory_type());
+            preparedStatement.setString(3, user.getFactoryType());
             preparedStatement.setString(4, user.getRole());
             int changedRows = preparedStatement.executeUpdate();
             log.info("User успешно добавлен");

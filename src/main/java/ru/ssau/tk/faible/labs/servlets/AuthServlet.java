@@ -63,7 +63,7 @@ public class AuthServlet extends HttpServlet {
                 return;
             }
 
-            String factoryType = user.getFactory_type() == null ? "array" : user.getFactory_type();
+            String factoryType = user.getFactoryType() == null ? "array" : user.getFactoryType();
             String role = user.getRole() == null ? "user" : user.getRole();
             int userId = usersDAO.insertUser(user.getUsername(), user.getPassword(), factoryType, role); // Добавляем пользователя в базу данных
 
@@ -71,7 +71,7 @@ public class AuthServlet extends HttpServlet {
             responseUser.setId(userId); // Создаем ответ
             responseUser.setPassword_hash(null); // Удаляем пароль из ответа
             responseUser.setUsername(user.getUsername()); // Устанавливаем username в ответ
-            responseUser.setFactory_type(factoryType); // Устанавливаем factory_type в ответ
+            responseUser.setFactoryType(factoryType); // Устанавливаем factory_type в ответ
             responseUser.setRole(role); // Устанавливаем role в ответ
 
             resp.setStatus(HttpServletResponse.SC_CREATED); // Отправляем ответ 201

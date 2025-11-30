@@ -56,7 +56,7 @@ class FunctionsDAOTest {
         Function function = functionsDAO.getFunctionById(firstFunctionId);
         assertEquals(firstFunctionId, function.getId());
         assertEquals("y=1", function.getName());
-        assertEquals(ids.get(0), function.getOwner_id());
+        assertEquals(ids.get(0), function.getOwnerId());
     }
 
     @Test
@@ -66,7 +66,7 @@ class FunctionsDAOTest {
         assertEquals(1, functions.size());
         assertEquals(firstFunctionId, firstFunction.getId());
         assertEquals("y=1", firstFunction.getName());
-        assertEquals(ids.get(0), firstFunction.getOwner_id());
+        assertEquals(ids.get(0), firstFunction.getOwnerId());
     }
 
     @Test
@@ -78,7 +78,7 @@ class FunctionsDAOTest {
     void updateName() {
         functionsDAO.updateName("y=3", firstFunctionId);
         Function function = functionsDAO.getFunctionById(firstFunctionId);
-        assertEquals(ids.get(0), function.getOwner_id());
+        assertEquals(ids.get(0), function.getOwnerId());
         assertEquals("constant", function.getType());
     }
 
@@ -87,7 +87,7 @@ class FunctionsDAOTest {
         functionsDAO.updateName("y=x+3", firstFunctionId);
         functionsDAO.updateType("tabulated", firstFunctionId);
         Function function = functionsDAO.getFunctionById(firstFunctionId);
-        assertEquals(ids.get(0), function.getOwner_id());
+        assertEquals(ids.get(0), function.getOwnerId());
         assertEquals("tabulated", function.getType());
     }
 

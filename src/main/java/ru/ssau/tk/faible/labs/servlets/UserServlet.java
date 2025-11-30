@@ -155,8 +155,8 @@ public class UserServlet extends HttpServlet {
                     usersDAO.updateRole(newRole, userId); // Обновляем role
                     log.info("Роль пользователя обновлена на: {}", newRole);
                 }
-                if (userNode.has("factory_type") && !userNode.get("factory_type").isNull()) {
-                    String factoryType = userNode.get("factory_type").asText();
+                if (userNode.has("factoryType") && !userNode.get("factoryType").isNull()) {
+                    String factoryType = userNode.get("factoryType").asText();
                     usersDAO.updateFactoryType(factoryType, userId);
                     log.info("Тип фабрики пользователя обновлен на: {}", factoryType);
                 }

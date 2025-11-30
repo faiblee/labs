@@ -77,9 +77,9 @@ public class PointServlet extends HttpServlet {
                 sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Не найдена точка с данным id", objectMapper);
                 return;
             }
-            int functionId = point.getFunction_id();
+            int functionId = point.getFunctionId();
             Function function = functionDAO.getFunctionById(functionId);
-            if (function.getOwner_id() != user.getId() && !user.getRole().equals("ADMIN")) {
+            if (function.getOwnerId() != user.getId() && !user.getRole().equals("ADMIN")) {
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
@@ -119,9 +119,9 @@ public class PointServlet extends HttpServlet {
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Точки с данным id не существует", objectMapper);
             return;
         }
-        int functionId = point.getFunction_id();
+        int functionId = point.getFunctionId();
         Function function = functionDAO.getFunctionById(functionId);
-        if (function.getOwner_id() != user.getId() && !user.getRole().equals("ADMIN")) {
+        if (function.getOwnerId() != user.getId() && !user.getRole().equals("ADMIN")) {
             sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
             return;
         }
@@ -135,13 +135,13 @@ public class PointServlet extends HttpServlet {
             }
 
             ObjectNode update = (ObjectNode) objectMapper.readTree(sb.toString());
-            if (!update.has("x_value") || !update.has("y_value")) {
+            if (!update.has("xvalue") || !update.has("yvalue")) {
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Отсутствуют необходимые поля", objectMapper);
                 return;
             }
 
-            JsonNode xNode = update.get("x_value");
-            JsonNode yNode = update.get("y_value");
+            JsonNode xNode = update.get("xvalue");
+            JsonNode yNode = update.get("yvalue");
 
             if (xNode == null || xNode.isNull() || !xNode.isNumber()) {
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "x_value должен быть числом", objectMapper);
@@ -198,9 +198,9 @@ public class PointServlet extends HttpServlet {
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Точки с данным id не существует", objectMapper);
             return;
         }
-        int functionId = point.getFunction_id();
+        int functionId = point.getFunctionId();
         Function function = functionDAO.getFunctionById(functionId);
-        if (function.getOwner_id() != user.getId() && !user.getRole().equals("ADMIN")) {
+        if (function.getOwnerId() != user.getId() && !user.getRole().equals("ADMIN")) {
             sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
             return;
         }

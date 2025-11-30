@@ -11,6 +11,6 @@ public class UserWithPassword {
     private int id;
     private String username;
     private String password;
-    private String factory_type;
+    private String factoryType;
     private String role;
 }

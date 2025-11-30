@@ -92,9 +92,9 @@ public class PointsDAO {
                 while(resultSet.next()) {
                     Point point = new Point();
                     point.setId(resultSet.getInt("id"));
-                    point.setX_value(resultSet.getDouble("x_value"));
-                    point.setY_value(resultSet.getDouble("y_value"));
-                    point.setFunction_id(resultSet.getInt("function_id"));
+                    point.setXValue(resultSet.getDouble("x_value"));
+                    point.setYValue(resultSet.getDouble("y_value"));
+                    point.setFunctionId(resultSet.getInt("function_id"));
                     points.add(point);
                 }
                 log.info("Успешно получены все points по function_id = {} и x от {} до {}", function_id, xStart, xEnd);
@@ -115,9 +115,9 @@ public class PointsDAO {
                 while (resultSet.next()) {
                     Point point = new Point();
                     point.setId(resultSet.getInt("id"));
-                    point.setX_value(resultSet.getDouble("x_value"));
-                    point.setY_value(resultSet.getDouble("y_value"));
-                    point.setFunction_id(resultSet.getInt("function_id"));
+                    point.setXValue(resultSet.getDouble("x_value"));
+                    point.setYValue(resultSet.getDouble("y_value"));
+                    point.setFunctionId(resultSet.getInt("function_id"));
                     points.add(point);
                 }
                 log.info("Успешно получены все points функции с id = {}", FunctionId);
@@ -138,9 +138,9 @@ public class PointsDAO {
                 point = new Point();
                 resultSet.next();
                 point.setId(resultSet.getInt("id"));
-                point.setX_value(resultSet.getDouble("x_value"));
-                point.setY_value(resultSet.getDouble("y_value"));
-                point.setFunction_id(resultSet.getInt("function_id"));
+                point.setXValue(resultSet.getDouble("x_value"));
+                point.setYValue(resultSet.getDouble("y_value"));
+                point.setFunctionId(resultSet.getInt("function_id"));
                 log.info("Успешно получена Point с id = {}", id);
                 return point;
             }

@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class Function {
     private int id;
     private String name;
-    private int owner_id;
+    private int ownerId;
     private String type;
 }
