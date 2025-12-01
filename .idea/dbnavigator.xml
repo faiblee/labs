@@ -24,14 +24,16 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d">
-      <console name="functions_db" type="STANDARD" schema="functions_db" session="Main"><![CDATA[insert into users ()]]></console>
+      <console name="functions_db" type="STANDARD" schema="functions_db" session="Main">insert into users ()</console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseEditorStateManager">
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" object-ref="schemas/public/tables/users" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" />
