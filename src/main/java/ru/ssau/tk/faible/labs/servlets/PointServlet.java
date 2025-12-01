@@ -57,15 +57,18 @@ public class PointServlet extends HttpServlet {
     // GET /api/points/{id} - получение точки по id
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        log.info("Получен GET запрос на получение точки");
         String pathInfo = req.getPathInfo();
 
         User user = ServletHelper.authenticateUser(req, usersDAO);
         if (user == null) { // пользователь не авторизован
+            log.error("Пользователь не авторизован");
             sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
             return;
         }
 
         if (pathInfo == null || pathInfo.isEmpty() || pathInfo.equals("/")) {
+            log.error("Неверный запрос");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный запрос", objectMapper);
             return;
         }
@@ -74,12 +77,14 @@ public class PointServlet extends HttpServlet {
             int pointId = Integer.parseInt(pathInfo.substring(1));
             Point point = pointsDAO.getPointById(pointId);
             if (point == null) {
+                log.warn("Не найдена точка с данным id {}", pointId);
                 sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Не найдена точка с данным id", objectMapper);
                 return;
             }
             int functionId = point.getFunctionId();
             Function function = functionDAO.getFunctionById(functionId);
             if (function.getOwnerId() != user.getId() && !user.getRole().equals("ADMIN")) {
+                log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
@@ -89,6 +94,7 @@ public class PointServlet extends HttpServlet {
             out.print(objectMapper.writeValueAsString(point));
             out.flush();
         } catch (NumberFormatException e) {
+            log.error("Неверный формат данных");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат данных", objectMapper);
         }
     }
@@ -97,13 +103,16 @@ public class PointServlet extends HttpServlet {
     // Body: { "x_value": 1.0, "y_value": 2.0 }
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        log.info("Получен PUT запрос на изменение точки");
         String pathInfo = req.getPathInfo();
         User user = ServletHelper.authenticateUser(req, usersDAO);
         if (user == null) { // пользователь не авторизован
+            log.error("Пользователь не авторизован");
             sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
             return;
         }
         if (pathInfo == null || pathInfo.isEmpty() || pathInfo.equals("/")) {
+            log.error("Неверный URL запроса");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный URL запроса, требуется id точки", objectMapper);
             return;
         }
@@ -111,17 +120,20 @@ public class PointServlet extends HttpServlet {
         try {
             pointId = Integer.parseInt(pathInfo.substring(1));
         } catch (NumberFormatException e) {
+            log.error("Неверный формат id");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат данных (id)", objectMapper);
             return;
         }
         Point point = pointsDAO.getPointById(pointId);
         if (point == null) { // если точки с данным id не существует
+            log.warn("Не найдена точка с данным id = {}", pointId);
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Точки с данным id не существует", objectMapper);
             return;
         }
         int functionId = point.getFunctionId();
         Function function = functionDAO.getFunctionById(functionId);
         if (function.getOwnerId() != user.getId() && !user.getRole().equals("ADMIN")) {
+            log.warn("Доступ запрещен");
             sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
             return;
         }
@@ -136,6 +148,7 @@ public class PointServlet extends HttpServlet {
 
             ObjectNode update = (ObjectNode) objectMapper.readTree(sb.toString());
             if (!update.has("xvalue") || !update.has("yvalue")) {
+                log.error("Отсутствуют необходимые поля");
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Отсутствуют необходимые поля", objectMapper);
                 return;
             }
@@ -144,10 +157,12 @@ public class PointServlet extends HttpServlet {
             JsonNode yNode = update.get("yvalue");
 
             if (xNode == null || xNode.isNull() || !xNode.isNumber()) {
+                log.error("x_value - не число");
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "x_value должен быть числом", objectMapper);
                 return;
             }
             if (yNode == null || yNode.isNull() || !yNode.isNumber()) {
+                log.error("y_value - не число");
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "y_value должен быть числом", objectMapper);
                 return;
             }
@@ -157,6 +172,7 @@ public class PointServlet extends HttpServlet {
 
             int changedRows = pointsDAO.updatePointById(pointId, new_x, new_y);
             if (changedRows > 0) {
+                log.info("Точка успешно обновлена");
                 Point updated = pointsDAO.getPointById(pointId);
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");
@@ -164,9 +180,11 @@ public class PointServlet extends HttpServlet {
                 out.print(objectMapper.writeValueAsString(updated));
                 out.flush();
             } else {
+                log.error("Не удалось обновить точку");
                 sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Не удалось обновить точку", objectMapper);
             }
         } catch (Exception e) {
+            log.error("ошибка при обновлении точки");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Ошибка при обновлении точки", objectMapper);
         }
     }
@@ -175,13 +193,16 @@ public class PointServlet extends HttpServlet {
     // DELETE /api/points/{id} - либо владелец функции, либо админ
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        log.info("Получен DELETE запрос на удаление точки");
         String pathInfo = req.getPathInfo();
         User user = ServletHelper.authenticateUser(req, usersDAO);
         if (user == null) { // пользователь не авторизован
+            log.error("Пользователь не авторизован");
             sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
             return;
         }
         if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
+            log.error("Неверный формат URL - требуется id");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Требуется ID точки", objectMapper);
             return;
         }
@@ -190,25 +211,30 @@ public class PointServlet extends HttpServlet {
         try {
             pointId = Integer.parseInt(pathInfo.substring(1));
         } catch (NumberFormatException e) {
+            log.error("Неверный формат id точки");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ID точки", objectMapper);
             return;
         }
         Point point = pointsDAO.getPointById(pointId);
         if (point == null) { // если точки с данным id не существует
+            log.error("Точки с данным id Не существует");
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Точки с данным id не существует", objectMapper);
             return;
         }
         int functionId = point.getFunctionId();
         Function function = functionDAO.getFunctionById(functionId);
         if (function.getOwnerId() != user.getId() && !user.getRole().equals("ADMIN")) {
+            log.warn("Доступ запрещен");
             sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
             return;
         }
 
         int deleted = pointsDAO.deletePointById(pointId);
         if (deleted > 0) {
+            log.info("Точка успешно удалена");
             resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } else {
+            log.error("Точка не была удалена");
             sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Точка не найдена", objectMapper);
         }
     }

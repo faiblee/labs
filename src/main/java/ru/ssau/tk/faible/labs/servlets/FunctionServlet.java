@@ -61,16 +61,20 @@ public class FunctionServlet extends HttpServlet {
         List<Function> functions;
 
         if (ownerIdParam != null) { // сортировка по ownerId
+            log.info("Получен запрос на получение данных с сортировкой ownerId");
             try {
                 int ownerId = Integer.parseInt(ownerIdParam);
                 functions = functionsDAO.getAllFunctionsByOwnerId(ownerId);
             } catch (NumberFormatException e) {
+                log.error("Неверный формат ownerId");
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ownerId", objectMapper);
                 return;
             }
         } else {
+            log.info("Получен запрос на получение всех функций");
             functions = functionsDAO.getAllFunctions();
         }
+        log.info("Успешно получены все функции");
         out.print(objectMapper.writeValueAsString(functions));
         out.flush();
     }
@@ -79,19 +83,30 @@ public class FunctionServlet extends HttpServlet {
     private void handleGetFunctionById(String idStr, HttpServletResponse resp, PrintWriter out, User owner) throws IOException {
         try {
             int id = Integer.parseInt(idStr);
+            log.info("Обработка запроса на получение функции по ID: {}", id);
+
             Function function = functionsDAO.getFunctionById(id);
             if (function == null) {
+                log.warn("Функция с ID={} не найдена", id);
                 sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Функция не найдена", objectMapper);
                 return;
             }
             if (function.getOwnerId() != owner.getId() && !owner.getRole().equals("ADMIN")) { // если юзер - не владелец функции и не админ
+                log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
             out.print(objectMapper.writeValueAsString(function));
             out.flush();
+
+            log.info("Функция с ID={} успешно отправлена пользователю ID={}", id, owner.getId());
+
         } catch (NumberFormatException e) {
+            log.warn("Неверный формат ID при запросе функции: {}", idStr, e);
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ID", objectMapper);
+        } catch (Exception e) {
+            log.error("Неожиданная ошибка при обработке запроса функции по ID={}", idStr, e);
+            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Ошибка сервера", objectMapper);
         }
     }
 
@@ -102,34 +117,38 @@ public class FunctionServlet extends HttpServlet {
             Function function = functionsDAO.getFunctionById(functionId);
             // Проверяем, существует ли функция
             if (function == null) {
+                log.error("Функция с id = {} не найдена", functionId);
                 sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Функция не найдена", objectMapper);
                 return;
             }
 
             if (function.getOwnerId() != owner.getId() && !owner.getRole().equals("ADMIN")) { // если юзер - не владелец функции и не админ
+                log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
 
             List<Point> points;
-            // если нет фильтрации, просто возвращаем все точки
             points = pointsDAO.getPointsByFunctionId(functionId);
             if (points == null) {
+                log.error("Не найдены точки выбранной функции");
                 sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Не найдены точки выбранной функции", objectMapper);
             }
             out.print(objectMapper.writeValueAsString(points));
             out.flush();
 
         } catch (NumberFormatException e) {
+            log.error("Неверный формат ID функции");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат ID функции", objectMapper);
         }
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
+        log.info("Получен GET запрос");
         User user = ServletHelper.authenticateUser(req, usersDAO);
         if (user == null) { // пользователь не авторизован
+            log.error("Пользователь не авторизован");
             sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
             return;
         }
@@ -142,7 +161,9 @@ public class FunctionServlet extends HttpServlet {
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
             // GET /api/functions — фильтрация по ownerId/все функции
+            log.debug("Получен запрос на получение функций");
             if (!isAllowed(role, "ADMIN")) {
+                log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
@@ -156,19 +177,24 @@ public class FunctionServlet extends HttpServlet {
 
         if (parts.length == 1) {
             // GET /api/functions/{id} - получение функции по id - только для admin или владелец функции
+            log.debug("Получен запрос на получение функции по шв");
             if (!isAllowed(role, "ADMIN", "USER")) {
+                log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
             handleGetFunctionById(parts[0], resp, out, user);
         } else if (parts.length == 2 && "points".equals(parts[1])) {
             // GET /api/functions/{id}/points - получение всех точек функции - ADMIN или владелец функции
+            log.debug("Получен запрос на получение всех точек функции");
             if (!isAllowed(role, "ADMIN", "USER")) {
+                log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
             handleGetPointsByFunctionId(parts[0], req, resp, out, user);
         } else {
+            log.error("Неверный путь");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный путь", objectMapper);
         }
     }
@@ -233,6 +259,7 @@ public class FunctionServlet extends HttpServlet {
             log.info("Функция существует");
             // если юзер - не владелец функции и не админ
             if (function.getOwnerId() != owner.getId() && !owner.getRole().equals("ADMIN")) {
+                log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
@@ -248,7 +275,7 @@ public class FunctionServlet extends HttpServlet {
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
             }
-            log.info("Body успешно считан: {}", sb.toString());
+            log.info("Body успешно считан: {}", sb);
             Point input = objectMapper.readValue(sb.toString(), Point.class);
             log.info("objectMapper успешно считал");
             if (input.getXValue() == null || input.getYValue() == null) {
@@ -268,6 +295,7 @@ public class FunctionServlet extends HttpServlet {
             response.setFunctionId(functionId);
 
             resp.setStatus(HttpServletResponse.SC_CREATED);
+            log.info("Точка успешно добавлена");
             out.print(objectMapper.writeValueAsString(response));
             out.flush();
 
@@ -279,14 +307,17 @@ public class FunctionServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        log.info("Получен POST запрос");
         String pathInfo = req.getPathInfo();
         User user = ServletHelper.authenticateUser(req, usersDAO);
         if (user == null) { // пользователь не авторизован
+            log.error("Пользователь не авторизован");
             sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
             return;
         }
         if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
             // POST /api/functions — создание функции - любой авторизованный
+            log.debug("Получен запрос на создание функции");
             handlePostFunction(req, resp, user.getId());
             return;
         }
@@ -296,8 +327,10 @@ public class FunctionServlet extends HttpServlet {
 
         if (parts.length == 2 && "points".equals(parts[1])) {
             // POST /api/functions/{id}/points — добавить точку - владелец функции или admin
-            handlePostPoint(parts[0], req, resp, user); // v
+            log.debug("Получен POST запрос на добавление точки");
+            handlePostPoint(parts[0], req, resp, user);
         } else {
+            log.error("Неверный путь");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный путь", objectMapper);
         }
     }
@@ -305,9 +338,10 @@ public class FunctionServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // PUT - /api/functions/{id} - изменение функции - владелец функции или admin
-
+        log.info("Получен PUT запрос на изменение функции");
         User owner = ServletHelper.authenticateUser(req, usersDAO);
         if (owner == null) { // пользователь не авторизован
+            log.error("Пользователь не авторизован");
             sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
             return;
         }
@@ -339,6 +373,7 @@ public class FunctionServlet extends HttpServlet {
         }
         // если юзер - не владелец функции и не админ
         if (function.getOwnerId() != owner.getId() && !owner.getRole().equals("ADMIN")) {
+            log.warn("Доступ запрещен");
             sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
             return;
         }
@@ -379,9 +414,10 @@ public class FunctionServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         // DELETE - /api/functions/{id} - удаление функции по id - admin или владелец функции
-
+        log.info("Получен DELETE запрос на удаление функции по id");
         User owner = ServletHelper.authenticateUser(req, usersDAO);
         if (owner == null) { // пользователь не авторизован
+            log.error("Пользователь не авторизован");
             sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
             return;
         }
@@ -406,6 +442,7 @@ public class FunctionServlet extends HttpServlet {
         Function function = functionsDAO.getFunctionById(functionId);
         // если юзер - не владелец функции и не админ
         if (function.getOwnerId() != owner.getId() && !owner.getRole().equals("ADMIN")) {
+            log.warn("Доступ запрещен");
             sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
             return;
         }

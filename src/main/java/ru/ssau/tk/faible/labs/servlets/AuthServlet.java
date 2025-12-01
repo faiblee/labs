@@ -27,6 +27,7 @@ public class AuthServlet extends HttpServlet {
     private static final long serialVersionUID = 3200801214537736701L;
     private UsersDAO usersDAO;
     private ObjectMapper objectMapper;
+
     @Override
     public void init() throws ServletException {
         super.init();
