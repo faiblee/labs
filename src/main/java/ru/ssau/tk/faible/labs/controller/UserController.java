@@ -27,14 +27,6 @@ public class UserController {
         this.securityService = securityService;
     }
 
-    /**
-     * Обрабатывает GET-запрос: /api/users
-     * Возвращает список всех пользователей.
-     * ДОСТУП: только ADMIN.
-     *
-     * Соответствует API-контракту:
-     *   - GET /api/users → только ADMIN
-     */
     @GetMapping("/users")
     public List<UserDTO> getAllUsers() {
         // Проверка роли, если не админ — ошибка
