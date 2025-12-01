@@ -62,9 +62,6 @@ public class Main {
         PointEntity point3 = new PointEntity(5.0, 6.0, savedFunction);
 
         pointRepo.saveAll(Arrays.asList(point1, point2, point3));
-
-        // Связывание не обязательно — Hibernate сам управляет через mappedBy
-        // savedFunction.getPoints().addAll(...);
     }
 
     private static void checkData(UserRepository userRepo,
@@ -74,10 +71,5 @@ public class Main {
         long userCount = userRepo.count();
         long functionCount = functionRepo.count();
         long pointCount = pointRepo.count();
-
-        System.out.println("Проверка данных:");
-        System.out.println("Пользователей: " + userCount);
-        System.out.println("Функций: " + functionCount);
-        System.out.println("Точек: " + pointCount);
     }
 }
