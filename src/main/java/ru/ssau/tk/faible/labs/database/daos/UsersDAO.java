@@ -86,30 +86,6 @@ public class UsersDAO {
         return users;
     }
 
-    public List<User> getUsersByRole(String role) {
-        List<User> users = new LinkedList<>();
-        log.info("Пытаемся получить users по role = {}", role);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/find_users_by_role.sql"))) {
-            preparedStatement.setString(1, role);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while(resultSet.next()) {
-                    User user = new User();
-                    user.setId(resultSet.getInt("id"));
-                    user.setUsername(resultSet.getString("username"));
-                    user.setPassword_hash(resultSet.getString("password_hash"));
-                    user.setFactoryType(resultSet.getString("factory_type"));
-                    user.setRole(resultSet.getString("role"));
-                    users.add(user);
-                }
-                log.info("Успешно получены все User с role = {}", role);
-                return users;
-            }
-        } catch (SQLException e) {
-            log.error("Ошибка при получении user по role = {}", role);
-            throw new RuntimeException(e);
-        }
-    }
-
     public String getPasswordHashById(int id) {
         log.info("Пытаемся получить password_hash по id = {}", id);
         try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/users/get_password_hash_by_id.sql"))) {

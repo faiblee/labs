@@ -81,31 +81,6 @@ public class PointsDAO {
         }
     }
 
-    public List<Point> getPointsByFunctionIdAndBetweenXValue(int function_id, double xStart, double xEnd) {
-        List<Point> points = new LinkedList<>();
-        log.info("Пытаемся получить все points по function_id = {} и x от {} до {}", function_id, xStart, xEnd);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/points/find_point_by_function_id_and_between_x_value.sql"))) {
-            preparedStatement.setInt(1, function_id);
-            preparedStatement.setDouble(2, xStart);
-            preparedStatement.setDouble(3, xEnd);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while(resultSet.next()) {
-                    Point point = new Point();
-                    point.setId(resultSet.getInt("id"));
-                    point.setXValue(resultSet.getDouble("x_value"));
-                    point.setYValue(resultSet.getDouble("y_value"));
-                    point.setFunctionId(resultSet.getInt("function_id"));
-                    points.add(point);
-                }
-                log.info("Успешно получены все points по function_id = {} и x от {} до {}", function_id, xStart, xEnd);
-                return points;
-            }
-        } catch (SQLException e) {
-            log.error("Ошибка при получении всех points по function_id = {} и x от {} до {}", function_id, xStart, xEnd);
-            throw new RuntimeException(e);
-        }
-    }
-
     public List<Point> getPointsByFunctionId(int FunctionId) {
         List<Point> points = new LinkedList<>();
         log.info("Пытаемся получить все points функции по id = {}", FunctionId);

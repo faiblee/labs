@@ -39,29 +39,6 @@ public class FunctionsDAO {
         }
     }
 
-    public List<Function> getAllFunctionsByType(String type) {
-        List<Function> functions = new LinkedList<>();
-        log.info("Пытаемся получить все function по type = {}", type);
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/functions/get_all_functions_by_type.sql"))) {
-            preparedStatement.setString(1, type);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    Function function = new Function();
-                    function.setId(resultSet.getInt("id"));
-                    function.setName(resultSet.getString("name"));
-                    function.setOwnerId(resultSet.getInt("owner_id"));
-                    function.setType(resultSet.getString("type"));
-                    functions.add(function);
-                }
-                log.info("Успешно получены все function с type = {}", type);
-                return functions;
-            }
-        } catch (SQLException e) {
-            log.error("Ошибка при получении всех function по type = {}", type);
-            throw new RuntimeException(e);
-        }
-    }
-
     public List<Function> getAllFunctionsByOwnerId(int id) {
         List<Function> functions = new LinkedList<>();
         log.info("Пытаемся получить все function по owner_id = {}", id);
@@ -82,28 +59,6 @@ public class FunctionsDAO {
         } catch (SQLException e) {
             log.error("Ошибка при получении всех function по owner_id = {}", id);
             throw new RuntimeException(e);
-        }
-    }
-
-    public List<Function> getFunctionsByOwnerAndType(int ownerId, String type) {
-        List<Function> functions = new LinkedList<>();
-        log.info("Получение функций по owner_id = {} и type = {}", ownerId, type);
-        try (PreparedStatement stmt = connection.prepareStatement(SqlHelper.loadSqlFromFile("scripts/functions/get_functions_by_ownerId_and_type.sql"))) {
-            stmt.setInt(1, ownerId);
-            stmt.setString(2, type);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Function f = new Function();
-                    f.setId(rs.getInt("id"));
-                    f.setName(rs.getString("name"));
-                    f.setOwnerId(rs.getInt("owner_id"));
-                    f.setType(rs.getString("type"));
-                    functions.add(f);
-                }
-            }
-            return functions;
-        } catch (SQLException e) {
-            throw new RuntimeException("Ошибка при фильтрации по владельцу и типу", e);
         }
     }
 

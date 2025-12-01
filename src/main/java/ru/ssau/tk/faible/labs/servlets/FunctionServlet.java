@@ -111,24 +111,12 @@ public class FunctionServlet extends HttpServlet {
                 return;
             }
 
-            // возможные параметры - minX и maxX
-            String minXParam = req.getParameter("minX");
-            String maxXParam = req.getParameter("maxX");
-
             List<Point> points;
-            if (minXParam != null && maxXParam != null) {
-                try {
-                    double minX = Double.parseDouble(minXParam);
-                    double maxX = Double.parseDouble(maxXParam);
-                    points = pointsDAO.getPointsByFunctionIdAndBetweenXValue(functionId, minX, maxX);
-                } catch (NumberFormatException e) {
-                    sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат minX или maxX", objectMapper);
-                    return;
-                }
-            } else { // если нет фильтрации, просто возвращаем все точки
-                points = pointsDAO.getPointsByFunctionId(functionId);
+            // если нет фильтрации, просто возвращаем все точки
+            points = pointsDAO.getPointsByFunctionId(functionId);
+            if (points == null) {
+                sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Не найдены точки выбранной функции", objectMapper);
             }
-
             out.print(objectMapper.writeValueAsString(points));
             out.flush();
 
@@ -172,7 +160,6 @@ public class FunctionServlet extends HttpServlet {
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
-            int functionId = Integer.parseInt(parts[0]);
             handleGetFunctionById(parts[0], resp, out, user);
         } else if (parts.length == 2 && "points".equals(parts[1])) {
             // GET /api/functions/{id}/points - получение всех точек функции - ADMIN или владелец функции
