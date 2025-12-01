@@ -1,6 +1,5 @@
+// src/main/java/ru/ssau/tk/faible/labs/entity/User.java
 package ru.ssau.tk.faible.labs.entity;
-
-import org.mindrot.jbcrypt.BCrypt;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -28,23 +27,24 @@ public class User {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<FunctionEntity> functions = new ArrayList<>();
 
-    public User(){}
+    public User() {}
 
-    public User(String username, String password_hash, String factoryType, String role) {
+    public User(String username, String passwordHash, String factoryType, String role) {
         this.username = username;
-        this.passwordHash = password_hash ;
+        this.passwordHash = passwordHash;
         this.factoryType = factoryType;
         this.role = role;
     }
 
+    // Геттеры и сеттеры
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
-    public String getPassword_hash() { return passwordHash; }
-    public void setPassword_hash(String password_hash) { this.passwordHash = password_hash; }
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
     public String getFactoryType() { return factoryType; }
     public void setFactoryType(String factoryType) { this.factoryType = factoryType; }

@@ -7,6 +7,7 @@ import ru.ssau.tk.faible.labs.entity.PointEntity;
 import ru.ssau.tk.faible.labs.entity.User;
 import java.util.List;
 
+@Repository
 public interface FunctionRepository extends JpaRepository<FunctionEntity, Long> {
 
     List<FunctionEntity> findByOwner(User owner);

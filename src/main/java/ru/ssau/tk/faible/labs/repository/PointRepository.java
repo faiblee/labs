@@ -7,7 +7,7 @@ import ru.ssau.tk.faible.labs.entity.PointEntity;
 
 import java.util.List;
 
-
+@Repository
 public interface PointRepository extends JpaRepository<PointEntity, Long> {
 
     List<PointEntity> findByFunction(FunctionEntity function);
@@ -15,9 +15,7 @@ public interface PointRepository extends JpaRepository<PointEntity, Long> {
     List<PointEntity> findByFunctionId(Long functionId);
 
     void deleteByFunction(FunctionEntity function);
-
-    List<PointEntity> findByxValueBetween(Double minX, Double maxX);
-
+    
 
 
 }

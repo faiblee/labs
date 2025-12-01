@@ -3,9 +3,9 @@ package ru.ssau.tk.faible.labs.repository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import ru.ssau.tk.faible.labs.config.DatabaseConfig;
 import ru.ssau.tk.faible.labs.entity.FunctionEntity;
 import ru.ssau.tk.faible.labs.entity.User;
 
@@ -13,7 +13,14 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringJUnitConfig(DatabaseConfig.class)
+@DataJpaTest
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:postgresql://localhost:5432/functions_db",
+        "spring.datasource.username=postgres",
+        "spring.datasource.password=nailamir",
+        "spring.jpa.hibernate.ddl-auto=update",
+        "spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect"
+})
 @Transactional
 class FunctionRepositoryTest {
 
