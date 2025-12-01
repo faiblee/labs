@@ -89,7 +89,7 @@ public class UserController {
 
         // Обновляем поля
         targetUser.setUsername(dto.getUsername());
-        targetUser.setFactoryType(dto.getFactoryType());
+        targetUser.setFactoryType(dto.getFactory_type());
 
 
         // Сохраняем изменения в базу данных

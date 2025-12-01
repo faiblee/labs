@@ -21,8 +21,8 @@ public class UserDTO {
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
-    public String getFactoryType() { return factory_type; }
-    public void setFactoryType(String factoryType) { this.factory_type = factoryType; }
+    public String getFactory_type() { return factory_type; }
+    public void setFactory_type(String factoryType) { this.factory_type = factoryType; }
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }

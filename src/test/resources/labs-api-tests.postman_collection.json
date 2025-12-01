@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "0e9eb1d9-4d6b-4531-919b-4151a0e72aae",
-		"name": "labs-api-tests",
+		"_postman_id": "a610e117-2c45-475e-adcb-4ac7b6ade81e",
+		"name": "labs-api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "50441404",
-		"_collection_link": "https://faiblee-5611255.postman.co/workspace/faible's-team's-Workspace~d135df0e-13f1-40b7-87ba-5321ccc79b88/collection/50441404-0e9eb1d9-4d6b-4531-919b-4151a0e72aae?action=share&source=collection_link&creator=50441404"
+		"_collection_link": "https://web.postman.co/workspace/faible's-team's-Workspace~d135df0e-13f1-40b7-87ba-5321ccc79b88/collection/50441404-a610e117-2c45-475e-adcb-4ac7b6ade81e?action=share&source=collection_link&creator=50441404"
 	},
 	"item": [
 		{
@@ -49,7 +49,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"{{userUsername}}\",\n  \"password\": \"123456\",\n  \"factoryType\": \"ARRAY\",\n  \"role\": \"USER\"\n}",
+							"raw": "{\n  \"username\": \"{{userUsername}}\",\n  \"password\": \"123456\",\n  \"factory_type\": \"linkedList\",\n  \"role\": \"USER\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -111,7 +111,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"123456\",\n  \"factoryType\": \"array\",\n  \"role\": \"ADMIN\"\n}",
+							"raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"123456\",\n  \"factory_type\": \"array\",\n  \"role\": \"ADMIN\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -260,7 +260,7 @@
 									"    pm.expect(user.username).to.eql(pm.collectionVariables.get(\"userUsername\"));",
 									"});",
 									"pm.test(\"Factory type was updated\", function () {",
-									"    pm.expect(user.factoryType).to.eql(\"linkedList\");",
+									"    pm.expect(user.factory_type).to.eql(\"linkedList\");",
 									"});",
 									"",
 									""
@@ -298,7 +298,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"{{userUsername}}\",\n  \"factoryType\": \"linkedList\"\n}",
+							"raw": "{\n  \"username\": \"{{userUsername}}\",\n  \"factory_type\": \"linkedList\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -406,7 +406,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"{{userUsername}}\",\n  \"password\": \"123456\",\n  \"factoryType\": \"ARRAY\",\n  \"role\": \"USER\"\n}",
+							"raw": "{\n  \"username\": \"{{userUsername}}\",\n  \"password\": \"123456\",\n  \"factory_type\": \"ARRAY\",\n  \"role\": \"USER\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -452,8 +452,7 @@
 									"pm.test(\"Response has id, name, ownerId, type\", function () {\r",
 									"    const json = pm.response.json();\r",
 									"    pm.expect(json.id).to.be.a('number');\r",
-									"    pm.expect(json.ownerId).to.eql(parseInt(pm.collectionVariables.get(\"adminId\"),10));\r",
-									"pm.environment.get(\"variable_key\");\r",
+									"    pm.expect(json.ownerId).to.eql(parseInt(pm.collectionVariables.get(\"adminId\"), 10));\r",
 									"    pm.expect(json.type).to.eql(\"TABULATED\")\r",
 									"    pm.expect(json.name).to.eql(\"y=1\")\r",
 									"});\r",
@@ -484,7 +483,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"y=1\",\r\n    \"ownerId\": {{userId}},\r\n    \"type\" : \"TABULATED\"\r\n}",
+							"raw": "{\r\n    \"name\" : \"y=1\",\r\n    \"type\" : \"TABULATED\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -523,7 +522,7 @@
 									"});\r",
 									"\r",
 									"pm.test(\"Type was updated\", function () {\r",
-									"    pm.expect(func.type).to.eql(\"constant\");\r",
+									"    pm.expect(func.type).to.eql(\"not_tabulated\");\r",
 									"});\r",
 									"\r",
 									""
@@ -552,7 +551,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"y=2\",\r\n    \"type\": \"constant\"\r\n}",
+							"raw": "{\r\n    \"name\": \"y=2\",\r\n    \"type\": \"not_tabulated\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -664,7 +663,7 @@
 									"    pm.test(\"All functions match both ownerId and type\", function () {",
 									"        const functions = pm.response.json();",
 									"        functions.forEach(f => {",
-									"            pm.expect(f.owner_id).to.eql(pm.collectionVariables.get(\"userId\"));",
+									"            pm.expect(f.ownerId).to.eql(pm.collectionVariables.get(\"userId\"));",
 									"        });",
 									"    });",
 									"}"
@@ -862,7 +861,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"{{userUsername}}\",\n  \"password\": \"123456\",\n  \"factoryType\": \"ARRAY\",\n  \"role\": \"USER\"\n}",
+							"raw": "{\n  \"username\": \"{{userUsername}}\",\n  \"password\": \"123456\",\n  \"factory_type\": \"ARRAY\",\n  \"role\": \"USER\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -927,7 +926,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\" : \"y=1\",\r\n    \"type\" : \"TABULATED\"\r\n}",
+							"raw": "{\r\n    \"name\" : \"y=1\",\r\n    \"ownerId\": {{userId}},\r\n    \"type\" : \"TABULATED\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -995,7 +994,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n\"xvalue\":1.0,\r\n\"yvalue\":2.0\r\n}",
+							"raw": "{\r\n    \"xvalue\" : 1.0,\r\n    \"yvalue\" : 2.0\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
