@@ -3,9 +3,8 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.53">
     <root id="1">
       <DateStyle>dmy</DateStyle>
-      <IntrospectionStateNumber>8794</IntrospectionStateNumber>
       <ServerVersion>16.1</ServerVersion>
-      <StartupTime>1762980693</StartupTime>
+      <StartupTime>1764613605</StartupTime>
       <TimeZones>true ACDT
 true ACSST
 false ACST
@@ -800,7 +799,6 @@ false Zulu
 14744||10|C|G
 14744||-9223372036854775808|U|G
 14744||10|U|G</Grants>
-      <IntrospectionStateNumber>8794</IntrospectionStateNumber>
       <ObjectId>16398</ObjectId>
       <OwnerName>postgres</OwnerName>
     </database>
@@ -815,7 +813,6 @@ false Zulu
 14744||10|C|G
 14744||-9223372036854775808|U|G
 14744||10|U|G</Grants>
-      <IntrospectionStateNumber>8793</IntrospectionStateNumber>
       <ObjectId>5</ObjectId>
       <OwnerName>postgres</OwnerName>
     </database>
@@ -4235,9 +4232,6 @@ false Zulu
       <AutoIntrospectionLevel>3</AutoIntrospectionLevel>
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <LastIntrospectionL1Xid>8794</LastIntrospectionL1Xid>
-      <LastIntrospectionL2Xid>8794</LastIntrospectionL2Xid>
-      <LastIntrospectionL3Xid>8794</LastIntrospectionL3Xid>
       <LastIntrospectionLevel>3</LastIntrospectionLevel>
       <LastIntrospectionLocalTimestamp>2025-11-17.16:55:21</LastIntrospectionLocalTimestamp>
       <ObjectId>2200</ObjectId>
@@ -7649,8 +7643,8 @@ false Zulu
     </table>
     <table id="514" parent="264" name="points">
       <DetailsLevel>2</DetailsLevel>
-      <ObjectId>16446</ObjectId>
-      <StateNumber>1260</StateNumber>
+      <ObjectId>16519</ObjectId>
+      <StateNumber>63959</StateNumber>
       <AccessMethodId>2</AccessMethodId>
       <OwnerName>postgres</OwnerName>
     </table>
@@ -7667,7 +7661,6 @@ false Zulu
       <Position>1</Position>
       <StateNumber>751</StateNumber>
       <StoredType>integer|0s</StoredType>
-      <SequenceId>16417</SequenceId>
       <TypeId>23</TypeId>
     </column>
     <column id="517" parent="513" name="name">
@@ -7725,62 +7718,62 @@ false Zulu
       <DefaultExpression>nextval(&apos;points_id_seq&apos;::regclass)</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>1</Position>
-      <StateNumber>1260</StateNumber>
+      <StateNumber>63959</StateNumber>
       <StoredType>integer|0s</StoredType>
-      <SequenceId>16445</SequenceId>
+      <SequenceId>16518</SequenceId>
       <TypeId>23</TypeId>
     </column>
     <column id="525" parent="514" name="x_value">
       <NotNull>1</NotNull>
       <Position>2</Position>
-      <StateNumber>1260</StateNumber>
+      <StateNumber>63959</StateNumber>
       <StoredType>real|0s</StoredType>
       <TypeId>700</TypeId>
     </column>
     <column id="526" parent="514" name="y_value">
       <NotNull>1</NotNull>
       <Position>3</Position>
-      <StateNumber>1260</StateNumber>
+      <StateNumber>63959</StateNumber>
       <StoredType>real|0s</StoredType>
       <TypeId>700</TypeId>
     </column>
     <column id="527" parent="514" name="function_id">
       <NotNull>1</NotNull>
       <Position>4</Position>
-      <StateNumber>1260</StateNumber>
+      <StateNumber>63959</StateNumber>
       <StoredType>integer|0s</StoredType>
       <TypeId>23</TypeId>
     </column>
     <foreign-key id="528" parent="514" name="points_function_id_fkey">
       <ColNames>function_id</ColNames>
       <NameSurrogate>1</NameSurrogate>
-      <ObjectId>16452</ObjectId>
+      <ObjectId>16525</ObjectId>
       <OnDelete>cascade</OnDelete>
-      <StateNumber>1260</StateNumber>
+      <StateNumber>63959</StateNumber>
       <RefKeyColPositions>1</RefKeyColPositions>
-      <RefTableId>16418</RefTableId>
+      <RefTableId>16506</RefTableId>
     </foreign-key>
     <index id="529" parent="514" name="points_pkey">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
-      <ObjectId>16450</ObjectId>
+      <ObjectId>16523</ObjectId>
       <Primary>1</Primary>
-      <StateNumber>1260</StateNumber>
+      <StateNumber>63959</StateNumber>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
     <index id="530" parent="514" name="idx_points_function_id">
       <ColNames>function_id</ColNames>
-      <ObjectId>16457</ObjectId>
-      <StateNumber>1261</StateNumber>
+      <ObjectId>16530</ObjectId>
+      <StateNumber>63959</StateNumber>
       <AccessMethodId>405</AccessMethodId>
     </index>
     <key id="531" parent="514" name="points_pkey">
       <NameSurrogate>1</NameSurrogate>
-      <ObjectId>16451</ObjectId>
+      <ObjectId>16524</ObjectId>
       <Primary>1</Primary>
-      <StateNumber>1260</StateNumber>
-      <UnderlyingIndexId>16450</UnderlyingIndexId>
+      <StateNumber>63959</StateNumber>
+      <UnderlyingIndexId>16523</UnderlyingIndexId>
     </key>
     <column id="532" parent="515" name="id">
       <DefaultExpression>nextval(&apos;users_id_seq&apos;::regclass)</DefaultExpression>
