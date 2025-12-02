@@ -5,10 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.ssau.tk.faible.labs.DTO.UserRegistrationDTO; // DTO для входных данных регистрации
-import ru.ssau.tk.faible.labs.DTO.UserDTO;             // DTO для ответа
-import ru.ssau.tk.faible.labs.entity.User;            // Сущность JPA
-import ru.ssau.tk.faible.labs.repository.UserRepository; // Репозиторий для работы с БД
+import ru.ssau.tk.faible.labs.DTO.UserRegistrationDTO;
+import ru.ssau.tk.faible.labs.DTO.UserDTO;
+import ru.ssau.tk.faible.labs.entity.User;
+import ru.ssau.tk.faible.labs.repository.UserRepository;
 import org.mindrot.jbcrypt.BCrypt;
 
 @RestController
