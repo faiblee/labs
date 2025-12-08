@@ -16,7 +16,7 @@ public class MainLayout extends AppLayout {
         addToNavbar(true, new DrawerToggle(), new H1("Лабораторная №7"));
 
         Scroller scroller = new Scroller(new VerticalLayout(
-                new RouterLink("Функции", MainView.class),
+                new RouterLink("Функции", FunctionChoiceView.class),
                 new RouterLink("Операции", MainView.class),
                 new RouterLink("Настройки", MainView.class)
         ));
