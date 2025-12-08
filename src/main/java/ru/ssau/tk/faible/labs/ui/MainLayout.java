@@ -9,7 +9,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
-@AnonymousAllowed
 @Route("main")
 public class MainLayout extends AppLayout {
 
@@ -19,8 +18,7 @@ public class MainLayout extends AppLayout {
         Scroller scroller = new Scroller(new VerticalLayout(
                 new RouterLink("Функции", MainView.class),
                 new RouterLink("Операции", MainView.class),
-                new RouterLink("Настройки", MainView.class),
-                new RouterLink("Профиль", MainView.class)
+                new RouterLink("Настройки", MainView.class)
         ));
         addToDrawer(scroller);
 
