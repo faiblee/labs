@@ -3,7 +3,6 @@ package ru.ssau.tk.faible.labs.ui.auth;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -71,12 +70,12 @@ public class LoginView extends VerticalLayout {
 
         try {
             // Используем getForObject с HttpEntity
-            restTemplate.execute("http://localhost:8080/api/users", HttpMethod.GET,
+            restTemplate.execute("http://localhost:8080/api/auth/login", HttpMethod.GET,
                     request -> request.getHeaders().addAll(entity.getHeaders()),
                     response -> response.getStatusCode());
             // Успешный вход — показываем уведомление и переходим на главную
             Notification.show("Успешный вход!", 3000, Notification.Position.MIDDLE);
-            UI.getCurrent().getPage().setLocation("/"); // или куда нужно
+            UI.getCurrent().getPage().setLocation("/main"); // или куда нужно
 
         } catch (HttpClientErrorException ex) {
             // 401 Unauthorized — значит, логин/пароль неверны
