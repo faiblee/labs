@@ -1,4 +1,3 @@
-// ui/utils/ErrorNotifier.java
 package ru.ssau.tk.faible.labs.ui.utils;
 
 import com.vaadin.flow.component.notification.Notification;

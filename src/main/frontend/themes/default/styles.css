@@ -1,4 +1,9 @@
 /* Add your styles here */
 body {
-    background-color: rgba(0, 255, 255, 0.15);
+    background-color: rgba(221, 255, 0, 0.16);
+}
+vaadin-button {
+    border: 1px solid black !important;
+    border-radius: 4px;
+    background-color: rgb(202, 200, 200);
 }
