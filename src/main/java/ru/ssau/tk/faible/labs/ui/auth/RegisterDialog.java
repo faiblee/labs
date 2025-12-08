@@ -18,6 +18,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.UserRegistrationDTO;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
+import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
 
 public class RegisterDialog extends Dialog {
@@ -61,12 +62,12 @@ public class RegisterDialog extends Dialog {
         String confirmPassword = confirmPasswordField.getValue();
 
         if (!password.equals(confirmPassword)) {
-            Notification.show("Пароли не совпадают!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show("Пароли не совпадают!", 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
         if (username.isEmpty() || password.isEmpty()) {
-            Notification.show("Логин и пароль обязательны!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show("Логин и пароль обязательны!", 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
@@ -78,7 +79,7 @@ public class RegisterDialog extends Dialog {
 
         try {
             restTemplate.postForObject("http://localhost:8080/api/auth/register", dto, Object.class);
-            Notification.show("Регистрация успешна! Перейдите на страницу входа", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show("Регистрация успешна! Перейдите на страницу входа", 3000, Notification.Position.BOTTOM_CENTER);
             // Очистить поля
             usernameField.clear();
             passwordField.clear();

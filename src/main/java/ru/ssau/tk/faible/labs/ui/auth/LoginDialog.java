@@ -23,6 +23,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
+import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
 import java.util.Base64;
 
@@ -68,7 +69,7 @@ public class LoginDialog extends Dialog {
         String password = passwordField.getValue();
 
         if (username.isEmpty() || password.isEmpty()) {
-            Notification.show("Логин и пароль обязательны!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show("Логин и пароль обязательны!", 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
@@ -87,11 +88,11 @@ public class LoginDialog extends Dialog {
                     request -> request.getHeaders().addAll(entity.getHeaders()),
                     ClientHttpResponse::getStatusCode);
             // Успешный вход — показываем уведомление и переходим на главную
-            Notification.show("Успешный вход!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show("Успешный вход!", 3000, Notification.Position.BOTTOM_CENTER);
             close();
             UI.getCurrent().getPage().setLocation("main");
         } catch (Exception ex) {
-            Notification.show("Ошибка: Неверный логин или пароль", 5000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show("Ошибка: Неверный логин или пароль", 5000, Notification.Position.BOTTOM_CENTER);
         }
     }
 }
