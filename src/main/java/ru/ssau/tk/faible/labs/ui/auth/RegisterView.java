@@ -1,5 +1,6 @@
 package ru.ssau.tk.faible.labs.ui.auth;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
@@ -67,7 +68,9 @@ public class RegisterView extends VerticalLayout {
 
         try {
             restTemplate.postForObject("http://localhost:8080/api/auth/register", dto, Object.class);
-            Notification.show("Регистрация успешна! Перейдите на страницу входа.", 3000, Notification.Position.MIDDLE);
+            Notification.show("Регистрация успешна! Перейдите на страницу входа", 3000, Notification.Position.MIDDLE);
+            UI.getCurrent().navigate("login"); // Переход на /login
+            UI.getCurrent().getPage().setLocation("/login");
             // Очистить поля
             usernameField.clear();
             passwordField.clear();
