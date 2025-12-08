@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import ru.ssau.tk.faible.labs.database.daos.UsersDAO;
 import ru.ssau.tk.faible.labs.database.models.User;
 
@@ -12,6 +13,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+@Slf4j
 public class ServletHelper {
 
     // Проверяет, может ли пользователь с ролью role вызывать метод
@@ -26,6 +28,7 @@ public class ServletHelper {
     public static User authenticateUser(HttpServletRequest req, UsersDAO usersDAO) throws IOException {
         String authHeader = req.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Basic ")) { // если заголовок неверный
+            log.error("Неверный заголовок");
             return null;
         }
 
@@ -34,6 +37,7 @@ public class ServletHelper {
             String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
             String[] parts = credentials.split(":", 2); // декодируем данные и разбиваем логин с паролем
             if (parts.length != 2) {
+                log.error("Заголовок не соответствует формату");
                 return null;
             }
 
@@ -42,11 +46,14 @@ public class ServletHelper {
 
             User user = usersDAO.getUserByUsername(username); // проверяем по базе данных пользователя
             if (user == null || !SqlHelper.checkPassword(password, user.getPassword_hash())) {
+                log.error("Пользователь не найден в бд");
                 return null;
             }
 
+            log.info("Пользователь успешно найден");
             return user;
         } catch (Exception e) {
+            log.error("Ошибка при поиске User в бд");
             return null;
         }
     }

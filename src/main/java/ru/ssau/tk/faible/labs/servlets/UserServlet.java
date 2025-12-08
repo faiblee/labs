@@ -46,6 +46,7 @@ public class UserServlet extends HttpServlet {
         log.info("Получен запрос на получение пользователей");
         User user = ServletHelper.authenticateUser(req, usersDAO);
         if (user == null) { // пользователь не авторизован
+            log.error("Пользователь не авторизован");
             sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
             return;
         }
@@ -56,11 +57,12 @@ public class UserServlet extends HttpServlet {
         String pathInfo = req.getPathInfo();
 
         if (pathInfo == null || pathInfo.equals("/")) { // Получение всех пользователей - только admin
+            log.info("Получен запрос на получение всех пользователей");
             if (!ServletHelper.isAllowed(user.getRole(), "ADMIN")) {
+                log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
             }
             // GET /api/users
-            log.info("Получен запрос на получение всех пользователей");
             List<User> users = usersDAO.selectAllUsers();
             users.forEach(us -> us.setPassword_hash(null)); // Удаляем пароль из ответа
             out.print(objectMapper.writeValueAsString(users)); // Преобразуем список пользователей в JSON
