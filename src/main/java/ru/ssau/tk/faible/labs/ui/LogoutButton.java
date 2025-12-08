@@ -17,7 +17,7 @@ public class LogoutButton extends Button {
             // VaadinService.getCurrentRequest().getWrappedSession().invalidate();
 
             // Перенаправить на login
-            getUI().ifPresent(ui -> ui.navigate("login"));
+            getUI().ifPresent(ui -> ui.navigate(""));
         });
     }
 }
