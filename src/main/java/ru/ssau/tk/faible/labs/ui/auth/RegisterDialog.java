@@ -2,9 +2,12 @@ package ru.ssau.tk.faible.labs.ui.auth;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -14,11 +17,10 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.UserRegistrationDTO;
+import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 
-@Route("register")
-@PageTitle("Регистрация")
-@AnonymousAllowed
-public class RegisterView extends VerticalLayout {
+
+public class RegisterDialog extends Dialog {
 
     private final TextField usernameField = new TextField("Логин");
     private final PasswordField passwordField = new PasswordField("Пароль");
@@ -27,7 +29,7 @@ public class RegisterView extends VerticalLayout {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public RegisterView() {
+    public RegisterDialog() {
         addClassName("register-view");
         setSizeFull();
 
@@ -35,14 +37,22 @@ public class RegisterView extends VerticalLayout {
         passwordField.setRequired(true);
         confirmPasswordField.setRequired(true);
 
-        registerButton.addClickListener(e -> register());
+        registerButton.addClickListener(e -> {
+            register();
+        });
 
         H1 title = new H1("Регистрация");
         title.getStyle().set("text-align", "center");
 
-        add(title, usernameField, passwordField, confirmPasswordField, registerButton);
-        setJustifyContentMode(JustifyContentMode.CENTER);
-        setAlignItems(Alignment.CENTER);
+        FormLayout form = new FormLayout();
+        form.add(title, usernameField, passwordField, confirmPasswordField);
+        add(form);
+
+        HorizontalLayout buttons = new HorizontalLayout();
+        Button cancelButton = new Button("Отмена", e -> close());
+
+        buttons.add(registerButton, cancelButton);
+        add(buttons);
     }
 
     private void register() {
@@ -51,12 +61,12 @@ public class RegisterView extends VerticalLayout {
         String confirmPassword = confirmPasswordField.getValue();
 
         if (!password.equals(confirmPassword)) {
-            Notification.show("Пароли не совпадают!", 3000, Notification.Position.MIDDLE);
+            Notification.show("Пароли не совпадают!", 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
         if (username.isEmpty() || password.isEmpty()) {
-            Notification.show("Логин и пароль обязательны!", 3000, Notification.Position.MIDDLE);
+            Notification.show("Логин и пароль обязательны!", 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
@@ -68,16 +78,15 @@ public class RegisterView extends VerticalLayout {
 
         try {
             restTemplate.postForObject("http://localhost:8080/api/auth/register", dto, Object.class);
-            Notification.show("Регистрация успешна! Перейдите на страницу входа", 3000, Notification.Position.MIDDLE);
-            UI.getCurrent().navigate("login"); // Переход на /login
-            UI.getCurrent().getPage().setLocation("/login");
+            Notification.show("Регистрация успешна! Перейдите на страницу входа", 3000, Notification.Position.BOTTOM_CENTER);
             // Очистить поля
             usernameField.clear();
             passwordField.clear();
             confirmPasswordField.clear();
+            close();
         } catch (RestClientException ex) {
             // Показываем ошибку, которую вернул бэкенд (например, "Username already exists")
-            Notification.show("Ошибка регистрации: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            ExceptionHandler.notifyUser(ex);
         }
     }
 }
