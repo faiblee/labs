@@ -61,6 +61,7 @@ public class UserServlet extends HttpServlet {
             if (!ServletHelper.isAllowed(user.getRole(), "ADMIN")) {
                 log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
+                return;
             }
             // GET /api/users
             List<User> users = usersDAO.selectAllUsers();
