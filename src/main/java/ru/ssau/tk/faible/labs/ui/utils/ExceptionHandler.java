@@ -11,15 +11,15 @@ public class ExceptionHandler {
         if (e instanceof HttpClientErrorException ex) {
             String message = extractMessageFromResponse(ex);
             if (message.equals("Неверный формат данных")) {
-                Notification.show("Ошибка: Пользователь с таким именем уже существует", 5000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show("Ошибка: Пользователь с таким именем уже существует", 5000, Notification.Position.BOTTOM_CENTER);
             } else {
-                Notification.show("Ошибка: " + message, 5000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show("Ошибка: " + message, 5000, Notification.Position.BOTTOM_CENTER);
             }
         } else if (e instanceof ResourceAccessException) {
-            Notification.show("Сервер недоступен. Проверьте подключение к сети.", 5000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show("Сервер недоступен. Проверьте подключение к сети.", 5000, Notification.Position.BOTTOM_CENTER);
         } else {
             // Общая ошибка
-            Notification.show("Произошла непредвиденная ошибка: " + e.getMessage(), 5000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show("Произошла непредвиденная ошибка: " + e.getMessage(), 5000, Notification.Position.BOTTOM_CENTER);
         }
     }
 
