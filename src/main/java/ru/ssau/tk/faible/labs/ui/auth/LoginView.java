@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -69,12 +70,10 @@ public class LoginView extends VerticalLayout {
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         try {
-
             // Используем getForObject с HttpEntity
-            restTemplate.execute("http://localhost:8080/api/users", HttpMethod.GET,
+            restTemplate.execute("http://localhost:8080/api/auth/login", HttpMethod.GET,
                     request -> request.getHeaders().addAll(entity.getHeaders()),
                     response -> response.getStatusCode());
-
             // Успешный вход — показываем уведомление и переходим на главную
             Notification.show("Успешный вход!", 3000, Notification.Position.MIDDLE);
             UI.getCurrent().getPage().setLocation("/"); // или куда нужно
