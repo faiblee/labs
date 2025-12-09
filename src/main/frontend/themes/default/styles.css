@@ -1,9 +1,39 @@
-/* Add your styles here */
-body {
-    background-color: rgba(221, 255, 0, 0.16);
+/* Главный фон */
+.main-view {
+    background-color: #FFF;
+    padding: 1.5rem;
+    min-height: 100vh;
 }
-vaadin-button {
-    border: 1px solid black !important;
-    border-radius: 4px;
-    background-color: rgb(202, 200, 200);
+
+/* Сетка 2x3 */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    max-width: 1200px;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+/* Карточка */
+.card {
+    background: hsla(214, 61%, 25%, 0.05);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+}
+
+/* Кнопка в карточке */
+.card > .card-button {
+    margin-top: auto;
 }
