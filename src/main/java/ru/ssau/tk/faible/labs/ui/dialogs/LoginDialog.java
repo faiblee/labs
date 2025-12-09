@@ -9,21 +9,24 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.server.VaadinSession;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestTemplate;
+import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
+import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
 import java.util.Base64;
 
-
+@Slf4j
 public class LoginDialog extends Dialog {
-
-    Logger log = LoggerFactory.getLogger(LoginDialog.class);
 
     private final TextField usernameField = new TextField("Логин");
     private final PasswordField passwordField = new PasswordField("Пароль");
@@ -82,8 +85,22 @@ public class LoginDialog extends Dialog {
                     ClientHttpResponse::getStatusCode);
             // Успешный вход — показываем уведомление и переходим на главную
             NotificationManager.show("Успешный вход!", 3000, Notification.Position.BOTTOM_CENTER);
+            try {
+                ResponseEntity<CurrentUser> response = restTemplate.exchange(
+                        "http://localhost:8080/api/auth/login",
+                        HttpMethod.GET,
+                        entity,
+                        CurrentUser.class);
+                CurrentUser currentUser = response.getBody();
+                if (currentUser != null) {
+                    currentUser.setEncodedCredentials(encodedCredentials);
+                }
+                VaadinSession.getCurrent().setAttribute(CurrentUser.class, currentUser);
+                UI.getCurrent().getPage().setLocation("main");
+            } catch (Exception ex) {
+                ExceptionHandler.notifyUser(ex);
+            }
             close();
-            UI.getCurrent().getPage().setLocation("main");
         } catch (Exception ex) {
             NotificationManager.show("Ошибка: Неверный логин или пароль", 5000, Notification.Position.BOTTOM_CENTER);
         }
