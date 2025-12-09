@@ -1,4 +1,4 @@
-package ru.ssau.tk.faible.labs.ui;
+package ru.ssau.tk.faible.labs.ui.models;
 
 public class UserRegistrationDTO
 {
