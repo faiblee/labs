@@ -53,7 +53,7 @@ public class SettingsDialog extends Dialog {
         factorySelect.setValue(currentUser.getFactory_type() + " factory");
 
         FormLayout form = new FormLayout();
-        form.add(usernameField, factorySelect, newPasswordField, confirmPasswordField);
+        form.add(usernameField, factorySelect, oldPasswordField, newPasswordField, confirmPasswordField);
         add(form);
 
         HorizontalLayout buttons = new HorizontalLayout();
