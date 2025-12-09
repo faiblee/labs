@@ -37,7 +37,7 @@ public class MainView extends VerticalLayout {
         H3 title = new H3("Функциональный калькулятор");
         Div spacer = new Div();
         Button logoutButton = new Button("🚪 Выйти", e -> {
-            UI.getCurrent().getPage().setLocation("/login");
+            UI.getCurrent().getPage().setLocation("");
         });
 
         header.add(spacer, title, logoutButton);

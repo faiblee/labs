@@ -1,8 +1,7 @@
-package ru.ssau.tk.faible.labs.ui;
+package ru.ssau.tk.faible.labs.ui.components;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.server.VaadinService;
 
 public class LogoutButton extends Button {
 
