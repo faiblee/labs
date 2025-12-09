@@ -1,4 +1,4 @@
-package ru.ssau.tk.faible.labs.ui.auth;
+package ru.ssau.tk.faible.labs.ui.dialogs;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;

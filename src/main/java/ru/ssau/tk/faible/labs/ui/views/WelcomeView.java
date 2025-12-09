@@ -1,18 +1,20 @@
-package ru.ssau.tk.faible.labs.ui;
+package ru.ssau.tk.faible.labs.ui.views;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import ru.ssau.tk.faible.labs.ui.auth.LoginDialog;
-import ru.ssau.tk.faible.labs.ui.auth.RegisterDialog;
+import com.vaadin.flow.theme.lumo.Lumo;
+import ru.ssau.tk.faible.labs.ui.dialogs.LoginDialog;
+import ru.ssau.tk.faible.labs.ui.dialogs.RegisterDialog;
 
 @Route("")
-@PageTitle("Главная")
-public class MainView extends VerticalLayout {
+@PageTitle("Welcome")
+public class WelcomeView extends VerticalLayout {
 
-    public MainView() {
+    public WelcomeView() {
         addClassName("main-view");
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
