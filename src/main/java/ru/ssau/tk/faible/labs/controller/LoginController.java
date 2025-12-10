@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @RestController
-@RequestMapping("/login")
+@RequestMapping("/api/auth")
 public class LoginController {
 
     private static final Logger log = LoggerFactory.getLogger(LoginController.class);
@@ -40,6 +40,7 @@ public class LoginController {
 
         String username = parts[0];
         String password = parts[1];
+
 
         log.info("Login attempt for user: {}", username);
 
