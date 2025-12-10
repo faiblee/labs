@@ -108,7 +108,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
 
-    // Устанавливает HTTP-статус 204 No Content
+    // Устанавливает HTTP-статус 204
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/users/{id}")
     public void deleteUser(@PathVariable Long id) {
