@@ -41,6 +41,7 @@ public class LoginController {
         String username = parts[0];
         String password = parts[1];
 
+
         log.info("Login attempt for user: {}", username);
 
         // Валидация входных данных

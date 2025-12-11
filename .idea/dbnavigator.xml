@@ -31,9 +31,7 @@
     <last-used-providers />
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files>
-      <object connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" object-ref="schemas/public/tables/users" />
-    </open-files>
+    <open-files />
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" />
@@ -49,15 +47,6 @@
   </component>
   <component name="DBNavigator.Project.ExecutionManager">
     <retain-sticky-names value="false" />
-  </component>
-  <component name="DBNavigator.Project.FileConnectionMappingManager">
-    <mapping file-url="file://$PROJECT_DIR$/src/main/resources/scripts/users/delete_user_by_id.sql" connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" session-id="MAIN" current-schema="public" />
-    <mapping file-url="file://$PROJECT_DIR$/src/main/resources/scripts/users/select_all_usernames.sql" connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" session-id="MAIN" current-schema="public" />
-    <mapping file-url="file://$PROJECT_DIR$/src/main/resources/scripts/dropping_tables/drop_functions_table.sql" connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" session-id="MAIN" current-schema="public" />
-    <mapping file-url="file://$PROJECT_DIR$/src/main/resources/scripts/dropping_tables/drop_points_table.sql" connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" session-id="MAIN" current-schema="public" />
-    <mapping file-url="file://$PROJECT_DIR$/src/main/resources/scripts/users/delete_all_users.sql" connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" session-id="MAIN" current-schema="public" />
-    <mapping file-url="file://$PROJECT_DIR$/src/main/resources/scripts/creating_tables/create_points_table.sql" connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" session-id="MAIN" current-schema="public" />
-    <mapping file-url="file://$PROJECT_DIR$/src/main/resources/scripts/creating_tables/create_functions_table.sql" connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" session-id="MAIN" current-schema="public" />
   </component>
   <component name="DBNavigator.Project.ObjectQuickFilterManager">
     <last-used-operator value="EQUAL" />
@@ -92,7 +81,7 @@
           <session-user value="postgres" />
         </database>
         <properties>
-          <auto-commit value="false" />
+          <auto-commit value="true" />
         </properties>
         <ssh-settings>
           <active value="false" />

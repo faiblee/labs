@@ -26,7 +26,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserDTO> register(@RequestBody UserRegistrationDTO dto) {
         // Логируем факт начала регистрации
-        log.info("Registering new user: {}", dto.getUsername());
+        log.info("Registering new user: {}, {}", dto.getUsername(), dto.getFactory_type());
 
         // логин обязателен
         if (dto.getUsername() == null || dto.getUsername().isEmpty()) {
@@ -51,10 +51,13 @@ public class AuthController {
         // Установка роли по умолчанию, если роль не указана — присваиваем "USER"
         String role = dto.getRole() != null ? dto.getRole() : "USER";
 
+        // Установка фабрики по умолчанию, если фабрика не указана — присваиваем "array"
+        String factory_type = dto.getFactory_type() != null ? dto.getFactory_type() : "array";
+
         User user = new User(
                 dto.getUsername(),
                 hashedPassword,
-                dto.getFactory_type(),
+                factory_type,
                 role
         );
 

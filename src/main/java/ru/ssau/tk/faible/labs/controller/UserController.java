@@ -1,11 +1,13 @@
 package ru.ssau.tk.faible.labs.controller;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.ssau.tk.faible.labs.DTO.UserDTO;
+import ru.ssau.tk.faible.labs.DTO.UserPutDTO;
 import ru.ssau.tk.faible.labs.entity.User;
 import ru.ssau.tk.faible.labs.repository.UserRepository;
 import ru.ssau.tk.faible.labs.service.SecurityService;
@@ -76,7 +78,7 @@ public class UserController {
     @PutMapping("/users/{id}")
     public ResponseEntity<UserDTO> updateUser(
             @PathVariable Long id,
-            @RequestBody UserDTO dto
+            @RequestBody UserPutDTO dto
     ) {
         User currentUser = securityService.getCurrentUser();
         User targetUser = userRepository.findById(id)
@@ -88,12 +90,29 @@ public class UserController {
         }
 
         // Обновляем поля
-        targetUser.setUsername(dto.getUsername());
-        targetUser.setFactoryType(dto.getFactory_type());
+        if (dto.getUsername() != null && !dto.getUsername().isEmpty()) {
+            targetUser.setUsername(dto.getUsername());
+        }
+        if (dto.getFactory_type() != null && !dto.getFactory_type().isEmpty() ) {
+            targetUser.setFactoryType(dto.getFactory_type());
+        }
 
+        if (dto.getOld_password() != null && !dto.getOld_password().isEmpty() &&
+        dto.getNew_password() != null && !dto.getNew_password().isEmpty()) {
+            String old_hash_password = currentUser.getPasswordHash();
+
+            if (!BCrypt.checkpw(dto.getOld_password(), old_hash_password)) { // если введен неверный старый пароль
+                log.error("Введен неверный старый пароль");
+                throw new IllegalArgumentException("Введен неверный старый пароль");
+            }
+
+            String newPassword = dto.getNew_password();
+            targetUser.setPasswordHash(BCrypt.hashpw(newPassword, BCrypt.gensalt()));
+        }
 
         // Сохраняем изменения в базу данных
         userRepository.save(targetUser);
+
 
         log.info("User {} updated user {}", currentUser.getUsername(), targetUser.getUsername());
 
