@@ -14,6 +14,7 @@
     "@vaadin/vaadin-material-styles": "24.9.6",
     "@vaadin/vaadin-themable-mixin": "24.9.6",
     "@vaadin/vaadin-usage-statistics": "2.1.3",
+    "chart.js": "4.4.0",
     "construct-style-sheets-polyfill": "3.1.0",
     "date-fns": "2.29.3",
     "lit": "3.3.1",
@@ -56,6 +57,7 @@
       "@vaadin/vaadin-material-styles": "24.9.6",
       "@vaadin/vaadin-themable-mixin": "24.9.6",
       "@vaadin/vaadin-usage-statistics": "2.1.3",
+      "chart.js": "4.4.0",
       "construct-style-sheets-polyfill": "3.1.0",
       "date-fns": "2.29.3",
       "lit": "3.3.1",
@@ -85,7 +87,7 @@
       "workbox-core": "7.3.0",
       "workbox-precaching": "7.3.0"
     },
-    "hash": "71dac5f82ad4b857d55c732745f1f1e08ae5a31425011fbbdac6b0dbc832c7c2"
+    "hash": "cb0cb6a54b349384e2342fe50f37de5d75ffd68aa09375349a9a1a32da713bfc"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -172,6 +174,7 @@
     "@vaadin/dashboard": "24.9.6",
     "@vaadin/grid-pro": "24.9.6",
     "@vaadin/map": "24.9.6",
-    "@vaadin/rich-text-editor": "24.9.6"
+    "@vaadin/rich-text-editor": "24.9.6",
+    "chart.js": "$chart.js"
   }
 }
