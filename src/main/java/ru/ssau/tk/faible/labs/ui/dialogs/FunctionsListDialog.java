@@ -33,7 +33,6 @@ public class FunctionsListDialog extends Dialog {
 
         add(new H3("Мои функции"));
 
-        Grid<FunctionDTO> grid = new Grid<>(FunctionDTO.class);
         grid.setColumns("name", "type");
         grid.getColumnByKey("name").setHeader("Имя");
         grid.getColumnByKey("type").setHeader("Тип");
