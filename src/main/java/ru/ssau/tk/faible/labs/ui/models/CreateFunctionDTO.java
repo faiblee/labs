@@ -7,9 +7,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FunctionDTO {
-    private int id;
+public class CreateFunctionDTO {
     private String name;
     private int ownerId;
     private String type;
+    private double xFrom;
+    private double xTo;
+    private int count;
+    private double constant;
+    private String factory_type;
 }

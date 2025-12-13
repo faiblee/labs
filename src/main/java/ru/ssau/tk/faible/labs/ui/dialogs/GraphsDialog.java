@@ -2,6 +2,8 @@
 
 package ru.ssau.tk.faible.labs.ui.dialogs;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -13,13 +15,21 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.server.VaadinSession;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.components.ChartComponent; // ← ваш компонент
+import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.FunctionDTO;
 import ru.ssau.tk.faible.labs.ui.models.PointDTO;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class GraphsDialog extends Dialog {
@@ -27,11 +37,13 @@ public class GraphsDialog extends Dialog {
     private final RestTemplate restTemplate = new RestTemplate();
     private final Grid<FunctionDTO> functionGrid = new Grid<>();
     private final ChartComponent chartComponent = new ChartComponent(); // ← используем ChartComponent
+    private final CurrentUser currentUser;
 
     public GraphsDialog() {
         setWidth("90vw");
         setHeight("90vh");
 
+        currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
         // Заголовок
         H2 title = new H2("Ваши функции");
         title.getStyle().set("margin", "0 0 1rem 0").set("font-size", "1.5em");
@@ -54,7 +66,34 @@ public class GraphsDialog extends Dialog {
             try {
                 String url = "http://localhost:8080/api/functions/" + selectedFunction.getId() + "/points";
                 // Предполагаем, что API возвращает List<PointDTO>
-                List<PointDTO> points = restTemplate.getForObject(url, List.class);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
+                HttpEntity<Void> request = new HttpEntity<>(headers);
+                // Выполняем GET-запрос и получаем ответ как массив JSON-объектов
+                ResponseEntity<String> response = restTemplate.exchange(
+                        url,
+                        HttpMethod.GET,
+                        request,
+                        String.class
+                );
+
+                // Парсим JSON вручную через Jackson
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode rootNode = mapper.readTree(response.getBody());
+
+                List<PointDTO> points = new LinkedList<>();
+
+                // Обрабатываем список функций
+                if (rootNode.isArray()) {
+                    for (JsonNode pointNode : rootNode) {
+                        int id = pointNode.get("id").asInt();
+                        double xValue = pointNode.get("xvalue").asDouble();
+                        double yValue = pointNode.get("yvalue").asDouble();
+                        int functionId = pointNode.get("functionId").asInt();
+
+                        points.add(new PointDTO(id, xValue, yValue, functionId));
+                    }
+                }
 
                 if (points == null || points.isEmpty()) {
                     NotificationManager.show("У функции '" + selectedFunction.getName() + "' нет точек для отображения.", 3000, Notification.Position.BOTTOM_CENTER);
@@ -99,11 +138,38 @@ public class GraphsDialog extends Dialog {
     private void loadFunctions() {
         try {
             // Получаем текущего пользователя (например, из сессии)
-            Long currentUserId = getCurrentUserId();
+            int currentUserId = currentUser.getId();
 
             String url = "http://localhost:8080/api/functions?ownerId=" + currentUserId;
-            // Предполагаем, что API возвращает List<FunctionDTO>
-            List<FunctionDTO> functions = restTemplate.getForObject(url, List.class);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
+            HttpEntity<Void> request = new HttpEntity<>(headers);
+            // Выполняем GET-запрос и получаем ответ как массив JSON-объектов
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+
+            // Парсим JSON вручную через Jackson
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(response.getBody());
+
+            List<FunctionDTO> functions = new LinkedList<>();
+
+            // Обрабатываем список функций
+            if (rootNode.isArray()) {
+                for (JsonNode functionNode : rootNode) {
+                    int id = functionNode.get("id").asInt();
+                    String name = functionNode.get("name").asText();
+                    int ownerId = functionNode.get("ownerId").asInt();
+                    String type = functionNode.get("type").asText();
+
+                    functions.add(new FunctionDTO(id, name, ownerId, type));
+                }
+            }
 
             if (functions != null) {
                 functionGrid.setItems(functions);
@@ -114,15 +180,5 @@ public class GraphsDialog extends Dialog {
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
         }
-    }
-
-    private Long getCurrentUserId() {
-        // Пример: извлекаем ID из сессии (если вы храните его там)
-        // В реальном проекте это должно быть получено через SecurityService
-        Object userIdObj = UI.getCurrent().getSession().getAttribute("current_user_id");
-        if (userIdObj != null && userIdObj instanceof Long) {
-            return (Long) userIdObj;
-        }
-        return 1L; // Для теста — замените на реальный способ получения ID
     }
 }

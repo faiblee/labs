@@ -14,6 +14,7 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import ru.ssau.tk.faible.labs.ui.components.LogoutButton;
 import ru.ssau.tk.faible.labs.ui.dialogs.*;
 
 @Route("/main")
@@ -36,9 +37,7 @@ public class MainView extends VerticalLayout {
 
         H3 title = new H3("Функциональный калькулятор");
         Div spacer = new Div();
-        Button logoutButton = new Button("🚪 Выйти", e -> {
-            UI.getCurrent().getPage().setLocation("");
-        });
+        LogoutButton logoutButton = new LogoutButton();
 
         header.add(spacer, title, logoutButton);
         add(header);
@@ -66,8 +65,11 @@ public class MainView extends VerticalLayout {
                 }),
                 createCard("🔄 Комплексные функции", "Работайте с составными функциями.", "Открыть",
                         () -> {}),
-                createCard("📈 Интегралы", "Вычисляйте интегралы для функций.", "Открыть",
-                        () -> {})
+                createCard("📈 Мои функции", "Все ваши функции.", "Открыть",
+                        () -> {
+                            FunctionsListDialog dialog = new FunctionsListDialog();
+                            dialog.open();
+                        })
         );
 
         add(gridContainer);
