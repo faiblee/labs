@@ -2,7 +2,6 @@
 
 package ru.ssau.tk.faible.labs.ui.dialogs;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -14,13 +13,20 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.IntegerField; // Используем IntegerField для количества точек
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.server.VaadinSession;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
+import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
+import ru.ssau.tk.faible.labs.ui.models.CreateFunctionDTO;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
 public class CreateFunctionDialog extends Dialog {
 
     private final Select<String> typeSelect = new Select<>();
+    private final TextField nameField = new TextField("Имя функции");
     private final TextField constantField = new TextField("Введите константу");
     private final TextField xFromField = new TextField("X начальное");
     private final TextField xToField = new TextField("X конечное");
@@ -34,7 +40,7 @@ public class CreateFunctionDialog extends Dialog {
     public CreateFunctionDialog() {
         // Устанавливаем размер: 60% ширины и высоты экрана (уменьшено)
         setWidth("60vw");
-        setHeight("60vh");
+        setHeight("70vh");
 
         // Заголовок
         H2 title = new H2("Создание новой функции");
@@ -92,7 +98,7 @@ public class CreateFunctionDialog extends Dialog {
 
         // Форма
         FormLayout form = new FormLayout();
-        form.add(title, description, typeSelect, constantField, xFromField, xToField, countField);
+        form.add(title, description, nameField, typeSelect, constantField, xFromField, xToField, countField);
         form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1)); // Настройка адаптивности
         form.addClassName("spacing-medium");
 
@@ -110,7 +116,7 @@ public class CreateFunctionDialog extends Dialog {
 
     private void createFunction() {
         String selectedType = typeSelect.getValue();
-
+        String name = nameField.getValue();
         if (selectedType == null || selectedType.trim().isEmpty()) {
             NotificationManager.show("Пожалуйста, выберите тип функции!", 3000, Notification.Position.BOTTOM_CENTER);
             return;
@@ -172,13 +178,49 @@ public class CreateFunctionDialog extends Dialog {
                 NotificationManager.show("X начальное не может быть больше X конечного!", 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
+
+            count = countVal;
         }
 
         // --- Логика отправки запроса ---
         try {
-            // Здесь вы можете сформировать DTO, например:
-            // FunctionDTO dto = new FunctionDTO(selectedType, xFrom, xTo, count, constantValue);
-            // restTemplate.postForObject("http://localhost:8080/api/functions", dto, Object.class);
+            CurrentUser currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
+
+            int owner_id = currentUser.getId();
+            String factory_type = currentUser.getFactory_type();
+            CreateFunctionDTO functionDTO = new CreateFunctionDTO();
+
+            functionDTO.setName(name);
+            functionDTO.setType(selectedType);
+            functionDTO.setOwner_id(owner_id);
+            functionDTO.setFactory_type(factory_type);
+
+            if ("TabulatedFunction".equals(selectedType)) {
+                // pass
+            } else {
+                functionDTO.setXFrom(xFrom);
+                functionDTO.setXTo(xTo);
+                functionDTO.setCount(count);
+            }
+            if ("ConstantFunction".equals(selectedType)) {
+                functionDTO.setConstant(Double.parseDouble(constantValue));
+            }
+
+            String url = "http://localhost:8080/api/functions";
+
+            HttpHeaders headers = new HttpHeaders();
+
+            headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<CreateFunctionDTO> requestEntity = new HttpEntity<>(functionDTO, headers);
+
+            try {
+                restTemplate.postForObject(url, requestEntity, Object.class);
+                close();
+            } catch (Exception ex) {
+                ExceptionHandler.notifyUser(ex);
+            }
 
             // Пока просто показываем уведомление
             if ("ConstantFunction".equals(selectedType)) {
