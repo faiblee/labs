@@ -157,7 +157,6 @@ public class CreateFunctionDialog extends Dialog {
             }
             if (countVal == null) { // IntegerField может вернуть null, если поле пустое
                 NotificationManager.show("Пожалуйста, введите количество точек!", 3000, Notification.Position.BOTTOM_CENTER);
-                return;
             }
 
             try {
