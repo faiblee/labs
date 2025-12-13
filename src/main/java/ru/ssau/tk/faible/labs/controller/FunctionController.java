@@ -5,14 +5,23 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.http.HttpStatus;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import ru.ssau.tk.faible.labs.DTO.CompositionFunctionRequestDTO;
 import ru.ssau.tk.faible.labs.DTO.FunctionDTO;
 import ru.ssau.tk.faible.labs.entity.FunctionEntity;
+import ru.ssau.tk.faible.labs.entity.PointEntity;
 import ru.ssau.tk.faible.labs.entity.User;
+import ru.ssau.tk.faible.labs.functions.ArrayTabulatedFunction;
+import ru.ssau.tk.faible.labs.functions.Point;
+import ru.ssau.tk.faible.labs.functions.TabulatedFunction;
 import ru.ssau.tk.faible.labs.repository.FunctionRepository;
+import ru.ssau.tk.faible.labs.repository.PointRepository;
 import ru.ssau.tk.faible.labs.repository.UserRepository;
 import ru.ssau.tk.faible.labs.service.SecurityService;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,14 +35,16 @@ public class FunctionController {
     private final FunctionRepository functionRepository;
     private final UserRepository userRepository;
     private final SecurityService securityService;
+    private final PointRepository pointRepository;
 
     public FunctionController(
             FunctionRepository functionRepository,
             UserRepository userRepository,
-            SecurityService securityService) {
+            SecurityService securityService, PointRepository pointRepository) {
         this.functionRepository = functionRepository;
         this.userRepository = userRepository;
         this.securityService = securityService;
+        this.pointRepository = pointRepository;
     }
 
     @GetMapping("/functions")
@@ -42,7 +53,7 @@ public class FunctionController {
 
         // если ownerId указан, то это запрос функций по владельцу
         if (ownerId != null) {
-            // пользователь должен быть авторизован
+            // пользователь должен быть авторизованKK
             securityService.getCurrentUser();
             log.info("Fetching functions for owner ID: {}", ownerId);
 
@@ -176,5 +187,105 @@ public class FunctionController {
         functionRepository.delete(f);
 
         log.info("User {} deleted function ID: {}", currentUser.getUsername(), id);
+    }
+    @PostMapping("/functions/composition")
+    public ResponseEntity<FunctionDTO> createCompositionFunction(
+            @RequestBody CompositionFunctionRequestDTO requestDto) {
+
+
+        User currentUser = securityService.getCurrentUser();
+        log.info("User {} is creating a composition function: {}", currentUser.getUsername(), requestDto.getName());
+
+        // 1. Найти внешнюю (f) и внутреннюю (g) функции
+        FunctionEntity outerFuncEntity = functionRepository.findById(requestDto.getOuterFunctionId())
+                .orElseThrow(() -> new RuntimeException("Outer function not found with id: " + requestDto.getOuterFunctionId()));
+
+        FunctionEntity innerFuncEntity = functionRepository.findById(requestDto.getInnerFunctionId())
+                .orElseThrow(() -> new RuntimeException("Inner function not found with id: " + requestDto.getInnerFunctionId()));
+
+        // 2. Проверить права: обе функции должны принадлежать текущему пользователю или пользователь - админ
+        if (!securityService.isAdmin()) {
+            if (!outerFuncEntity.getOwner().getId().equals(currentUser.getId())) {
+                throw new RuntimeException("Access denied: Outer function does not belong to you.");
+            }
+            if (!innerFuncEntity.getOwner().getId().equals(currentUser.getId())) {
+                throw new RuntimeException("Access denied: Inner function does not belong to you.");
+            }
+        }
+
+        // 3. Загрузить точки обеих функций
+        List<PointEntity> outerPoints = pointRepository.findByFunctionId(outerFuncEntity.getId());
+        List<PointEntity> innerPoints = pointRepository.findByFunctionId(innerFuncEntity.getId());
+
+        if (outerPoints.isEmpty() || innerPoints.isEmpty()) {
+            throw new RuntimeException("Cannot compose functions: one or both functions have no points.");
+        }
+
+        // 4. Преобразовать точки в TabulatedFunction (предположим, что это ArrayTabulatedFunction)
+        //    На практике, если у вас могут быть разные типы (Array, Linked), нужно проверить и создать соответствующий.
+        double[] outerX = outerPoints.stream().mapToDouble(PointEntity::getXValue).toArray();
+        double[] outerY = outerPoints.stream().mapToDouble(PointEntity::getYValue).toArray();
+        double[] innerX = innerPoints.stream().mapToDouble(PointEntity::getXValue).toArray();
+        double[] innerY = innerPoints.stream().mapToDouble(PointEntity::getYValue).toArray();
+
+        TabulatedFunction outerFunc = new ArrayTabulatedFunction(outerX, outerY);
+        TabulatedFunction innerFunc = new ArrayTabulatedFunction(innerX, innerY);
+
+        // 5. Задать диапазон и количество точек для табуляции результата
+        double xFrom = innerX[0]; // Используем диапазон внутренней функции
+        double xTo = innerX[innerX.length - 1];
+        int count = 100; // или передавать в DTO
+
+        // 6. Вычислить значения для новой функции h(x) = outerFunc(innerFunc(x))
+        double[] resultX = new double[count];
+        double[] resultY = new double[count];
+        double step = (xTo - xFrom) / (count - 1);
+
+        for (int i = 0; i < count; i++) {
+            double x = xFrom + i * step;
+            // Вычисляем g(x)
+            double g_x = innerFunc.apply(x);
+            // Затем вычисляем f(g(x))
+            double f_g_x = outerFunc.apply(g_x);
+
+            resultX[i] = x;
+            resultY[i] = f_g_x;
+        }
+
+        // 7. Создать новую табулированную функцию из вычисленных значений
+        TabulatedFunction resultTabulatedFunc = new ArrayTabulatedFunction(resultX, resultY);
+
+        // 8. Создать новую сущность FunctionEntity и сохранить
+        FunctionEntity resultEntity = new FunctionEntity(requestDto.getName(), "COMPOSITE", currentUser);
+
+        // 9. Сохранить функцию
+        FunctionEntity savedResultEntity = functionRepository.save(resultEntity);
+
+        // 10. Создать и сохранить точки новой функции
+        List<PointEntity> resultPoints = new ArrayList<>();
+        for (int i = 0; i < resultX.length; i++) {
+            PointEntity point = new PointEntity(resultX[i], resultY[i], savedResultEntity);
+            resultPoints.add(point);
+        }
+        pointRepository.saveAll(resultPoints);
+        // Обновим сущность, чтобы точки были связаны (если lazy fetch)
+        savedResultEntity.setPoints(resultPoints);
+
+        // 11. Логировать создание
+        log.info("User {} created composite function '{}' from f(id={}) and g(id={})",
+                currentUser.getUsername(), requestDto.getName(), outerFuncEntity.getId(), innerFuncEntity.getId());
+
+        // 12. Вернуть DTO созданной функции
+        FunctionDTO resultDto = toDto(savedResultEntity);
+        return ResponseEntity.status(HttpStatus.CREATED).body(resultDto);
+
+    }
+    private FunctionDTO toDto(FunctionEntity entity) {
+        return new FunctionDTO(
+                entity.getId(),
+                entity.getName(),
+                entity.getType(),
+                entity.getOwner().getId()
+        );
     }
 }
