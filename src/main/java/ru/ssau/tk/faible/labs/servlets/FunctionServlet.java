@@ -154,6 +154,7 @@ public class FunctionServlet extends HttpServlet {
                 sendError(resp, HttpServletResponse.SC_NOT_FOUND, "Не найдены точки выбранной функции", objectMapper);
             }
             out.print(objectMapper.writeValueAsString(points));
+            log.info("Тело ответа: {}", objectMapper.writeValueAsString(points));
             out.flush();
 
         } catch (NumberFormatException e) {
