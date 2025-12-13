@@ -55,9 +55,6 @@ public class CreateFunctionDialog extends Dialog {
                 "CompositeFunction",
                 "TabulatedFunction"
         );
-        // --- УБРАНО ---
-        // typeSelect.setValue("ZeroFunction"); // НЕ устанавливаем значение по умолчанию
-        // ----------------
 
         // Настройка поля ввода константы
         constantField.setVisible(false);
@@ -82,9 +79,7 @@ public class CreateFunctionDialog extends Dialog {
 
             // Проверяем, нужно ли показать поля XFrom, XTo, Count
             // Это нужно для всех функций, кроме ConstantFunction и TabulatedFunction
-            boolean needsRangeAndCount = selectedType != null && // <-- Добавлена проверка на null
-                    !selectedType.equals("ConstantFunction") &&
-                    !selectedType.equals("TabulatedFunction");
+            boolean needsRangeAndCount = selectedType != null && !selectedType.equals("TabulatedFunction");
 
             xFromField.setVisible(needsRangeAndCount);
             xToField.setVisible(needsRangeAndCount);
@@ -142,7 +137,7 @@ public class CreateFunctionDialog extends Dialog {
         Double xTo = null;
         Integer count = null;
 
-        if (!"ConstantFunction".equals(selectedType) && !"TabulatedFunction".equals(selectedType)) {
+        if (!"TabulatedFunction".equals(selectedType)) {
             String xFromStr = xFromField.getValue();
             String xToStr = xToField.getValue();
             Integer countVal = countField.getValue(); // IntegerField возвращает Integer или null
