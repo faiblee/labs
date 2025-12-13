@@ -62,15 +62,22 @@ public class FunctionServlet extends HttpServlet {
     }
 
     // Обработка запросов GET /api/functions
-    private void handleGetAllFunctions(HttpServletRequest req, HttpServletResponse resp, PrintWriter out) throws IOException {
+    private void handleGetAllFunctions(HttpServletRequest req, HttpServletResponse resp, PrintWriter out, User user) throws IOException {
         String ownerIdParam = req.getParameter("ownerId");
 
         List<Function> functions;
+
+        log.info("Owner id param = {}", ownerIdParam);
 
         if (ownerIdParam != null) { // сортировка по ownerId
             log.info("Получен запрос на получение данных с сортировкой ownerId");
             try {
                 int ownerId = Integer.parseInt(ownerIdParam);
+                if (user.getId() != ownerId) {
+                    log.warn("Доступ запрещен");
+                    sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
+                    return;
+                }
                 functions = functionsDAO.getAllFunctionsByOwnerId(ownerId);
             } catch (NumberFormatException e) {
                 log.error("Неверный формат ownerId");
@@ -78,6 +85,11 @@ public class FunctionServlet extends HttpServlet {
                 return;
             }
         } else {
+            if (!isAllowed(user.getRole(), "ADMIN")) {
+                log.warn("Доступ запрещен");
+                sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
+                return;
+            }
             log.info("Получен запрос на получение всех функций");
             functions = functionsDAO.getAllFunctions();
         }
@@ -152,13 +164,14 @@ public class FunctionServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        log.info("Получен GET запрос");
+        log.info("Получен GET запрос по /api/functions");
         User user = ServletHelper.authenticateUser(req, usersDAO);
         if (user == null) { // пользователь не авторизован
             log.error("Пользователь не авторизован");
             sendError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Пользователь не авторизован", objectMapper);
             return;
         }
+        log.info("Пользователь авторизован");
         String role = user.getRole();
         // Если пользователь авторизован, продолжаем
         resp.setContentType("application/json");
@@ -166,15 +179,12 @@ public class FunctionServlet extends HttpServlet {
         PrintWriter out = resp.getWriter();
 
         String pathInfo = req.getPathInfo();
+
+        log.info("Path info - {}", pathInfo);
         if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
             // GET /api/functions — фильтрация по ownerId/все функции
-            log.debug("Получен запрос на получение функций");
-            if (!isAllowed(role, "ADMIN")) {
-                log.warn("Доступ запрещен");
-                sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
-                return;
-            }
-            handleGetAllFunctions(req, resp, out);
+            log.info("Получен запрос на получение функций");
+            handleGetAllFunctions(req, resp, out, user);
             return;
         }
 
@@ -184,7 +194,7 @@ public class FunctionServlet extends HttpServlet {
 
         if (parts.length == 1) {
             // GET /api/functions/{id} - получение функции по id - только для admin или владелец функции
-            log.debug("Получен запрос на получение функции по шв");
+            log.debug("Получен запрос на получение функции по id");
             if (!isAllowed(role, "ADMIN", "USER")) {
                 log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
