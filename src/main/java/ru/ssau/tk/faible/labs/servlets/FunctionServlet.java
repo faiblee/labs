@@ -11,17 +11,25 @@ import lombok.extern.slf4j.Slf4j;
 import ru.ssau.tk.faible.labs.database.daos.FunctionsDAO;
 import ru.ssau.tk.faible.labs.database.daos.PointsDAO;
 import ru.ssau.tk.faible.labs.database.daos.UsersDAO;
+import ru.ssau.tk.faible.labs.database.models.CreateFunctionDTO;
 import ru.ssau.tk.faible.labs.database.models.Function;
 import ru.ssau.tk.faible.labs.database.models.Point;
 import ru.ssau.tk.faible.labs.database.models.User;
 import ru.ssau.tk.faible.labs.database.utils.DBConnector;
 import ru.ssau.tk.faible.labs.database.utils.ServletHelper;
+import ru.ssau.tk.faible.labs.functions.IdentityFunction;
+import ru.ssau.tk.faible.labs.functions.SqrFunction;
+import ru.ssau.tk.faible.labs.functions.factory.ArrayTabulatedFunctionFactory;
+import ru.ssau.tk.faible.labs.functions.factory.LinkedListTabulatedFunctionFactory;
+import ru.ssau.tk.faible.labs.functions.factory.TabulatedFunctionFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serial;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static ru.ssau.tk.faible.labs.database.utils.ServletHelper.isAllowed;
 import static ru.ssau.tk.faible.labs.database.utils.ServletHelper.sendError;
@@ -215,7 +223,9 @@ public class FunctionServlet extends HttpServlet {
                 sb.append(line);
             }
 
-            Function input = objectMapper.readValue(sb.toString(), Function.class);
+            CreateFunctionDTO input = objectMapper.readValue(sb.toString(), CreateFunctionDTO.class);
+
+//            Function inputt = objectMapper.readValue(sb.toString(), Function.class);
 
             if (input.getName() == null || input.getType() == null || ownerId <= 0) {
                 log.error("Отклонён запрос: некорректные данные — name={}, type={}, owner_id={}",
@@ -224,8 +234,28 @@ public class FunctionServlet extends HttpServlet {
                 return;
             }
 
-            int functionId = functionsDAO.insertFunction(input.getName(), ownerId, input.getType());
+            int functionId = functionsDAO.insertFunction(input.getName(), input.getOwnerId(), input.getType());
+
             log.info("Функция успешно добавлена в БД с id={}", functionId);
+
+            String factory_type = input.getFactory_type();
+            String type = input.getType();
+            if (!type.isEmpty() && !type.equals("Tabulated")) {
+                double xFrom = input.getXFrom();
+                double xTo = input.getXTo();
+                int count = input.getCount();
+
+                TabulatedFunctionFactory factory;
+                if (factory_type.equals("array")) {
+                    factory = new ArrayTabulatedFunctionFactory();
+                } else {
+                    factory = new LinkedListTabulatedFunctionFactory();
+                }
+                Map<String, Object> functions = new HashMap<>();
+                functions.put("Квадратичная функция", new SqrFunction());
+                functions.put("Тождественная функция", new IdentityFunction());
+//                factory.create(functions., )
+            }
 
             Function response = new Function();
             response.setId(functionId);
