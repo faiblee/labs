@@ -7,13 +7,23 @@ import org.springframework.http.HttpStatus;
 
 import org.springframework.web.bind.annotation.*;
 
+import ru.ssau.tk.faible.labs.DTO.CreateFunctionDTO;
 import ru.ssau.tk.faible.labs.DTO.FunctionDTO;
 import ru.ssau.tk.faible.labs.entity.FunctionEntity;
+import ru.ssau.tk.faible.labs.entity.PointEntity;
 import ru.ssau.tk.faible.labs.entity.User;
+import ru.ssau.tk.faible.labs.functions.*;
+import ru.ssau.tk.faible.labs.functions.factory.ArrayTabulatedFunctionFactory;
+import ru.ssau.tk.faible.labs.functions.factory.LinkedListTabulatedFunctionFactory;
+import ru.ssau.tk.faible.labs.functions.factory.TabulatedFunctionFactory;
 import ru.ssau.tk.faible.labs.repository.FunctionRepository;
+import ru.ssau.tk.faible.labs.repository.PointRepository;
 import ru.ssau.tk.faible.labs.repository.UserRepository;
 import ru.ssau.tk.faible.labs.service.SecurityService;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -25,14 +35,16 @@ public class FunctionController {
 
     private final FunctionRepository functionRepository;
     private final UserRepository userRepository;
+    private final PointRepository pointRepository;
     private final SecurityService securityService;
 
     public FunctionController(
             FunctionRepository functionRepository,
-            UserRepository userRepository,
+            UserRepository userRepository, PointRepository pointRepository,
             SecurityService securityService) {
         this.functionRepository = functionRepository;
         this.userRepository = userRepository;
+        this.pointRepository = pointRepository;
         this.securityService = securityService;
     }
 
@@ -78,27 +90,54 @@ public class FunctionController {
 
     @ResponseStatus(HttpStatus.CREATED) // устанавливает HTTP-статус 201
     @PostMapping("/functions")
-    public FunctionDTO createFunction(@RequestBody FunctionDTO dto) {
+    public FunctionDTO createFunction(@RequestBody CreateFunctionDTO dto) {
         // получаем текущего авторизованного пользователя (владельца)
         User owner = securityService.getCurrentUser();
 
         // создаём новую сущность FunctionEntity
-        FunctionEntity function = new FunctionEntity(
+        FunctionEntity functionEnt = new FunctionEntity(
                 dto.getName(),
                 dto.getType(),
                 owner // владелец — текущий пользователь
         );
         // Сохраняем в базу данных
-        functionRepository.save(function);
+        FunctionEntity func = functionRepository.save(functionEnt);
+
+        String factory_type = dto.getFactory_type();
+        String type = dto.getType();
+        if (!type.isEmpty() && !type.equals("Tabulated")) {
+            double xFrom = dto.getxFrom();
+            double xTo = dto.getxTo();
+            int count = dto.getCount();
+
+            TabulatedFunctionFactory factory;
+            if (factory_type.equals("array")) {
+                factory = new ArrayTabulatedFunctionFactory();
+            } else {
+                factory = new LinkedListTabulatedFunctionFactory();
+            }
+            Map<String, MathFunction> functions = new HashMap<>();
+            functions.put("Квадратичная функция", new SqrFunction());
+            functions.put("Тождественная функция", new IdentityFunction());
+            functions.put("Константная функция", new ConstantFunction(dto.getConstant()));
+            functions.put("Функция с константой 0", new ZeroFunction());
+            functions.put("Функция с константой 1", new UnitFunction());
+
+            TabulatedFunction function = factory.create(functions.get(type), xFrom, xTo, count);
+
+            for (ru.ssau.tk.faible.labs.functions.Point point : function) {
+                pointRepository.save(new PointEntity(point.x, point.y, func));
+            }
+        }
 
         // логируем успешное создание
-        log.info("User {} created function {}", owner.getUsername(), function.getName());
+        log.info("User {} created function {}", owner.getUsername(), functionEnt.getName());
 
         // Возвращаем DTO с присвоенным ID
         return new FunctionDTO(
-                function.getId(),
-                function.getName(),
-                function.getType(),
+                functionEnt.getId(),
+                functionEnt.getName(),
+                functionEnt.getType(),
                 owner.getId()
         );
     }
