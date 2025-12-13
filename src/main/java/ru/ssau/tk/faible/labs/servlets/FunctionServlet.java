@@ -17,8 +17,7 @@ import ru.ssau.tk.faible.labs.database.models.Point;
 import ru.ssau.tk.faible.labs.database.models.User;
 import ru.ssau.tk.faible.labs.database.utils.DBConnector;
 import ru.ssau.tk.faible.labs.database.utils.ServletHelper;
-import ru.ssau.tk.faible.labs.functions.IdentityFunction;
-import ru.ssau.tk.faible.labs.functions.SqrFunction;
+import ru.ssau.tk.faible.labs.functions.*;
 import ru.ssau.tk.faible.labs.functions.factory.ArrayTabulatedFunctionFactory;
 import ru.ssau.tk.faible.labs.functions.factory.LinkedListTabulatedFunctionFactory;
 import ru.ssau.tk.faible.labs.functions.factory.TabulatedFunctionFactory;
@@ -223,9 +222,12 @@ public class FunctionServlet extends HttpServlet {
                 sb.append(line);
             }
 
+            log.info("Тело запроса - {}", sb.toString());
+
             CreateFunctionDTO input = objectMapper.readValue(sb.toString(), CreateFunctionDTO.class);
 
-//            Function inputt = objectMapper.readValue(sb.toString(), Function.class);
+            log.info("Тело успешно считано, функция - {}, тип - {}, owner_id - {}", input.getName(), input.getType(), input.getOwnerId());
+            log.info("Owners ids - {} {}", input.getOwnerId(), ownerId);
 
             if (input.getName() == null || input.getType() == null || ownerId <= 0) {
                 log.error("Отклонён запрос: некорректные данные — name={}, type={}, owner_id={}",
@@ -251,10 +253,18 @@ public class FunctionServlet extends HttpServlet {
                 } else {
                     factory = new LinkedListTabulatedFunctionFactory();
                 }
-                Map<String, Object> functions = new HashMap<>();
+                Map<String, MathFunction> functions = new HashMap<>();
                 functions.put("Квадратичная функция", new SqrFunction());
                 functions.put("Тождественная функция", new IdentityFunction());
-//                factory.create(functions., )
+                functions.put("Константная функция", new ConstantFunction(input.getConstant()));
+                functions.put("Функция с константой 0", new ZeroFunction());
+                functions.put("Функция с константой 1", new UnitFunction());
+
+                TabulatedFunction function = factory.create(functions.get(type), xFrom, xTo, count);
+
+                for (ru.ssau.tk.faible.labs.functions.Point point : function) {
+                    pointsDAO.insertPoint(point.x, point.y, functionId);
+                }
             }
 
             Function response = new Function();
@@ -271,7 +281,7 @@ public class FunctionServlet extends HttpServlet {
             log.info("Функция с id = {} успешно добавлена", functionId);
 
         } catch (Exception e) {
-            log.error("Ошибка при обработке POST-запроса для /function");
+            log.error("Ошибка при обработке POST-запроса для /function - {}", e.getMessage());
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный формат данных", objectMapper);
         }
     }
