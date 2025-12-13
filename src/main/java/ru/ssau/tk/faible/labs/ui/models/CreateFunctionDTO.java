@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateFunctionDTO {
     private String name;
-    private int owner_id;
+    private int ownerId;
     private String type;
     private double xFrom;
     private double xTo;

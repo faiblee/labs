@@ -53,12 +53,11 @@ public class CreateFunctionDialog extends Dialog {
         // Настройка Select
         typeSelect.setLabel("Тип функции");
         typeSelect.setItems(
-                "ZeroFunction",
-                "UnitFunction",
-                "SqrFunction",
-                "IdentityFunction",
-                "ConstantFunction",
-                "CompositeFunction",
+                "Функция с константой 0",
+                "Функция с константой 1",
+                "Квадратичная функция",
+                "Тождественная функция",
+                "Константная функция",
                 "TabulatedFunction"
         );
 
@@ -75,7 +74,7 @@ public class CreateFunctionDialog extends Dialog {
             String selectedType = event.getValue();
 
             // Проверяем, нужно ли показать поле константы
-            boolean isConstantFunction = "ConstantFunction".equals(selectedType);
+            boolean isConstantFunction = "Константная функция".equals(selectedType);
             constantField.setVisible(isConstantFunction);
             if (isConstantFunction) {
                 constantField.focus();
@@ -124,7 +123,7 @@ public class CreateFunctionDialog extends Dialog {
 
         // --- Проверки и сбор данных для ConstantFunction ---
         String constantValue = null;
-        if ("ConstantFunction".equals(selectedType)) {
+        if ("Константная функция".equals(selectedType)) {
             constantValue = constantField.getValue();
             if (constantValue == null || constantValue.trim().isEmpty()) {
                 NotificationManager.show("Пожалуйста, введите константу!", 3000, Notification.Position.BOTTOM_CENTER);
@@ -192,7 +191,7 @@ public class CreateFunctionDialog extends Dialog {
 
             functionDTO.setName(name);
             functionDTO.setType(selectedType);
-            functionDTO.setOwner_id(owner_id);
+            functionDTO.setOwnerId(owner_id);
             functionDTO.setFactory_type(factory_type);
 
             if ("TabulatedFunction".equals(selectedType)) {
@@ -202,7 +201,7 @@ public class CreateFunctionDialog extends Dialog {
                 functionDTO.setXTo(xTo);
                 functionDTO.setCount(count);
             }
-            if ("ConstantFunction".equals(selectedType)) {
+            if ("Константная функция".equals(selectedType)) {
                 functionDTO.setConstant(Double.parseDouble(constantValue));
             }
 
@@ -223,7 +222,7 @@ public class CreateFunctionDialog extends Dialog {
             }
 
             // Пока просто показываем уведомление
-            if ("ConstantFunction".equals(selectedType)) {
+            if ("Константная функция".equals(selectedType)) {
                 NotificationManager.show("Функция типа '" + selectedType + "' с константой '" + constantValue + "' создана!", 3000, Notification.Position.BOTTOM_CENTER);
             } else if ("TabulatedFunction".equals(selectedType)) {
                 NotificationManager.show("Пустая табулированная функция типа '" + selectedType + "' создана!", 3000, Notification.Position.BOTTOM_CENTER);
