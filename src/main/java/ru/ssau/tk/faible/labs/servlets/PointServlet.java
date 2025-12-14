@@ -100,7 +100,7 @@ public class PointServlet extends HttpServlet {
     }
 
     // PUT /api/points/{id} - изменение точки по id - владелец или admin
-    // Body: { "x_value": 1.0, "y_value": 2.0 }
+    // Body: { "xvalue": 1.0, "yvalue": 2.0 }
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("Получен PUT запрос на изменение точки");
