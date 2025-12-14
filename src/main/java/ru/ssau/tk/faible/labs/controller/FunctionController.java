@@ -322,34 +322,29 @@ public class FunctionController {
 
     // --- НОВЫЙ ВСПОМОГАТЕЛЬНЫЙ МЕТОД ---
     private MathFunction createMathFunctionFromEntity(FunctionEntity entity) {
-        String type = entity.getType();
+        String type = entity.getType(); // например, "Тождественная функция"
 
-        // Предполагается, что у вас есть классы, реализующие MathFunction
-        // и у них есть конструкторы по умолчанию или без параметров
         switch (type) {
             case "ZeroFunction":
-                return new ZeroFunction(); // Предполагается, что класс существует
+            case "Функция с константой 0": // ← Добавляем альтернативу
+                return new ZeroFunction();
             case "UnitFunction":
+            case "Функция с константой 1": // ← Добавляем альтернативу
                 return new UnitFunction();
             case "SqrFunction":
+            case "Квадратичная функция": // ← Добавляем альтернативу
                 return new SqrFunction();
-            case "IdentityFunction":
+            case "IdentityFunction": // ← Основное имя
+            case "Тождественная функция": // ← Альтернативное имя из UI
                 return new IdentityFunction();
             case "ConstantFunction":
-                // Для ConstantFunction нужно знать значение константы
-                // Это можно хранить в отдельной таблице/поле или в JSON-данных
-                // Предположим, что вы можете получить константу из связанной сущности или из поля
-                // Например, если у FunctionEntity есть поле `constantValue`:
-                // return new ConstantFunction(entity.getConstantValue());
-                // Или если константа хранится отдельно, например, в PointEntity первой точки (для ConstantFunction все Y равны одной константе)
+            case "Константная функция": // ← Добавляем альтернативу
                 List<PointEntity> points = pointRepository.findByFunctionId(entity.getId());
                 if (points.isEmpty()) {
                     throw new RuntimeException("ConstantFunction must have at least one point to determine the constant value.");
                 }
                 double constantValue = points.get(0).getYValue();
                 return new ConstantFunction(constantValue);
-
-            // Если это TabulatedFunction, вы можете создать её из точек
             case "TabulatedFunction":
                 List<PointEntity> tabulatedPoints = pointRepository.findByFunctionId(entity.getId());
                 if (tabulatedPoints.isEmpty()) {
@@ -358,7 +353,6 @@ public class FunctionController {
                 double[] xVals = tabulatedPoints.stream().mapToDouble(PointEntity::getXValue).toArray();
                 double[] yVals = tabulatedPoints.stream().mapToDouble(PointEntity::getYValue).toArray();
                 return new ArrayTabulatedFunction(xVals, yVals);
-
             default:
                 throw new RuntimeException("Unknown function type: " + type);
         }
