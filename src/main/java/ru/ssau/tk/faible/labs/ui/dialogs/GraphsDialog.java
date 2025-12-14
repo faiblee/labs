@@ -68,7 +68,6 @@ public class GraphsDialog extends Dialog {
                 // Предполагаем, что API возвращает List<PointDTO>
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
-// Передаём headers напрямую, без обёртки в HttpEntity
                 HttpEntity<String> request = new HttpEntity<>(headers);
 
                 ResponseEntity<String> response = restTemplate.exchange(
@@ -107,6 +106,9 @@ public class GraphsDialog extends Dialog {
 
                 // Построение графика
                 chartComponent.setChartData(xValues, yValues);
+
+                chartComponent.setHeight("60vh");
+                chartComponent.setWidth("70vh");
 
             } catch (Exception ex) {
                 ExceptionHandler.notifyUser(ex);
