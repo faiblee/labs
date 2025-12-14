@@ -454,7 +454,8 @@ public class FunctionServlet extends HttpServlet {
                 pointsDAO.insertPoint(point.x, point.y, functionID);
             }
 
-
+            resp.setStatus(HttpServletResponse.SC_CREATED);
+            log.info("Сложная функция успешно добавлена");
         } catch (Exception ex) {
             log.error("Ошибка при создании сложной функции {}", ex.getMessage());
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Ошибка при создании сложной функции", objectMapper);
