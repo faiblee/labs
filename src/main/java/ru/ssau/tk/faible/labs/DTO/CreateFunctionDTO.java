@@ -4,18 +4,18 @@ public class CreateFunctionDTO {
     private String name;
     private int ownerId;
     private String type;
-    private double xFrom;
-    private double xTo;
+    private double xfrom;
+    private double xto;
     private int count;
     private double constant;
     private String factory_type;
 
-    public CreateFunctionDTO(String name, int ownerId, String type, double xFrom, double xTo, int count, double constant, String factory_type) {
+    public CreateFunctionDTO(String name, int ownerId, String type, double xfrom, double xto, int count, double constant, String factory_type) {
         this.name = name;
         this.ownerId = ownerId;
         this.type = type;
-        this.xFrom = xFrom;
-        this.xTo = xTo;
+        this.xfrom = xfrom;
+        this.xto = xto;
         this.count = count;
         this.constant = constant;
         this.factory_type = factory_type;
@@ -45,20 +45,20 @@ public class CreateFunctionDTO {
         this.type = type;
     }
 
-    public double getxFrom() {
-        return xFrom;
+    public double getxfrom() {
+        return xfrom;
     }
 
-    public void setxFrom(double xFrom) {
-        this.xFrom = xFrom;
+    public void setxfrom(double xfrom) {
+        this.xfrom = xfrom;
     }
 
-    public double getxTo() {
-        return xTo;
+    public double getxto() {
+        return xto;
     }
 
-    public void setxTo(double xTo) {
-        this.xTo = xTo;
+    public void setxto(double xto) {
+        this.xto = xto;
     }
 
     public int getCount() {
