@@ -252,17 +252,19 @@ public class FunctionServlet extends HttpServlet {
 
             String factory_type = input.getFactory_type();
             String type = input.getType();
-            if (!type.isEmpty() && !type.equals("Tabulated")) {
+
+            TabulatedFunctionFactory factory;
+            if (factory_type.equals("array")) {
+                factory = new ArrayTabulatedFunctionFactory();
+            } else {
+                factory = new LinkedListTabulatedFunctionFactory();
+            }
+
+            if (!type.isEmpty() && !type.equals("Табулированная функция")) {
                 double xFrom = input.getXFrom();
                 double xTo = input.getXTo();
                 int count = input.getCount();
 
-                TabulatedFunctionFactory factory;
-                if (factory_type.equals("array")) {
-                    factory = new ArrayTabulatedFunctionFactory();
-                } else {
-                    factory = new LinkedListTabulatedFunctionFactory();
-                }
                 Map<String, MathFunction> functions = new HashMap<>();
                 functions.put("Квадратичная функция", new SqrFunction());
                 functions.put("Тождественная функция", new IdentityFunction());
@@ -271,6 +273,16 @@ public class FunctionServlet extends HttpServlet {
                 functions.put("Функция с константой 1", new UnitFunction());
 
                 TabulatedFunction function = factory.create(functions.get(type), xFrom, xTo, count);
+
+                for (ru.ssau.tk.faible.labs.functions.Point point : function) {
+                    pointsDAO.insertPoint(point.x, point.y, functionId);
+                }
+            } else if ("Табулированная функция".equals(type)) {
+                // табулированная функция
+                double[] xValues = input.getXvalues();
+                double[] yValues = input.getYvalues();
+
+                TabulatedFunction function = factory.create(xValues, yValues);
 
                 for (ru.ssau.tk.faible.labs.functions.Point point : function) {
                     pointsDAO.insertPoint(point.x, point.y, functionId);
