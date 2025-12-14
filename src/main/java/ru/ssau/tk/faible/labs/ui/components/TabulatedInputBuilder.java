@@ -1,9 +1,9 @@
 package ru.ssau.tk.faible.labs.ui.components;
 
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -23,7 +23,7 @@ public class TabulatedInputBuilder extends Div {
     private final Button buildButton = new Button("Создать таблицу");
     private final VerticalLayout pointsLayout = new VerticalLayout();
     private final List<PointField> pointFields = new ArrayList<>();
-
+    private static int flag = 0;
     public static class PointField {
         public final TextField xField;
         public final TextField yField;
@@ -59,7 +59,8 @@ public class TabulatedInputBuilder extends Div {
 
         // Собираем UI
         add(new H3("Табулированная функция"));
-        add(new HorizontalLayout(pointCountField, buildButton));
+        add(pointCountField);
+        add(buildButton);
         add(pointsLayout);
     }
 
@@ -93,7 +94,14 @@ public class TabulatedInputBuilder extends Div {
     }
 
     private static TextField createDoubleField(String label) {
-        TextField field = new TextField(label);
+        TextField field;
+        if (flag < 2) {
+            field = new TextField(label);
+            flag++;
+        } else {
+            field = new TextField();
+        }
+
         field.setValueChangeMode(ValueChangeMode.EAGER); // мгновенная проверка
         field.addValueChangeListener(e -> {
             String val = e.getValue();
@@ -128,28 +136,5 @@ public class TabulatedInputBuilder extends Div {
             points.add(new Point(pf.getX(), pf.getY()));
         }
         return points;
-    }
-
-    // Или как списки Double:
-    public List<Double> getXValues() {
-        List<Double> x = new ArrayList<>();
-        for (PointField pf : pointFields) {
-            if (!isValidDouble(pf.xField.getValue())) {
-                throw new IllegalStateException("Некорректное значение X");
-            }
-            x.add(pf.getX());
-        }
-        return x;
-    }
-
-    public List<Double> getYValues() {
-        List<Double> y = new ArrayList<>();
-        for (PointField pf : pointFields) {
-            if (!isValidDouble(pf.yField.getValue())) {
-                throw new IllegalStateException("Некорректное значение Y");
-            }
-            y.add(pf.getY());
-        }
-        return y;
     }
 }
