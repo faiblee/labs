@@ -8,21 +8,17 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.server.VaadinSession;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
-import ru.ssau.tk.faible.labs.ui.components.ChartComponent; // ← ваш компонент
+import ru.ssau.tk.faible.labs.ui.components.ChartComponent;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.FunctionDTO;
 import ru.ssau.tk.faible.labs.ui.models.PointDTO;
@@ -36,149 +32,160 @@ public class GraphsDialog extends Dialog {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final Grid<FunctionDTO> functionGrid = new Grid<>();
-    private final ChartComponent chartComponent = new ChartComponent(); // ← используем ChartComponent
+    private final ChartComponent chartComponent = new ChartComponent();
     private final CurrentUser currentUser;
+    private final H3 chartTitle = new H3("Выберите функцию для отображения графика");
 
     public GraphsDialog() {
-        setWidth("90vw");
+        setWidth("95vw");
         setHeight("90vh");
 
         currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
-        // Заголовок
-        H2 title = new H2("Ваши функции");
-        title.getStyle().set("margin", "0 0 1rem 0").set("font-size", "1.5em");
 
-        // Описание
+        // === Левая панель: список функций ===
+        VerticalLayout leftPanel = createLeftPanel();
+
+        // === Правая панель: график ===
+        VerticalLayout rightPanel = createRightPanel();
+
+        // === Основной макет: 2 колонки ===
+        HorizontalLayout mainLayout = new HorizontalLayout(leftPanel, rightPanel);
+        mainLayout.setSizeFull();
+        mainLayout.setFlexGrow(0, leftPanel);   // левая панель — фиксированная ширина
+        mainLayout.setFlexGrow(1, rightPanel);  // правая — растягивается
+
+        // === Кнопка закрытия (внизу, по центру) ===
+        Button closeButton = new Button("Закрыть", e -> close());
+        closeButton.addClassName("graph-dialog-close-button");
+
+        VerticalLayout dialogContent = new VerticalLayout(mainLayout, closeButton);
+        dialogContent.setSizeFull();
+        dialogContent.setSpacing(true);
+        dialogContent.setPadding(true);
+        dialogContent.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        add(dialogContent);
+
+        loadFunctions();
+    }
+
+    private VerticalLayout createLeftPanel() {
+        H2 title = new H2("Ваши функции");
+        title.getStyle()
+                .set("margin", "0 0 0.5rem 0")
+                .set("font-size", "1.3em");
+
         Paragraph description = new Paragraph("Выберите функцию для построения графика.");
         description.getStyle().set("margin", "0 0 1rem 0").set("color", "var(--lumo-secondary-text-color)");
 
-        // Настройка Grid
-        functionGrid.addColumn(FunctionDTO::getName).setHeader("Имя");
-        functionGrid.addColumn(FunctionDTO::getType).setHeader("Тип");
-        functionGrid.addColumn(FunctionDTO::getId).setHeader("ID");
+        functionGrid.addColumn(FunctionDTO::getName).setHeader("Имя").setAutoWidth(true);
+        functionGrid.setHeight("60vh"); // фиксированная высота, чтобы не растягивалась
+        functionGrid.addClassName("graph-function-grid");
+
+        VerticalLayout leftPanel = new VerticalLayout(title, description, functionGrid);
+        leftPanel.setSpacing(true);
+        leftPanel.setPadding(true);
+        leftPanel.setWidth("300px"); // фиксированная ширина
+        leftPanel.getStyle().set("border-right", "1px solid var(--lumo-contrast-10pct)");
 
         functionGrid.addSelectionListener(event -> {
-            if (!event.getFirstSelectedItem().isPresent()) return;
-
-            FunctionDTO selectedFunction = event.getFirstSelectedItem().get();
-
-            // Загрузка точек функции
-            try {
-                String url = "http://localhost:8080/api/functions/" + selectedFunction.getId() + "/points";
-                // Предполагаем, что API возвращает List<PointDTO>
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
-                HttpEntity<String> request = new HttpEntity<>(headers);
-
-                ResponseEntity<String> response = restTemplate.exchange(
-                        url,
-                        HttpMethod.GET,
-                        request,
-                        String.class
-                );
-
-                // Парсим JSON вручную через Jackson
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode rootNode = mapper.readTree(response.getBody());
-
-                List<PointDTO> points = new LinkedList<>();
-
-                // Обрабатываем список функций
-                if (rootNode.isArray()) {
-                    for (JsonNode pointNode : rootNode) {
-                        int id = pointNode.get("id").asInt();
-                        double xValue = pointNode.get("xvalue").asDouble();
-                        double yValue = pointNode.get("yvalue").asDouble();
-                        int functionId = pointNode.get("functionId").asInt();
-
-                        points.add(new PointDTO(id, xValue, yValue, functionId));
-                    }
-                }
-
-                if (points == null || points.isEmpty()) {
-                    NotificationManager.show("У функции '" + selectedFunction.getName() + "' нет точек для отображения.", 3000, Notification.Position.BOTTOM_CENTER);
-                    return;
-                }
-
-                // Преобразуем точки в массивы
-                double[] xValues = points.stream().mapToDouble(PointDTO::getXValue).toArray();
-                double[] yValues = points.stream().mapToDouble(PointDTO::getYValue).toArray();
-
-                // Построение графика
-                chartComponent.setChartData(xValues, yValues);
-
-                chartComponent.setHeight("60vh");
-                chartComponent.setWidth("70vh");
-
-            } catch (Exception ex) {
-                ExceptionHandler.notifyUser(ex);
+            if (event.getFirstSelectedItem().isEmpty()) {
+                showPlaceholder();
+                return;
             }
+            loadAndDisplayChart(event.getFirstSelectedItem().get());
         });
 
-        // Кнопка закрытия
-        Button closeButton = new Button("Закрыть", e -> close());
+        return leftPanel;
+    }
 
-        // Макет
-        VerticalLayout chartLayout = new VerticalLayout(chartComponent);
-        chartLayout.setPadding(true);
-        chartLayout.setSizeFull();
+    private VerticalLayout createRightPanel() {
+        chartTitle.getStyle().set("margin", "0 0 1rem 0").set("text-align", "center");
 
-        HorizontalLayout buttons = new HorizontalLayout(closeButton);
-        buttons.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-        buttons.setWidthFull();
+        chartComponent.setWidth("100%");
+        chartComponent.setHeight("70vh"); // занимает большую часть
 
-        VerticalLayout layout = new VerticalLayout(title, description, functionGrid, chartLayout, buttons);
-        layout.setSpacing(true);
-        layout.setPadding(true);
-        layout.setSizeFull();
+        VerticalLayout chartWrapper = new VerticalLayout(chartTitle, chartComponent);
+        chartWrapper.setSpacing(true);
+        chartWrapper.setPadding(true);
+        chartWrapper.setSizeFull();
+        chartWrapper.setAlignItems(FlexComponent.Alignment.CENTER);
+        chartWrapper.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
-        add(layout);
+        return chartWrapper;
+    }
 
-        // Загрузка функций при открытии
-        loadFunctions();
+    private void showPlaceholder() {
+        chartTitle.setText("Выберите функцию для отображения графика");
+        // Очищаем график (удаляем canvas и создаём новый)
+        chartComponent.clearChart();
+    }
+
+    private void loadAndDisplayChart(FunctionDTO selectedFunction) {
+        try {
+            chartTitle.setText("График: " + selectedFunction.getName());
+
+            String url = "http://localhost:8080/api/functions/" + selectedFunction.getId() + "/points";
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
+            HttpEntity<String> request = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(response.getBody());
+            List<PointDTO> points = new LinkedList<>();
+
+            if (rootNode.isArray()) {
+                for (JsonNode pointNode : rootNode) {
+                    double x = pointNode.get("xvalue").asDouble();
+                    double y = pointNode.get("yvalue").asDouble();
+                    points.add(new PointDTO(0, x, y, 0)); // id и functionId не нужны для графика
+                }
+            }
+
+            if (points.isEmpty()) {
+                NotificationManager.show("У функции нет точек для отображения.", 3000, Notification.Position.BOTTOM_CENTER);
+                showPlaceholder();
+                return;
+            }
+
+            double[] xValues = points.stream().mapToDouble(PointDTO::getXValue).toArray();
+            double[] yValues = points.stream().mapToDouble(PointDTO::getYValue).toArray();
+
+            chartComponent.setChartData(xValues, yValues);
+
+        } catch (Exception ex) {
+            ExceptionHandler.notifyUser(ex);
+            showPlaceholder();
+        }
     }
 
     private void loadFunctions() {
         try {
-            // Получаем текущего пользователя (например, из сессии)
-            int currentUserId = currentUser.getId();
-
-            String url = "http://localhost:8080/api/functions?ownerId=" + currentUserId;
-
+            String url = "http://localhost:8080/api/functions?ownerId=" + currentUser.getId();
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
             HttpEntity<Void> request = new HttpEntity<>(headers);
-            // Выполняем GET-запрос и получаем ответ как массив JSON-объектов
-            ResponseEntity<String> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    request,
-                    String.class
-            );
 
-            // Парсим JSON вручную через Jackson
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
+
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(response.getBody());
-
             List<FunctionDTO> functions = new LinkedList<>();
 
-            // Обрабатываем список функций
             if (rootNode.isArray()) {
-                for (JsonNode functionNode : rootNode) {
-                    int id = functionNode.get("id").asInt();
-                    String name = functionNode.get("name").asText();
-                    int ownerId = functionNode.get("ownerId").asInt();
-                    String type = functionNode.get("type").asText();
-
-                    functions.add(new FunctionDTO(id, name, ownerId, type));
+                for (JsonNode node : rootNode) {
+                    functions.add(new FunctionDTO(
+                            node.get("id").asInt(),
+                            node.get("name").asText(),
+                            node.get("ownerId").asInt(),
+                            node.get("type").asText()
+                    ));
                 }
             }
 
-            if (functions != null) {
-                functionGrid.setItems(functions);
-            } else {
-                NotificationManager.show("Не удалось загрузить функции.", 3000, Notification.Position.BOTTOM_CENTER);
-            }
+            functionGrid.setItems(functions);
 
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
