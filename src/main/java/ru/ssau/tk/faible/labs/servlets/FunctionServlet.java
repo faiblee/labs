@@ -11,10 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import ru.ssau.tk.faible.labs.database.daos.FunctionsDAO;
 import ru.ssau.tk.faible.labs.database.daos.PointsDAO;
 import ru.ssau.tk.faible.labs.database.daos.UsersDAO;
-import ru.ssau.tk.faible.labs.database.models.CreateFunctionDTO;
-import ru.ssau.tk.faible.labs.database.models.Function;
+import ru.ssau.tk.faible.labs.database.models.*;
 import ru.ssau.tk.faible.labs.database.models.Point;
-import ru.ssau.tk.faible.labs.database.models.User;
 import ru.ssau.tk.faible.labs.database.utils.DBConnector;
 import ru.ssau.tk.faible.labs.database.utils.ServletHelper;
 import ru.ssau.tk.faible.labs.functions.*;
@@ -329,6 +327,7 @@ public class FunctionServlet extends HttpServlet {
             log.info("Body успешно считан: {}", sb);
             Point input = objectMapper.readValue(sb.toString(), Point.class);
             log.info("objectMapper успешно считал");
+
             if (input.getXValue() == null || input.getYValue() == null) {
                 log.error("x или y - null");
                 sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Требуются x_value и y_value", objectMapper);
@@ -368,7 +367,7 @@ public class FunctionServlet extends HttpServlet {
         }
         if (pathInfo == null || pathInfo.equals("/") || pathInfo.isEmpty()) {
             // POST /api/functions — создание функции - любой авторизованный
-            log.debug("Получен запрос на создание функции");
+            log.info("Получен запрос на создание функции");
             handlePostFunction(req, resp, user.getId());
             return;
         }
@@ -380,9 +379,52 @@ public class FunctionServlet extends HttpServlet {
             // POST /api/functions/{id}/points — добавить точку - владелец функции или admin
             log.debug("Получен POST запрос на добавление точки");
             handlePostPoint(parts[0], req, resp, user);
+        } else if (parts.length == 1 && "composition".equals(parts[0])) {
+            // api/functions/composition
+            log.info("Получен запрос на создание сложной функции");
+            handlePostCompositeFunction(req, resp, user);
         } else {
             log.error("Неверный путь");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный путь", objectMapper);
+        }
+    }
+
+    private void handlePostCompositeFunction(HttpServletRequest req, HttpServletResponse resp, User user) throws IOException {
+        try {
+            log.info("Начало обработки POST-запроса для создания сложной функции");
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            PrintWriter out = resp.getWriter();
+
+            StringBuilder sb = new StringBuilder();
+            BufferedReader reader = req.getReader();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+
+            log.info("Тело запроса - {}", sb.toString());
+
+            CreateCompositeFunctionDTO compositeFunctionDTO = objectMapper.readValue(sb.toString(), CreateCompositeFunctionDTO.class);
+
+            log.info("objectMapper успешно считал");
+
+            int innerFunctionId = compositeFunctionDTO.getInnerFunctionId();
+            int outerFunctionId = compositeFunctionDTO.getOuterFunctionId();
+
+            List<Point> innerPoints = pointsDAO.getPointsByFunctionId(innerFunctionId);
+            List<Point> outerPoints = pointsDAO.getPointsByFunctionId(outerFunctionId);
+
+            double[] xInnerValues;
+            double[] yInnerValues;
+            double[] xOuterValues;
+            double[] yOuterValues;
+
+//            TabulatedFunction compositeFunction =
+        } catch (Exception ex) {
+            log.error("Ошибка при создании сложной функции {}", ex.getMessage());
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Ошибка при создании сложной функции", objectMapper);
         }
     }
 
