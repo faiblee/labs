@@ -233,9 +233,18 @@ public class FunctionController {
         Long innerFunctionId = compositeFunctionDTO.getInnerFunctionId();
         Long outerFunctionId = compositeFunctionDTO.getOuterFunctionId();
 
+        FunctionEntity innerFunction = functionRepository.findById(innerFunctionId)
+                .orElseThrow(() -> new RuntimeException("Inner function not found"));
+
+        FunctionEntity outerFunction = functionRepository.findById(outerFunctionId)
+                .orElseThrow(() -> new RuntimeException("Outer function not found"));
+
         // 3. Загрузить точки обеих функций
         List<PointEntity> outerPoints = pointRepository.findByFunctionId(outerFunctionId);
         List<PointEntity> innerPoints = pointRepository.findByFunctionId(innerFunctionId);
+
+        log.info("Точек в outer = {}", outerPoints.size());
+        log.info("Точек в inner = {}", innerPoints.size());
 
         List<Double> xInnerValues = new LinkedList<>();
         List<Double> yInnerValues = new LinkedList<>();
@@ -266,10 +275,10 @@ public class FunctionController {
         double[] xOuterValuesArray = xOuterValues.stream().mapToDouble(Double::doubleValue).toArray();
         double[] yOuterValuesArray = yOuterValues.stream().mapToDouble(Double::doubleValue).toArray();
 
-        TabulatedFunction innerFunction = factory.create(xInnerValuesArray, yInnerValuesArray);
-        TabulatedFunction outerFunction = factory.create(xOuterValuesArray, yOuterValuesArray);
+        TabulatedFunction innerFunctionTabulated = factory.create(xInnerValuesArray, yInnerValuesArray);
+        TabulatedFunction outerFunctionTabulated = factory.create(xOuterValuesArray, yOuterValuesArray);
 
-        CompositeTabulatedFunction compositeFunction = new CompositeTabulatedFunction(innerFunction, outerFunction);
+        CompositeTabulatedFunction compositeFunction = new CompositeTabulatedFunction(innerFunctionTabulated, outerFunctionTabulated);
 
         for (ru.ssau.tk.faible.labs.functions.Point point : compositeFunction) {
             PointEntity pointEntity = new PointEntity(point.x, point.y, function);
