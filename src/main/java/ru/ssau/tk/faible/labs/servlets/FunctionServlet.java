@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serial;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -408,6 +409,8 @@ public class FunctionServlet extends HttpServlet {
 
             CreateCompositeFunctionDTO compositeFunctionDTO = objectMapper.readValue(sb.toString(), CreateCompositeFunctionDTO.class);
 
+            int functionID = functionsDAO.insertFunction(compositeFunctionDTO.getName(), user.getId(), "Сложная функция");
+
             log.info("objectMapper успешно считал");
 
             int innerFunctionId = compositeFunctionDTO.getInnerFunctionId();
@@ -416,12 +419,42 @@ public class FunctionServlet extends HttpServlet {
             List<Point> innerPoints = pointsDAO.getPointsByFunctionId(innerFunctionId);
             List<Point> outerPoints = pointsDAO.getPointsByFunctionId(outerFunctionId);
 
-            double[] xInnerValues;
-            double[] yInnerValues;
-            double[] xOuterValues;
-            double[] yOuterValues;
+            List<Double> xInnerValues = new LinkedList<>();
+            List<Double> yInnerValues = new LinkedList<>();
+            List<Double> xOuterValues = new LinkedList<>();
+            List<Double> yOuterValues = new LinkedList<>();
 
-//            TabulatedFunction compositeFunction =
+            for (Point point : innerPoints) {
+                xInnerValues.add(point.getXValue());
+                yInnerValues.add(point.getYValue());
+            }
+            for (Point point : outerPoints) {
+                xOuterValues.add(point.getXValue());
+                yOuterValues.add(point.getYValue());
+            }
+
+            TabulatedFunctionFactory factory;
+            if ("array".equals(user.getFactory_type())) {
+                factory = new ArrayTabulatedFunctionFactory();
+            } else {
+                factory = new LinkedListTabulatedFunctionFactory();
+            }
+
+            double[] xInnerValuesArray = xInnerValues.stream().mapToDouble(Double::doubleValue).toArray();
+            double[] yInnerValuesArray = yInnerValues.stream().mapToDouble(Double::doubleValue).toArray();
+            double[] xOuterValuesArray = xOuterValues.stream().mapToDouble(Double::doubleValue).toArray();
+            double[] yOuterValuesArray = yOuterValues.stream().mapToDouble(Double::doubleValue).toArray();
+
+            MathFunction innerFunction = factory.create(xInnerValuesArray, yInnerValuesArray);
+            MathFunction outerFunction = factory.create(xOuterValuesArray, yOuterValuesArray);
+
+            TabulatedFunction compositeFunction = (TabulatedFunction) innerFunction.andThen(outerFunction);
+
+            for (ru.ssau.tk.faible.labs.functions.Point point : compositeFunction) {
+                pointsDAO.insertPoint(point.x, point.y, functionID);
+            }
+
+
         } catch (Exception ex) {
             log.error("Ошибка при создании сложной функции {}", ex.getMessage());
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Ошибка при создании сложной функции", objectMapper);
