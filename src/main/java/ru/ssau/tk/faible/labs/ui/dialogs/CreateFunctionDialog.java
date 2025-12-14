@@ -23,6 +23,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
+import ru.ssau.tk.faible.labs.ui.components.TabulatedInputBuilder;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.CreateFunctionDTO;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
@@ -40,6 +41,7 @@ public class CreateFunctionDialog extends Dialog {
     private final TextField xFromField = new TextField("X начальное");
     private final TextField xToField = new TextField("X конечное");
     private final IntegerField countField = new IntegerField("Количество точек");
+    private final TabulatedInputBuilder tabulatedInputBuilder = new TabulatedInputBuilder();
 
     private final Button createButton = new Button("Создать");
     private final Button cancelButton = new Button("Отмена");
@@ -47,7 +49,7 @@ public class CreateFunctionDialog extends Dialog {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public CreateFunctionDialog() {
-        // Устанавливаем размер: 60% ширины и высоты экрана (уменьшено)
+        // Устанавливаем размер: 60% ширины и 70% высоты экрана (уменьшено)
         setWidth("60vw");
         setHeight("70vh");
 
@@ -75,6 +77,7 @@ public class CreateFunctionDialog extends Dialog {
         xFromField.setVisible(false);
         xToField.setVisible(false);
         countField.setVisible(false);
+        tabulatedInputBuilder.setVisible(false);
 
         // --- Реакция на изменение типа функции ---
         typeSelect.addValueChangeListener(event -> {
@@ -87,6 +90,10 @@ public class CreateFunctionDialog extends Dialog {
                 constantField.focus();
             } else {
                 constantField.setVisible(false); // Скрываем, если не ConstantFunction
+            }
+
+            if ("TabulatedFunction".equals(selectedType)) {
+                tabulatedInputBuilder.setVisible(true);
             }
 
             // Проверяем, нужно ли показать поля XFrom, XTo, Count
@@ -103,7 +110,7 @@ public class CreateFunctionDialog extends Dialog {
         });
         // Форма
         FormLayout form = new FormLayout();
-        form.add(title, description, nameField, typeSelect, constantField, xFromField, xToField, countField);
+        form.add(title, description, nameField, typeSelect, tabulatedInputBuilder, constantField, xFromField, xToField, countField);
         form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1)); // Настройка адаптивности
         form.addClassName("spacing-medium");
 
