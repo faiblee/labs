@@ -247,41 +247,27 @@ public class FunctionController {
                 }
             }
 
-            // 3. Загрузить точки обеих функций
-            List<PointEntity> outerPoints = pointRepository.findByFunctionId(outerFuncEntity.getId());
-            List<PointEntity> innerPoints = pointRepository.findByFunctionId(innerFuncEntity.getId());
+            // --- ИСПРАВЛЕНИЕ: Создаём экземпляры MathFunction на основе типа ---
+            MathFunction innerRealFunc = createMathFunctionFromEntity(innerFuncEntity);
+            MathFunction outerRealFunc = createMathFunctionFromEntity(outerFuncEntity);
 
-            // --- ИСПРАВЛЕНИЕ: Проверяем, есть ли точки ---
-            if (outerPoints.isEmpty()) {
+            // 3. Задать диапазон и количество точек для табуляции результата
+            // Для базовых функций, у которых нет точек, нужно задать диапазон вручную или получить из DTO
+            // Предположим, что DTO содержит xFrom, xTo, count
+            double xFrom = requestDto.getXFrom(); // Добавьте в DTO
+            double xTo = requestDto.getXTo();     // Добавьте в DTO
+            int count = requestDto.getCount();    // Добавьте в DTO
+
+            if (xFrom > xTo) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Cannot compose functions: outer function has no points."));
+                        .body(Map.of("error", "xFrom cannot be greater than xTo."));
             }
-            if (innerPoints.isEmpty()) {
+            if (count < 2) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Cannot compose functions: inner function has no points."));
+                        .body(Map.of("error", "Count must be at least 2."));
             }
-            if (outerPoints.isEmpty() && innerPoints.isEmpty()) {
-                // (или можно просто вернуть общий текст, как ниже)
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Cannot compose functions: one or both functions have no points."));
-            }
-            // --- Конец исправления ---
 
-            // 4. Преобразовать точки в TabulatedFunction (предположим, что это ArrayTabulatedFunction)
-            double[] outerX = outerPoints.stream().mapToDouble(PointEntity::getXValue).toArray();
-            double[] outerY = outerPoints.stream().mapToDouble(PointEntity::getYValue).toArray();
-            double[] innerX = innerPoints.stream().mapToDouble(PointEntity::getXValue).toArray();
-            double[] innerY = innerPoints.stream().mapToDouble(PointEntity::getYValue).toArray();
-
-            TabulatedFunction outerFunc = new ArrayTabulatedFunction(outerX, outerY);
-            TabulatedFunction innerFunc = new ArrayTabulatedFunction(innerX, innerY);
-
-            // 5. Задать диапазон и количество точек для табуляции результата
-            double xFrom = innerX[0]; // Используем диапазон внутренней функции
-            double xTo = innerX[innerX.length - 1];
-            int count = 100; // или передавать в DTO
-
-            // 6. Вычислить значения для новой функции h(x) = outerFunc(innerFunc(x))
+            // 4. Вычислить значения для новой функции h(x) = outerFunc(innerFunc(x))
             double[] resultX = new double[count];
             double[] resultY = new double[count];
             double step = (xTo - xFrom) / (count - 1);
@@ -289,24 +275,22 @@ public class FunctionController {
             for (int i = 0; i < count; i++) {
                 double x = xFrom + i * step;
                 // Вычисляем g(x)
-                double g_x = innerFunc.apply(x);
+                double g_x = innerRealFunc.apply(x);
                 // Затем вычисляем f(g(x))
-                double f_g_x = outerFunc.apply(g_x);
+                double f_g_x = outerRealFunc.apply(g_x);
 
                 resultX[i] = x;
                 resultY[i] = f_g_x;
             }
 
-            // 7. Создать новую табулированную функцию из вычисленных значений
-            TabulatedFunction resultTabulatedFunc = new ArrayTabulatedFunction(resultX, resultY);
-
-            // 8. Создать новую сущность FunctionEntity и сохранить
+            // 5. Создать новую табулированную функцию из вычисленных значений
+            // и сохранить её в БД как COMPOSITE функцию
             FunctionEntity resultEntity = new FunctionEntity(requestDto.getName(), "COMPOSITE", currentUser);
 
-            // 9. Сохранить функцию
+            // 6. Сохранить функцию
             FunctionEntity savedResultEntity = functionRepository.save(resultEntity);
 
-            // 10. Создать и сохранить точки новой функции
+            // 7. Создать и сохранить точки новой функции
             List<PointEntity> resultPoints = new ArrayList<>();
             for (int i = 0; i < resultX.length; i++) {
                 PointEntity point = new PointEntity(resultX[i], resultY[i], savedResultEntity);
@@ -316,11 +300,11 @@ public class FunctionController {
             // Обновим сущность, чтобы точки были связаны (если lazy fetch)
             savedResultEntity.setPoints(resultPoints);
 
-            // 11. Логировать создание
-            log.info("User {} created composite function '{}' from f(id={}) and g(id={})",
-                    currentUser.getUsername(), requestDto.getName(), outerFuncEntity.getId(), innerFuncEntity.getId());
+            // 8. Логировать создание
+            log.info("User {} created composite function '{}' from f(type={}) and g(type={})",
+                    currentUser.getUsername(), requestDto.getName(), outerFuncEntity.getType(), innerFuncEntity.getType());
 
-            // 12. Вернуть DTO созданной функции
+            // 9. Вернуть DTO созданной функции
             FunctionDTO resultDto = toDto(savedResultEntity);
             return ResponseEntity.status(HttpStatus.CREATED).body(resultDto);
 
@@ -333,6 +317,50 @@ public class FunctionController {
             log.error("Unexpected error during composition creation: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "An error occurred while creating composition: " + e.getMessage()));
+        }
+    }
+
+    // --- НОВЫЙ ВСПОМОГАТЕЛЬНЫЙ МЕТОД ---
+    private MathFunction createMathFunctionFromEntity(FunctionEntity entity) {
+        String type = entity.getType();
+
+        // Предполагается, что у вас есть классы, реализующие MathFunction
+        // и у них есть конструкторы по умолчанию или без параметров
+        switch (type) {
+            case "ZeroFunction":
+                return new ZeroFunction(); // Предполагается, что класс существует
+            case "UnitFunction":
+                return new UnitFunction();
+            case "SqrFunction":
+                return new SqrFunction();
+            case "IdentityFunction":
+                return new IdentityFunction();
+            case "ConstantFunction":
+                // Для ConstantFunction нужно знать значение константы
+                // Это можно хранить в отдельной таблице/поле или в JSON-данных
+                // Предположим, что вы можете получить константу из связанной сущности или из поля
+                // Например, если у FunctionEntity есть поле `constantValue`:
+                // return new ConstantFunction(entity.getConstantValue());
+                // Или если константа хранится отдельно, например, в PointEntity первой точки (для ConstantFunction все Y равны одной константе)
+                List<PointEntity> points = pointRepository.findByFunctionId(entity.getId());
+                if (points.isEmpty()) {
+                    throw new RuntimeException("ConstantFunction must have at least one point to determine the constant value.");
+                }
+                double constantValue = points.get(0).getYValue();
+                return new ConstantFunction(constantValue);
+
+            // Если это TabulatedFunction, вы можете создать её из точек
+            case "TabulatedFunction":
+                List<PointEntity> tabulatedPoints = pointRepository.findByFunctionId(entity.getId());
+                if (tabulatedPoints.isEmpty()) {
+                    throw new RuntimeException("TabulatedFunction must have points.");
+                }
+                double[] xVals = tabulatedPoints.stream().mapToDouble(PointEntity::getXValue).toArray();
+                double[] yVals = tabulatedPoints.stream().mapToDouble(PointEntity::getYValue).toArray();
+                return new ArrayTabulatedFunction(xVals, yVals);
+
+            default:
+                throw new RuntimeException("Unknown function type: " + type);
         }
     }
 
