@@ -5,14 +5,30 @@ public class CompositionFunctionRequestDTO {
     private Long outerFunctionId; // f(x)
     private Long innerFunctionId; // g(x)
 
-    public CompositionFunctionRequestDTO() {}
+    public CompositionFunctionRequestDTO() {
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getName() {
+        return name;
+    }
 
-    public Long getOuterFunctionId() { return outerFunctionId; }
-    public void setOuterFunctionId(Long outerFunctionId) { this.outerFunctionId = outerFunctionId; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public Long getInnerFunctionId() { return innerFunctionId; }
-    public void setInnerFunctionId(Long innerFunctionId) { this.innerFunctionId = innerFunctionId; }
+    public Long getOuterFunctionId() {
+        return outerFunctionId;
+    }
+
+    public void setOuterFunctionId(Long outerFunctionId) {
+        this.outerFunctionId = outerFunctionId;
+    }
+
+    public Long getInnerFunctionId() {
+        return innerFunctionId;
+    }
+
+    public void setInnerFunctionId(Long innerFunctionId) {
+        this.innerFunctionId = innerFunctionId;
+    }
 }
