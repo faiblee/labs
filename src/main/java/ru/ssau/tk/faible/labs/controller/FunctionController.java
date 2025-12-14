@@ -94,6 +94,8 @@ public class FunctionController {
         // получаем текущего авторизованного пользователя (владельца)
         User owner = securityService.getCurrentUser();
 
+        log.info("Создаем функцию для user = {}", owner.getUsername());
+
         // создаём новую сущность FunctionEntity
         FunctionEntity functionEnt = new FunctionEntity(
                 dto.getName(),
@@ -103,6 +105,8 @@ public class FunctionController {
         // Сохраняем в базу данных
         FunctionEntity func = functionRepository.save(functionEnt);
 
+        log.info("Сохранена функция с именем {}", func.getName());
+
         String factory_type = dto.getFactory_type();
         String type = dto.getType();
         if (!type.isEmpty() && !type.equals("Tabulated")) {
@@ -111,11 +115,13 @@ public class FunctionController {
             int count = dto.getCount();
 
             TabulatedFunctionFactory factory;
+
             if (factory_type.equals("array")) {
                 factory = new ArrayTabulatedFunctionFactory();
             } else {
                 factory = new LinkedListTabulatedFunctionFactory();
             }
+
             Map<String, MathFunction> functions = new HashMap<>();
             functions.put("Квадратичная функция", new SqrFunction());
             functions.put("Тождественная функция", new IdentityFunction());
@@ -126,6 +132,7 @@ public class FunctionController {
             TabulatedFunction function = factory.create(functions.get(type), xFrom, xTo, count);
 
             for (ru.ssau.tk.faible.labs.functions.Point point : function) {
+                log.info("Создаем точку со значениями ({}, {})", point.x, point.y);
                 pointRepository.save(new PointEntity(point.x, point.y, func));
             }
         }
