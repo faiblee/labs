@@ -109,18 +109,20 @@ public class FunctionController {
 
         String factory_type = dto.getFactory_type();
         String type = dto.getType();
-        if (!type.isEmpty() && !type.equals("Tabulated")) {
+        TabulatedFunctionFactory factory;
+
+        if (factory_type.equals("array")) {
+            factory = new ArrayTabulatedFunctionFactory();
+        } else {
+            factory = new LinkedListTabulatedFunctionFactory();
+        }
+
+
+        if (!type.isEmpty() && !type.equals("Табулированная функция")) {
             double xFrom = dto.getxfrom();
             double xTo = dto.getxto();
             int count = dto.getCount();
 
-            TabulatedFunctionFactory factory;
-
-            if (factory_type.equals("array")) {
-                factory = new ArrayTabulatedFunctionFactory();
-            } else {
-                factory = new LinkedListTabulatedFunctionFactory();
-            }
 
             Map<String, MathFunction> functions = new HashMap<>();
             functions.put("Квадратичная функция", new SqrFunction());
@@ -135,8 +137,17 @@ public class FunctionController {
                 log.info("Создаем точку со значениями ({}, {})", point.x, point.y);
                 pointRepository.save(new PointEntity(point.x, point.y, func));
             }
-        }
+        } else {
+            double[] xValues = dto.getXvalues();
+            double[] yValues = dto.getYvalues();
 
+            TabulatedFunction function = factory.create(xValues, yValues);
+
+            for (ru.ssau.tk.faible.labs.functions.Point point : function) {
+                log.info("Создаем точку со значениями ({}, {})", point.x, point.y);
+                pointRepository.save(new PointEntity(point.x, point.y, func));
+            }
+        }
         // логируем успешное создание
         log.info("User {} created function {}", owner.getUsername(), functionEnt.getName());
 
