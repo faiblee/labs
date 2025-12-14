@@ -119,8 +119,8 @@ public class FunctionController {
 
 
         if (!type.isEmpty() && !type.equals("Табулированная функция")) {
-            double xFrom = dto.getxfrom();
-            double xTo = dto.getxto();
+            double xFrom = dto.getXfrom();
+            double xTo = dto.getXto();
             int count = dto.getCount();
 
 

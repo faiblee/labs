@@ -3,24 +3,14 @@ package ru.ssau.tk.faible.labs.DTO;
 public class CreateFunctionDTO {
     private String name;
     private int ownerId;
-
-    public CreateFunctionDTO() {
-    }
-
-    public CreateFunctionDTO(String name, int ownerId, String type, double xfrom, double xto, int count, double constant, String factory_type, double[] xvalues, double[] yvalues) {
-        this.name = name;
-        this.ownerId = ownerId;
-        this.type = type;
-        this.xfrom = xfrom;
-        this.xto = xto;
-        this.count = count;
-        this.constant = constant;
-        this.factory_type = factory_type;
-        this.xvalues = xvalues;
-        this.yvalues = yvalues;
-    }
-
     private String type;
+    private double xfrom;
+    private double xto;
+    private int count;
+    private double constant;
+    private String factory_type;
+    private double[] xvalues;
+    private double[] yvalues;
 
     public String getName() {
         return name;
@@ -101,12 +91,4 @@ public class CreateFunctionDTO {
     public void setYvalues(double[] yvalues) {
         this.yvalues = yvalues;
     }
-
-    private double xfrom;
-    private double xto;
-    private int count;
-    private double constant;
-    private String factory_type;
-    private double[] xvalues;
-    private double[] yvalues;
 }
