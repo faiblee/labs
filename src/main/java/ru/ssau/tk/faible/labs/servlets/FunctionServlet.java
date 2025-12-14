@@ -1,5 +1,6 @@
 package ru.ssau.tk.faible.labs.servlets;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.ServletException;
@@ -194,7 +195,7 @@ public class FunctionServlet extends HttpServlet {
 
         if (parts.length == 1) {
             // GET /api/functions/{id} - получение функции по id - только для admin или владелец функции
-            log.debug("Получен запрос на получение функции по id");
+            log.info("Получен запрос на получение функции по id");
             if (!isAllowed(role, "ADMIN", "USER")) {
                 log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
@@ -203,17 +204,66 @@ public class FunctionServlet extends HttpServlet {
             handleGetFunctionById(parts[0], resp, out, user);
         } else if (parts.length == 2 && "points".equals(parts[1])) {
             // GET /api/functions/{id}/points - получение всех точек функции - ADMIN или владелец функции
-            log.debug("Получен запрос на получение всех точек функции");
+            log.info("Получен запрос на получение всех точек функции");
             if (!isAllowed(role, "ADMIN", "USER")) {
                 log.warn("Доступ запрещен");
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
                 return;
             }
             handleGetPointsByFunctionId(parts[0], req, resp, out, user);
+        } else if (parts.length == 2 && "apply".equals(parts[1])) {
+            // GET /api/functions/{id}/apply?x=.. - получение значения функции в случайной точке
+            log.info("Получен запрос на получение значения функции в точке");
+            if (!isAllowed(role, "ADMIN", "USER")) {
+                log.warn("Доступ запрещен");
+                sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
+                return;
+            }
+            handleGetValueInX(parts[0], req, resp, out, user);
         } else {
             log.error("Неверный путь");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный путь", objectMapper);
         }
+    }
+
+    private void handleGetValueInX(String id, HttpServletRequest req, HttpServletResponse resp, PrintWriter out, User user) throws IOException {
+        String x_string = req.getParameter("x");
+        double x = Double.parseDouble(x_string);
+        int function_id = Integer.parseInt(id);
+
+        List<Point> points = pointsDAO.getPointsByFunctionId(function_id);
+        List<Double> xValuesList = new LinkedList<>();
+        List<Double> yValuesList = new LinkedList<>();
+        for (Point p : points) {
+            xValuesList.add(p.getXValue());
+            yValuesList.add(p.getYValue());
+        }
+
+        double[] xValues = xValuesList.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] yValues = yValuesList.stream().mapToDouble(Double::doubleValue).toArray();
+
+        String factory_type = user.getFactory_type();
+
+        TabulatedFunctionFactory factory;
+        if (factory_type.equals("array")) {
+            factory = new ArrayTabulatedFunctionFactory();
+        } else {
+            factory = new LinkedListTabulatedFunctionFactory();
+        }
+
+        TabulatedFunction function = factory.create(xValues, yValues);
+
+        double y = function.apply(x);
+
+        log.info("Значение функции в точке {} = {}", x, y);
+
+        PrintWriter outWriter = resp.getWriter();
+        Map<String, Double> data = Map.of("y", y);
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        outWriter.print(objectMapper.writeValueAsString(data));
+        outWriter.flush();
+        resp.setStatus(HttpServletResponse.SC_OK);
     }
 
     // Обработка запроса POST /api/functions - создание функции
