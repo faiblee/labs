@@ -64,7 +64,10 @@ public class MainView extends VerticalLayout {
                     dialog.open();
                 }),
                 createCard("🔄 Комплексные функции", "Работайте с составными функциями.", "Открыть",
-                        () -> {}),
+                        () -> {
+                            CreateCompositionFunctionDialog dialog = new CreateCompositionFunctionDialog();
+                            dialog.open();
+                        }),
                 createCard("📈 Мои функции", "Все ваши функции.", "Открыть",
                         () -> {
                             FunctionsListDialog dialog = new FunctionsListDialog();

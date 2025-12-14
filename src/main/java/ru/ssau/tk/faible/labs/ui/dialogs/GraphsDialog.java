@@ -68,8 +68,9 @@ public class GraphsDialog extends Dialog {
                 // Предполагаем, что API возвращает List<PointDTO>
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
-                HttpEntity<Void> request = new HttpEntity<>(headers);
-                // Выполняем GET-запрос и получаем ответ как массив JSON-объектов
+// Передаём headers напрямую, без обёртки в HttpEntity
+                HttpEntity<String> request = new HttpEntity<>(headers);
+
                 ResponseEntity<String> response = restTemplate.exchange(
                         url,
                         HttpMethod.GET,
