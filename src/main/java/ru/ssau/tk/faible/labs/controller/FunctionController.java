@@ -320,7 +320,6 @@ public class FunctionController {
         }
     }
 
-    // --- НОВЫЙ ВСПОМОГАТЕЛЬНЫЙ МЕТОД ---
     private MathFunction createMathFunctionFromEntity(FunctionEntity entity) {
         String type = entity.getType(); // например, "Тождественная функция"
 
