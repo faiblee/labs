@@ -110,8 +110,8 @@ public class FunctionController {
         String factory_type = dto.getFactory_type();
         String type = dto.getType();
         if (!type.isEmpty() && !type.equals("Tabulated")) {
-            double xFrom = dto.getxFrom();
-            double xTo = dto.getxTo();
+            double xFrom = dto.getxfrom();
+            double xTo = dto.getxto();
             int count = dto.getCount();
 
             TabulatedFunctionFactory factory;
