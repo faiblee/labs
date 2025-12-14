@@ -10,6 +10,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+
+import ru.ssau.tk.faible.labs.ui.models.Point;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
 import java.util.ArrayList;
@@ -117,13 +119,13 @@ public class TabulatedInputBuilder extends Div {
     }
 
     // Метод для получения валидных данных
-    public List<double[]> getPointsAsArray() {
-        List<double[]> points = new ArrayList<>();
+    public List<Point> getPointsAsArray() {
+        List<Point> points = new ArrayList<>();
         for (PointField pf : pointFields) {
             if (!pf.isValid()) {
                 throw new IllegalStateException("Некорректные значения в поле X или Y");
             }
-            points.add(new double[]{pf.getX(), pf.getY()});
+            points.add(new Point(pf.getX(), pf.getY()));
         }
         return points;
     }

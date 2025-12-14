@@ -1,23 +1,16 @@
-// src/main/java/ru/ssau/tk/faible/labs/ui/dialogs/CreateFunctionDialog.java
-
 package ru.ssau.tk.faible.labs.ui.dialogs;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.IntegerField; // Используем IntegerField для количества точек
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Setter;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.server.VaadinSession;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -26,12 +19,13 @@ import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.components.TabulatedInputBuilder;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.CreateFunctionDTO;
+import ru.ssau.tk.faible.labs.ui.models.Point;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 public class CreateFunctionDialog extends Dialog {
 
@@ -49,7 +43,6 @@ public class CreateFunctionDialog extends Dialog {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public CreateFunctionDialog() {
-        // Устанавливаем размер: 60% ширины и 70% высоты экрана (уменьшено)
         setWidth("60vw");
         setHeight("70vh");
 
@@ -69,17 +62,15 @@ public class CreateFunctionDialog extends Dialog {
                 "Квадратичная функция",
                 "Тождественная функция",
                 "Константная функция",
-                "TabulatedFunction"
+                "Табулированная функция"
         );
 
-        // Настройка поля ввода константы
         constantField.setVisible(false);
         xFromField.setVisible(false);
         xToField.setVisible(false);
         countField.setVisible(false);
         tabulatedInputBuilder.setVisible(false);
 
-        // --- Реакция на изменение типа функции ---
         typeSelect.addValueChangeListener(event -> {
             String selectedType = event.getValue();
 
@@ -92,20 +83,19 @@ public class CreateFunctionDialog extends Dialog {
                 constantField.setVisible(false); // Скрываем, если не ConstantFunction
             }
 
-            if ("TabulatedFunction".equals(selectedType)) {
-                tabulatedInputBuilder.setVisible(true);
-            }
+            boolean isTabulated = "Табулированная функция".equals(selectedType);
 
-            // Проверяем, нужно ли показать поля XFrom, XTo, Count
-            // Это нужно для всех функций, кроме ConstantFunction и TabulatedFunction
-            boolean needsRangeAndCount = selectedType != null && !selectedType.equals("TabulatedFunction");
+            tabulatedInputBuilder.setVisible(isTabulated);
+
+
+            boolean needsRangeAndCount = selectedType != null && !selectedType.equals("Табулированная функция");
 
             xFromField.setVisible(needsRangeAndCount);
             xToField.setVisible(needsRangeAndCount);
             countField.setVisible(needsRangeAndCount);
 
             if (needsRangeAndCount) {
-                xFromField.focus(); // (опционально) перевести фокус на первое поле
+                xFromField.focus();
             }
         });
         // Форма
@@ -134,7 +124,7 @@ public class CreateFunctionDialog extends Dialog {
             return;
         }
 
-        // --- Проверки и сбор данных для ConstantFunction ---
+
         String constantValue = null;
         if ("Константная функция".equals(selectedType)) {
             constantValue = constantField.getValue();
@@ -150,15 +140,16 @@ public class CreateFunctionDialog extends Dialog {
             }
         }
 
-        // --- Проверки и сбор данных для базовых функций (кроме Constant и Tabulated) ---
+
         Double xFrom = null;
         Double xTo = null;
         Integer count = null;
+        List<Point> tabulatedPoints = new LinkedList<>();
 
-        if (!"TabulatedFunction".equals(selectedType)) {
+        if (!"Табулированная функция".equals(selectedType)) {
             String xFromStr = xFromField.getValue();
             String xToStr = xToField.getValue();
-            Integer countVal = countField.getValue(); // IntegerField возвращает Integer или null
+            Integer countVal = countField.getValue();
 
             if (xFromStr == null || xFromStr.trim().isEmpty()) {
                 NotificationManager.show("Пожалуйста, введите начальное значение X!", 3000, Notification.Position.BOTTOM_CENTER);
@@ -168,7 +159,7 @@ public class CreateFunctionDialog extends Dialog {
                 NotificationManager.show("Пожалуйста, введите конечное значение X!", 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
-            if (countVal == null) { // IntegerField может вернуть null, если поле пустое
+            if (countVal == null) {
                 NotificationManager.show("Пожалуйста, введите количество точек!", 3000, Notification.Position.BOTTOM_CENTER);
             }
 
@@ -191,9 +182,37 @@ public class CreateFunctionDialog extends Dialog {
             }
 
             count = countVal;
+        } else {
+            // если Tabulated
+            tabulatedPoints = tabulatedInputBuilder.getPointsAsArray();
+            if (tabulatedPoints == null || tabulatedPoints.isEmpty()) {
+                NotificationManager.show("Добавьте хотя бы одну точку!", 3000, Notification.Position.BOTTOM_CENTER);
+                return;
+            }
+
+            // Проверка: все x и y заданы
+            for (Point p : tabulatedPoints) {
+                if (p.x == null || p.y == null) {
+                    NotificationManager.show("Все значения X и Y должны быть заполнены!", 3000, Notification.Position.BOTTOM_CENTER);
+                    return;
+                }
+            }
+
+            // Проверка: минимум 2 точки
+            if (tabulatedPoints.size() < 2) {
+                NotificationManager.show("Табулированная функция должна содержать минимум 2 точки!", 3000, Notification.Position.BOTTOM_CENTER);
+                return;
+            }
+
+            // Проверка: x строго возрастают
+            for (int i = 1; i < tabulatedPoints.size(); i++) {
+                if (tabulatedPoints.get(i).x <= tabulatedPoints.get(i - 1).x) {
+                    NotificationManager.show("Значения X должны быть строго возрастающими!", 3000, Notification.Position.BOTTOM_CENTER);
+                    return;
+                }
+            }
         }
 
-        // --- Логика отправки запроса ---
         try {
             CurrentUser currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
 
@@ -206,8 +225,19 @@ public class CreateFunctionDialog extends Dialog {
             functionDTO.setOwnerId(owner_id);
             functionDTO.setFactory_type(factory_type);
 
-            if ("TabulatedFunction".equals(selectedType)) {
-                // pass
+            if ("Табулированная функция".equals(selectedType) && tabulatedPoints != null) {
+                List<Double> xList = new ArrayList<>();
+                List<Double> yList = new ArrayList<>();
+                for (Point p : tabulatedPoints) {
+                    xList.add(p.x);
+                    yList.add(p.y);
+                }
+
+                double[] xArray = xList.stream().mapToDouble(Double::doubleValue).toArray();
+                double[] yArray = yList.stream().mapToDouble(Double::doubleValue).toArray();
+
+                functionDTO.setXvalues(xArray);
+                functionDTO.setYvalues(yArray);
             } else {
                 functionDTO.setXFrom(xFrom);
                 functionDTO.setXTo(xTo);
@@ -233,10 +263,10 @@ public class CreateFunctionDialog extends Dialog {
                 ExceptionHandler.notifyUser(ex);
             }
 
-            // Пока просто показываем уведомление
+
             if ("Константная функция".equals(selectedType)) {
                 NotificationManager.show("Функция типа '" + selectedType + "' с константой '" + constantValue + "' создана!", 3000, Notification.Position.BOTTOM_CENTER);
-            } else if ("TabulatedFunction".equals(selectedType)) {
+            } else if ("Табулированная функция".equals(selectedType)) {
                 NotificationManager.show("Пустая табулированная функция типа '" + selectedType + "' создана!", 3000, Notification.Position.BOTTOM_CENTER);
             } else {
                 NotificationManager.show("Функция типа '" + selectedType + "' с параметрами X=[" + xFrom + ", " + xTo + "], точек: " + count + " создана!", 3000, Notification.Position.BOTTOM_CENTER);

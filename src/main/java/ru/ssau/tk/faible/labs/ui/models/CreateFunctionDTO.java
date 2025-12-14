@@ -16,4 +16,6 @@ public class CreateFunctionDTO {
     private int count;
     private double constant;
     private String factory_type;
+    private double[] xvalues;
+    private double[] yvalues;
 }
