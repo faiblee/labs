@@ -255,8 +255,13 @@ public class FunctionsListDialog extends Dialog {
             String url = "http://localhost:8080/api/functions/" + functionId + "/apply?x=" + x;
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
-            ResponseEntity<Double> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), Double.class);
-            applyResult.setText("f(" + x + ") = " + String.format("%.4f", response.getBody()));
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.getBody());
+            double yValue = root.get("y").asDouble();
+
+            applyResult.setText("f(" + x + ") = " + String.format("%.4f", yValue));
         } catch (NumberFormatException e) {
             NotificationManager.show("Некорректное значение x", 3000, Notification.Position.BOTTOM_CENTER);
         } catch (Exception ex) {
