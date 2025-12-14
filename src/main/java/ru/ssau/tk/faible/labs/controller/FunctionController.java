@@ -230,8 +230,6 @@ public class FunctionController {
 
         FunctionEntity function = functionRepository.save(func);
 
-        log.info("objectMapper успешно считал");
-
         Long innerFunctionId = compositeFunctionDTO.getInnerFunctionId();
         Long outerFunctionId = compositeFunctionDTO.getOuterFunctionId();
 
@@ -252,6 +250,8 @@ public class FunctionController {
             xOuterValues.add(point.getXValue());
             yOuterValues.add(point.getYValue());
         }
+
+        log.info("Массивы точек: xInnerValues - {}, yInnerValues - {}, xOuterValues - {}, yOuterValues - {}", xInnerValues, yInnerValues, xOuterValues, yOuterValues);
 
         TabulatedFunctionFactory factory;
 
