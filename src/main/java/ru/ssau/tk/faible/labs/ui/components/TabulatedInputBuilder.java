@@ -10,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public class TabulatedInputBuilder extends Div {
     private void buildTable() {
         Integer count = pointCountField.getValue();
         if (count == null || count < 2) {
-            NotificationManager.show("Укажите количество точек (минимум 2)", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Укажите количество точек (минимум 2)"), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
@@ -121,7 +122,7 @@ public class TabulatedInputBuilder extends Div {
         List<double[]> points = new ArrayList<>();
         for (PointField pf : pointFields) {
             if (!pf.isValid()) {
-                throw new IllegalStateException("Некорректные значения в поле X или Y");
+                throw new IllegalStateException(BrailleHelper.applyBrailleIfEnabled("Некорректные значения в поле X или Y"));
             }
             points.add(new double[]{pf.getX(), pf.getY()});
         }
@@ -133,7 +134,7 @@ public class TabulatedInputBuilder extends Div {
         List<Double> x = new ArrayList<>();
         for (PointField pf : pointFields) {
             if (!isValidDouble(pf.xField.getValue())) {
-                throw new IllegalStateException("Некорректное значение X");
+                throw new IllegalStateException(BrailleHelper.applyBrailleIfEnabled("Некорректное значение X"));
             }
             x.add(pf.getX());
         }
@@ -144,7 +145,7 @@ public class TabulatedInputBuilder extends Div {
         List<Double> y = new ArrayList<>();
         for (PointField pf : pointFields) {
             if (!isValidDouble(pf.yField.getValue())) {
-                throw new IllegalStateException("Некорректное значение Y");
+                throw new IllegalStateException(BrailleHelper.applyBrailleIfEnabled("Некорректное значение Y"));
             }
             y.add(pf.getY());
         }

@@ -2,11 +2,12 @@ package ru.ssau.tk.faible.labs.ui.components;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 
 public class LogoutButton extends Button {
 
     public LogoutButton() {
-        setText("Выйти");
+        setText(BrailleHelper.applyBrailleIfEnabled("Выйти"));
         setIcon(VaadinIcon.SIGN_OUT.create());
         addClickListener(e -> {
             // Удаляем Basic Auth credentials из сессии

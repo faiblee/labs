@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
@@ -28,9 +29,9 @@ import java.util.Base64;
 @Slf4j
 public class LoginDialog extends Dialog {
 
-    private final TextField usernameField = new TextField("Логин");
-    private final PasswordField passwordField = new PasswordField("Пароль");
-    private final Button loginButton = new Button("Войти");
+    private final TextField usernameField = new TextField(BrailleHelper.applyBrailleIfEnabled("Логин"));
+    private final PasswordField passwordField = new PasswordField(BrailleHelper.applyBrailleIfEnabled("Пароль"));
+    private final Button loginButton = new Button(BrailleHelper.applyBrailleIfEnabled("Войти"));
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -46,7 +47,7 @@ public class LoginDialog extends Dialog {
             login();
         } );
 
-        H1 title = new H1("Вход");
+        H1 title = new H1(BrailleHelper.applyBrailleIfEnabled("Вход"));
         title.getStyle().set("text-align", "center");
 
         FormLayout form = new FormLayout();
@@ -54,7 +55,7 @@ public class LoginDialog extends Dialog {
         add(form);
 
         HorizontalLayout buttons = new HorizontalLayout();
-        Button cancelButton = new Button("Отмена", e -> close());
+        Button cancelButton = new Button(BrailleHelper.applyBrailleIfEnabled("Отмена"), e -> close());
 
         buttons.add(loginButton, cancelButton);
         add(buttons);
@@ -65,7 +66,7 @@ public class LoginDialog extends Dialog {
         String password = passwordField.getValue();
 
         if (username.isEmpty() || password.isEmpty()) {
-            NotificationManager.show("Логин и пароль обязательны!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Логин и пароль обязательны!"), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
@@ -84,7 +85,7 @@ public class LoginDialog extends Dialog {
                     request -> request.getHeaders().addAll(entity.getHeaders()),
                     ClientHttpResponse::getStatusCode);
             // Успешный вход — показываем уведомление и переходим на главную
-            NotificationManager.show("Успешный вход!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Успешный вход!"), 3000, Notification.Position.BOTTOM_CENTER);
             try {
                 ResponseEntity<CurrentUser> response = restTemplate.exchange(
                         "http://localhost:8080/api/auth/login",
@@ -102,7 +103,7 @@ public class LoginDialog extends Dialog {
             }
             close();
         } catch (Exception ex) {
-            NotificationManager.show("Ошибка: Неверный логин или пароль", 5000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Ошибка: Неверный логин или пароль"), 5000, Notification.Position.BOTTOM_CENTER);
         }
     }
 }

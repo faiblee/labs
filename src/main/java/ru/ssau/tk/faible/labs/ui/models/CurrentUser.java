@@ -9,4 +9,6 @@ public class CurrentUser {
     private String role;
     private String factory_type;
     private String encodedCredentials;
+    private boolean brailleModeEnabled = false; // ← НОВОЕ
+
 }

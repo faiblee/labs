@@ -11,21 +11,22 @@ import com.vaadin.flow.component.textfield.TextField;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.models.UserRegistrationDTO;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
 
 public class RegisterDialog extends Dialog {
 
-    private final TextField usernameField = new TextField("Логин");
-    private final PasswordField passwordField = new PasswordField("Пароль");
-    private final PasswordField confirmPasswordField = new PasswordField("Подтвердите пароль");
-    private final Button registerButton = new Button("Зарегистрироваться");
+    private final TextField usernameField = new TextField(BrailleHelper.applyBrailleIfEnabled("Логин"));
+    private final PasswordField passwordField = new PasswordField(BrailleHelper.applyBrailleIfEnabled("Пароль"));
+    private final PasswordField confirmPasswordField = new PasswordField(BrailleHelper.applyBrailleIfEnabled("Подтвердите пароль"));
+    private final Button registerButton = new Button(BrailleHelper.applyBrailleIfEnabled("Зарегистрироваться"));
 
     private final RestTemplate restTemplate = new RestTemplate();
 
     public RegisterDialog() {
-        addClassName("register-view");
+        addClassName(BrailleHelper.applyBrailleIfEnabled("register-view"));
         setSizeFull();
 
         usernameField.setRequired(true);
@@ -36,7 +37,7 @@ public class RegisterDialog extends Dialog {
             register();
         });
 
-        H1 title = new H1("Регистрация");
+        H1 title = new H1(BrailleHelper.applyBrailleIfEnabled("Регистрация"));
         title.getStyle().set("text-align", "center");
 
         FormLayout form = new FormLayout();
@@ -44,7 +45,7 @@ public class RegisterDialog extends Dialog {
         add(form);
 
         HorizontalLayout buttons = new HorizontalLayout();
-        Button cancelButton = new Button("Отмена", e -> close());
+        Button cancelButton = new Button(BrailleHelper.applyBrailleIfEnabled("Отмена"), e -> close());
 
         buttons.add(registerButton, cancelButton);
         add(buttons);
@@ -56,12 +57,12 @@ public class RegisterDialog extends Dialog {
         String confirmPassword = confirmPasswordField.getValue();
 
         if (!password.equals(confirmPassword)) {
-            NotificationManager.show("Пароли не совпадают!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пароли не совпадают!"), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
         if (username.isEmpty() || password.isEmpty()) {
-            NotificationManager.show("Логин и пароль обязательны!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Логин и пароль обязательны!"), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
@@ -73,7 +74,7 @@ public class RegisterDialog extends Dialog {
 
         try {
             restTemplate.postForObject("http://localhost:8080/api/auth/register", dto, Object.class);
-            NotificationManager.show("Регистрация успешна! Перейдите на страницу входа", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Регистрация успешна! Перейдите на страницу входа"), 3000, Notification.Position.BOTTOM_CENTER);
             // Очистить поля
             usernameField.clear();
             passwordField.clear();

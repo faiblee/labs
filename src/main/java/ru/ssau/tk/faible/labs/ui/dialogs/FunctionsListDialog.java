@@ -13,6 +13,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.FunctionDTO;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 
 import java.util.Arrays;
@@ -31,7 +32,7 @@ public class FunctionsListDialog extends Dialog {
         setWidth("900px");
         setHeight("600px");
 
-        add(new H3("Мои функции"));
+        add(new H3(BrailleHelper.applyBrailleIfEnabled("Мои функции")));
 
         grid.setColumns("name", "type");
         grid.getColumnByKey("name").setHeader("Имя");
@@ -46,7 +47,7 @@ public class FunctionsListDialog extends Dialog {
 
         loadFunctions();
 
-        Button closeButton = new Button("Закрыть", e -> close());
+        Button closeButton = new Button(BrailleHelper.applyBrailleIfEnabled("Закрыть"), e -> close());
         add(new VerticalLayout(grid, closeButton));
     }
 

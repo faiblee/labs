@@ -26,6 +26,7 @@ import ru.ssau.tk.faible.labs.ui.components.ChartComponent; // ← ваш ком
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.FunctionDTO;
 import ru.ssau.tk.faible.labs.ui.models.PointDTO;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
@@ -45,16 +46,16 @@ public class GraphsDialog extends Dialog {
 
         currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
         // Заголовок
-        H2 title = new H2("Ваши функции");
+        H2 title = new H2(BrailleHelper.applyBrailleIfEnabled("Ваши функции"));
         title.getStyle().set("margin", "0 0 1rem 0").set("font-size", "1.5em");
 
         // Описание
-        Paragraph description = new Paragraph("Выберите функцию для построения графика.");
+        Paragraph description = new Paragraph(BrailleHelper.applyBrailleIfEnabled("Выберите функцию для построения графика."));
         description.getStyle().set("margin", "0 0 1rem 0").set("color", "var(--lumo-secondary-text-color)");
 
         // Настройка Grid
-        functionGrid.addColumn(FunctionDTO::getName).setHeader("Имя");
-        functionGrid.addColumn(FunctionDTO::getType).setHeader("Тип");
+        functionGrid.addColumn(FunctionDTO::getName).setHeader(BrailleHelper.applyBrailleIfEnabled("Имя"));
+        functionGrid.addColumn(FunctionDTO::getType).setHeader(BrailleHelper.applyBrailleIfEnabled("Тип"));
 
         functionGrid.addSelectionListener(event -> {
             if (!event.getFirstSelectedItem().isPresent()) return;
@@ -96,7 +97,7 @@ public class GraphsDialog extends Dialog {
                 }
 
                 if (points == null || points.isEmpty()) {
-                    NotificationManager.show("У функции '" + selectedFunction.getName() + "' нет точек для отображения.", 3000, Notification.Position.BOTTOM_CENTER);
+                    NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("У функции '" + selectedFunction.getName() + "' нет точек для отображения."), 3000, Notification.Position.BOTTOM_CENTER);
                     return;
                 }
 
@@ -113,7 +114,7 @@ public class GraphsDialog extends Dialog {
         });
 
         // Кнопка закрытия
-        Button closeButton = new Button("Закрыть", e -> close());
+        Button closeButton = new Button(BrailleHelper.applyBrailleIfEnabled("Закрыть"), e -> close());
 
         // Макет
         VerticalLayout chartLayout = new VerticalLayout(chartComponent);
@@ -174,7 +175,7 @@ public class GraphsDialog extends Dialog {
             if (functions != null) {
                 functionGrid.setItems(functions);
             } else {
-                NotificationManager.show("Не удалось загрузить функции.", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Не удалось загрузить функции."), 3000, Notification.Position.BOTTOM_CENTER);
             }
 
         } catch (Exception ex) {

@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.FunctionDTO;
 import ru.ssau.tk.faible.labs.ui.models.OperationRequestDTO;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
@@ -33,36 +34,36 @@ public class OperationsDialog extends Dialog {
     private final Select<String> operationSelect = new Select<>();
     private final Select<FunctionDTO> function1Select = new Select<>();
     private final Select<FunctionDTO> function2Select = new Select<>();
-    private final TextField resultNameField = new TextField("Имя результата");
+    private final TextField resultNameField = new TextField(BrailleHelper.applyBrailleIfEnabled("Имя результата"));
 
-    private final Button executeButton = new Button("Выполнить");
-    private final Button cancelButton = new Button("Отмена");
+    private final Button executeButton = new Button(BrailleHelper.applyBrailleIfEnabled("Выполнить"));
+    private final Button cancelButton = new Button(BrailleHelper.applyBrailleIfEnabled("Отмена"));
 
     public OperationsDialog() {
         setWidth("60vw");
         setHeight("60vh");
 
         // Заголовок
-        H2 title = new H2("Операции над функциями");
+        H2 title = new H2(BrailleHelper.applyBrailleIfEnabled("Операции над функциями"));
         title.getStyle().set("margin", "0 0 1rem 0").set("font-size", "1.5em");
 
         // Описание
-        Paragraph description = new Paragraph("Выберите операцию и две функции.");
+        Paragraph description = new Paragraph(BrailleHelper.applyBrailleIfEnabled("Выберите операцию и две функции."));
         description.getStyle().set("margin", "0 0 1rem 0").set("color", "var(--lumo-secondary-text-color)");
 
         // Настройка Select для операций
-        operationSelect.setLabel("Операция");
+        operationSelect.setLabel(BrailleHelper.applyBrailleIfEnabled("Операция"));
         operationSelect.setItems("Сложение", "Вычитание", "Умножение", "Деление");
 
         // Настройка Select для функций
-        function1Select.setLabel("Функция 1 (f)");
-        function2Select.setLabel("Функция 2 (g)");
+        function1Select.setLabel(BrailleHelper.applyBrailleIfEnabled("Функция 1 (f)"));
+        function2Select.setLabel(BrailleHelper.applyBrailleIfEnabled("Функция 2 (g)"));
 
         // Загружаем функции при открытии диалога
         loadFunctions();
 
         // Поле для имени результата
-        resultNameField.setPlaceholder("Введите имя новой функции");
+        resultNameField.setPlaceholder(BrailleHelper.applyBrailleIfEnabled("Введите имя новой функции"));
         resultNameField.setRequiredIndicatorVisible(true);
 
         // Форма
@@ -88,7 +89,7 @@ public class OperationsDialog extends Dialog {
         try {
             CurrentUser currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
             if (currentUser == null) {
-                NotificationManager.show("Пользователь не авторизован.", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пользователь не авторизован."), 3000, Notification.Position.BOTTOM_CENTER);
                 close();
                 return;
             }
@@ -139,14 +140,14 @@ public class OperationsDialog extends Dialog {
         String resultName = resultNameField.getValue();
 
         if (operation == null || func1 == null || func2 == null || resultName == null || resultName.trim().isEmpty()) {
-            NotificationManager.show("Пожалуйста, заполните все поля.", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пожалуйста, заполните все поля."), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
         try {
             CurrentUser currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
             if (currentUser == null) {
-                NotificationManager.show("Пользователь не авторизован.", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пользователь не авторизован."), 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
 
@@ -167,7 +168,7 @@ public class OperationsDialog extends Dialog {
 
             restTemplate.postForObject(url, requestEntity, Object.class);
 
-            NotificationManager.show("Операция выполнена успешно! Результат: " + resultName, 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Операция выполнена успешно! Результат: " + resultName), 3000, Notification.Position.BOTTOM_CENTER);
             close();
 
         } catch (Exception ex) {

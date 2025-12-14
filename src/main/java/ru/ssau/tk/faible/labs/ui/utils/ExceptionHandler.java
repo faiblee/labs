@@ -9,12 +9,12 @@ public class ExceptionHandler {
     public static void notifyUser(Exception e) {
         if (e instanceof HttpClientErrorException ex) {
             String message = extractMessageFromResponse(ex);
-            NotificationManager.show("Ошибка: " + message, 5000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Ошибка: " + message), 5000, Notification.Position.BOTTOM_CENTER);
         } else if (e instanceof ResourceAccessException) {
-            NotificationManager.show("Сервер недоступен. Проверьте подключение к сети.", 5000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Сервер недоступен. Проверьте подключение к сети."), 5000, Notification.Position.BOTTOM_CENTER);
         } else {
             // Общая ошибка
-            NotificationManager.show("Произошла непредвиденная ошибка: " + e.getMessage(), 5000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Произошла непредвиденная ошибка: " + e.getMessage()), 5000, Notification.Position.BOTTOM_CENTER);
         }
     }
 
