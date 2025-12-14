@@ -23,10 +23,7 @@ import ru.ssau.tk.faible.labs.repository.PointRepository;
 import ru.ssau.tk.faible.labs.repository.UserRepository;
 import ru.ssau.tk.faible.labs.service.SecurityService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -219,97 +216,67 @@ public class FunctionController {
 
         log.info("User {} deleted function ID: {}", currentUser.getUsername(), id);
     }
+
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/functions/composition")
-    public ResponseEntity<FunctionDTO> createCompositionFunction(
-            @RequestBody CompositionFunctionRequestDTO requestDto) {
+    public void createCompositionFunction(
+            @RequestBody CompositionFunctionRequestDTO compositeFunctionDTO) {
 
 
         User currentUser = securityService.getCurrentUser();
-        log.info("User {} is creating a composition function: {}", currentUser.getUsername(), requestDto.getName());
+        log.info("User {} is creating a composition function: {}", currentUser.getUsername(), compositeFunctionDTO.getName());
 
-        // 1. Найти внешнюю (f) и внутреннюю (g) функции
-        FunctionEntity outerFuncEntity = functionRepository.findById(requestDto.getOuterFunctionId())
-                .orElseThrow(() -> new RuntimeException("Outer function not found with id: " + requestDto.getOuterFunctionId()));
+        FunctionEntity func = new FunctionEntity(compositeFunctionDTO.getName(), "Сложная функция", currentUser);
 
-        FunctionEntity innerFuncEntity = functionRepository.findById(requestDto.getInnerFunctionId())
-                .orElseThrow(() -> new RuntimeException("Inner function not found with id: " + requestDto.getInnerFunctionId()));
+        FunctionEntity function = functionRepository.save(func);
 
-        // 2. Проверить права: обе функции должны принадлежать текущему пользователю или пользователь - админ
-        if (!securityService.isAdmin()) {
-            if (!outerFuncEntity.getOwner().getId().equals(currentUser.getId())) {
-                throw new RuntimeException("Access denied: Outer function does not belong to you.");
-            }
-            if (!innerFuncEntity.getOwner().getId().equals(currentUser.getId())) {
-                throw new RuntimeException("Access denied: Inner function does not belong to you.");
-            }
-        }
+        log.info("objectMapper успешно считал");
+
+        Long innerFunctionId = compositeFunctionDTO.getInnerFunctionId();
+        Long outerFunctionId = compositeFunctionDTO.getOuterFunctionId();
 
         // 3. Загрузить точки обеих функций
-        List<PointEntity> outerPoints = pointRepository.findByFunctionId(outerFuncEntity.getId());
-        List<PointEntity> innerPoints = pointRepository.findByFunctionId(innerFuncEntity.getId());
+        List<PointEntity> outerPoints = pointRepository.findByFunctionId(outerFunctionId);
+        List<PointEntity> innerPoints = pointRepository.findByFunctionId(innerFunctionId);
 
-        if (outerPoints.isEmpty() || innerPoints.isEmpty()) {
-            throw new RuntimeException("Cannot compose functions: one or both functions have no points.");
+        List<Double> xInnerValues = new LinkedList<>();
+        List<Double> yInnerValues = new LinkedList<>();
+        List<Double> xOuterValues = new LinkedList<>();
+        List<Double> yOuterValues = new LinkedList<>();
+
+        for (PointEntity point : innerPoints) {
+            xInnerValues.add(point.getXValue());
+            yInnerValues.add(point.getYValue());
+        }
+        for (PointEntity point : outerPoints) {
+            xOuterValues.add(point.getXValue());
+            yOuterValues.add(point.getYValue());
         }
 
-        // 4. Преобразовать точки в TabulatedFunction (предположим, что это ArrayTabulatedFunction)
-        //    На практике, если у вас могут быть разные типы (Array, Linked), нужно проверить и создать соответствующий.
-        double[] outerX = outerPoints.stream().mapToDouble(PointEntity::getXValue).toArray();
-        double[] outerY = outerPoints.stream().mapToDouble(PointEntity::getYValue).toArray();
-        double[] innerX = innerPoints.stream().mapToDouble(PointEntity::getXValue).toArray();
-        double[] innerY = innerPoints.stream().mapToDouble(PointEntity::getYValue).toArray();
+        TabulatedFunctionFactory factory;
 
-        TabulatedFunction outerFunc = new ArrayTabulatedFunction(outerX, outerY);
-        TabulatedFunction innerFunc = new ArrayTabulatedFunction(innerX, innerY);
-
-        // 5. Задать диапазон и количество точек для табуляции результата
-        double xFrom = innerX[0]; // Используем диапазон внутренней функции
-        double xTo = innerX[innerX.length - 1];
-        int count = 100; // или передавать в DTO
-
-        // 6. Вычислить значения для новой функции h(x) = outerFunc(innerFunc(x))
-        double[] resultX = new double[count];
-        double[] resultY = new double[count];
-        double step = (xTo - xFrom) / (count - 1);
-
-        for (int i = 0; i < count; i++) {
-            double x = xFrom + i * step;
-            // Вычисляем g(x)
-            double g_x = innerFunc.apply(x);
-            // Затем вычисляем f(g(x))
-            double f_g_x = outerFunc.apply(g_x);
-
-            resultX[i] = x;
-            resultY[i] = f_g_x;
+        if ("array".equals(currentUser.getFactoryType())) {
+            factory = new ArrayTabulatedFunctionFactory();
+        } else {
+            factory = new LinkedListTabulatedFunctionFactory();
         }
 
-        // 7. Создать новую табулированную функцию из вычисленных значений
-        TabulatedFunction resultTabulatedFunc = new ArrayTabulatedFunction(resultX, resultY);
+        double[] xInnerValuesArray = xInnerValues.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] yInnerValuesArray = yInnerValues.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] xOuterValuesArray = xOuterValues.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] yOuterValuesArray = yOuterValues.stream().mapToDouble(Double::doubleValue).toArray();
 
-        // 8. Создать новую сущность FunctionEntity и сохранить
-        FunctionEntity resultEntity = new FunctionEntity(requestDto.getName(), "COMPOSITE", currentUser);
+        TabulatedFunction innerFunction = factory.create(xInnerValuesArray, yInnerValuesArray);
+        TabulatedFunction outerFunction = factory.create(xOuterValuesArray, yOuterValuesArray);
 
-        // 9. Сохранить функцию
-        FunctionEntity savedResultEntity = functionRepository.save(resultEntity);
+        CompositeTabulatedFunction compositeFunction = new CompositeTabulatedFunction(innerFunction, outerFunction);
 
-        // 10. Создать и сохранить точки новой функции
-        List<PointEntity> resultPoints = new ArrayList<>();
-        for (int i = 0; i < resultX.length; i++) {
-            PointEntity point = new PointEntity(resultX[i], resultY[i], savedResultEntity);
-            resultPoints.add(point);
+        for (ru.ssau.tk.faible.labs.functions.Point point : compositeFunction) {
+            PointEntity pointEntity = new PointEntity(point.x, point.y, function);
+            pointRepository.save(pointEntity);
         }
-        pointRepository.saveAll(resultPoints);
-        // Обновим сущность, чтобы точки были связаны (если lazy fetch)
-        savedResultEntity.setPoints(resultPoints);
 
-        // 11. Логировать создание
-        log.info("User {} created composite function '{}' from f(id={}) and g(id={})",
-                currentUser.getUsername(), requestDto.getName(), outerFuncEntity.getId(), innerFuncEntity.getId());
-
-        // 12. Вернуть DTO созданной функции
-        FunctionDTO resultDto = toDto(savedResultEntity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(resultDto);
-
+        log.info("Сложная функция успешно добавлена");
     }
     private FunctionDTO toDto(FunctionEntity entity) {
         return new FunctionDTO(
