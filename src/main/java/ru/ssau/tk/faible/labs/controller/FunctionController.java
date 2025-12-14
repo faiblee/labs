@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.ssau.tk.faible.labs.DTO.CompositionFunctionRequestDTO;
 import ru.ssau.tk.faible.labs.DTO.CreateFunctionDTO;
 import ru.ssau.tk.faible.labs.DTO.FunctionDTO;
+import ru.ssau.tk.faible.labs.DTO.OperationRequestDTO;
 import ru.ssau.tk.faible.labs.entity.FunctionEntity;
 import ru.ssau.tk.faible.labs.entity.PointEntity;
 import ru.ssau.tk.faible.labs.entity.User;
@@ -22,6 +23,7 @@ import ru.ssau.tk.faible.labs.repository.FunctionRepository;
 import ru.ssau.tk.faible.labs.repository.PointRepository;
 import ru.ssau.tk.faible.labs.repository.UserRepository;
 import ru.ssau.tk.faible.labs.service.SecurityService;
+
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -297,6 +299,138 @@ public class FunctionController {
         }
 
         log.info("Сложная функция успешно добавлена");
+    }
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/functions/operation")
+    public void performOperation(
+            @RequestBody OperationRequestDTO operationRequestDTO) {
+
+        User currentUser = securityService.getCurrentUser();
+        log.info("User {} is performing operation: {} between func1(id={}) and func2(id={})",
+                currentUser.getUsername(), operationRequestDTO.getOperation(),
+                operationRequestDTO.getFunction1Id(), operationRequestDTO.getFunction2Id());
+
+        // 1. Найти обе функции
+        FunctionEntity func1 = functionRepository.findById(operationRequestDTO.getFunction1Id())
+                .orElseThrow(() -> new RuntimeException("Function 1 not found with id: " + operationRequestDTO.getFunction1Id()));
+
+        FunctionEntity func2 = functionRepository.findById(operationRequestDTO.getFunction2Id())
+                .orElseThrow(() -> new RuntimeException("Function 2 not found with id: " + operationRequestDTO.getFunction2Id()));
+
+        // 2. Проверить права: обе функции должны принадлежать текущему пользователю или пользователь - админ
+        if (!securityService.isAdmin()) {
+            if (!func1.getOwner().getId().equals(currentUser.getId())) {
+                throw new RuntimeException("Access denied: Function 1 does not belong to you.");
+            }
+            if (!func2.getOwner().getId().equals(currentUser.getId())) {
+                throw new RuntimeException("Access denied: Function 2 does not belong to you.");
+            }
+        }
+
+        // 3. Загрузить точки обеих функций
+        List<PointEntity> points1 = pointRepository.findByFunctionId(operationRequestDTO.getFunction1Id());
+        List<PointEntity> points2 = pointRepository.findByFunctionId(operationRequestDTO.getFunction2Id());
+
+        log.info("Точек в func1 = {}", points1.size());
+        log.info("Точек в func2 = {}", points2.size());
+
+        if (points1.isEmpty() || points2.isEmpty()) {
+            throw new RuntimeException("Cannot perform operation: one or both functions have no points.");
+        }
+
+        // 4. Проверить, что X-координаты совпадают (упрощение)
+        if (points1.size() != points2.size()) {
+            throw new RuntimeException("Cannot perform operation: functions must have the same number of points.");
+        }
+
+        List<Double> x1Values = new LinkedList<>();
+        List<Double> y1Values = new LinkedList<>();
+        List<Double> x2Values = new LinkedList<>();
+        List<Double> y2Values = new LinkedList<>();
+
+        for (PointEntity point : points1) {
+            x1Values.add(point.getXValue());
+            y1Values.add(point.getYValue());
+        }
+        for (PointEntity point : points2) {
+            x2Values.add(point.getXValue());
+            y2Values.add(point.getYValue());
+        }
+
+        for (int i = 0; i < x1Values.size(); i++) {
+            if (Math.abs(x1Values.get(i) - x2Values.get(i)) > 1e-10) { // Проверка с погрешностью
+                throw new RuntimeException("Cannot perform operation: X coordinates do not match at index " + i);
+            }
+        }
+
+        log.info("Массивы точек: x1Values - {}, y1Values - {}, x2Values - {}, y2Values - {}", x1Values, y1Values, x2Values, y2Values);
+
+        // 5. Выбрать фабрику в зависимости от пользователя
+        TabulatedFunctionFactory factory;
+        if ("array".equals(currentUser.getFactoryType())) {
+            factory = new ArrayTabulatedFunctionFactory();
+        } else {
+            factory = new LinkedListTabulatedFunctionFactory();
+        }
+
+        // 6. Преобразовать в TabulatedFunction
+        double[] x1Array = x1Values.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] y1Array = y1Values.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] x2Array = x2Values.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] y2Array = y2Values.stream().mapToDouble(Double::doubleValue).toArray();
+
+        TabulatedFunction func1Tabulated = factory.create(x1Array, y1Array);
+        TabulatedFunction func2Tabulated = factory.create(x2Array, y2Array);
+
+        log.info("Созданы 2 табулированные функции успешно");
+
+        // 7. Выполнить операцию
+        String operation = operationRequestDTO.getOperation();
+        double[] resultYArray = new double[y1Array.length];
+
+        switch (operation.toLowerCase()) { // Приводим к нижнему регистру для надёжности
+            case "сложение":
+            case "addition":
+                for (int i = 0; i < resultYArray.length; i++) {
+                    resultYArray[i] = y1Array[i] + y2Array[i];
+                }
+                break;
+            case "вычитание":
+            case "subtraction":
+                for (int i = 0; i < resultYArray.length; i++) {
+                    resultYArray[i] = y1Array[i] - y2Array[i];
+                }
+                break;
+            case "умножение":
+            case "multiplication":
+                for (int i = 0; i < resultYArray.length; i++) {
+                    resultYArray[i] = y1Array[i] * y2Array[i];
+                }
+                break;
+            case "деление":
+            case "division":
+                for (int i = 0; i < resultYArray.length; i++) {
+                    if (Math.abs(y2Array[i]) < 1e-10) {
+                        throw new RuntimeException("Cannot divide by zero at x=" + x1Array[i]);
+                    }
+                    resultYArray[i] = y1Array[i] / y2Array[i];
+                }
+                break;
+            default:
+                throw new RuntimeException("Unsupported operation: " + operation);
+        }
+
+        // 8. Создать новую функцию
+        FunctionEntity resultFunction = new FunctionEntity(operationRequestDTO.getResultName(), "OPERATION_RESULT", currentUser);
+        FunctionEntity savedResultFunction = functionRepository.save(resultFunction);
+
+        // 9. Создать и сохранить точки новой функции
+        for (int i = 0; i < x1Array.length; i++) {
+            PointEntity pointEntity = new PointEntity(x1Array[i], resultYArray[i], savedResultFunction);
+            pointRepository.save(pointEntity);
+        }
+
+        log.info("Результат операции '{}' успешно сохранён как функция с ID: {}", operation, savedResultFunction.getId());
     }
     private FunctionDTO toDto(FunctionEntity entity) {
         return new FunctionDTO(

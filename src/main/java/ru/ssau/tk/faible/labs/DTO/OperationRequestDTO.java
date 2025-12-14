@@ -1,6 +1,4 @@
-// src/main/java/ru/ssau/tk/faible/labs/ui/models/OperationRequestDTO.java
-
-package ru.ssau.tk.faible.labs.ui.models;
+package ru.ssau.tk.faible.labs.DTO;
 
 public class OperationRequestDTO {
     private String operation; // "Сложение", "Вычитание", "Умножение", "Деление"
