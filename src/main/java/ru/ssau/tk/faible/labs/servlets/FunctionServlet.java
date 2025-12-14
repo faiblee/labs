@@ -445,10 +445,10 @@ public class FunctionServlet extends HttpServlet {
             double[] xOuterValuesArray = xOuterValues.stream().mapToDouble(Double::doubleValue).toArray();
             double[] yOuterValuesArray = yOuterValues.stream().mapToDouble(Double::doubleValue).toArray();
 
-            MathFunction innerFunction = factory.create(xInnerValuesArray, yInnerValuesArray);
-            MathFunction outerFunction = factory.create(xOuterValuesArray, yOuterValuesArray);
+            TabulatedFunction innerFunction = factory.create(xInnerValuesArray, yInnerValuesArray);
+            TabulatedFunction outerFunction = factory.create(xOuterValuesArray, yOuterValuesArray);
 
-            TabulatedFunction compositeFunction = (TabulatedFunction) innerFunction.andThen(outerFunction);
+            CompositeTabulatedFunction compositeFunction = new CompositeTabulatedFunction(innerFunction, outerFunction);
 
             for (ru.ssau.tk.faible.labs.functions.Point point : compositeFunction) {
                 pointsDAO.insertPoint(point.x, point.y, functionID);
