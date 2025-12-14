@@ -285,7 +285,11 @@ public class FunctionController {
         TabulatedFunction innerFunctionTabulated = factory.create(xInnerValuesArray, yInnerValuesArray);
         TabulatedFunction outerFunctionTabulated = factory.create(xOuterValuesArray, yOuterValuesArray);
 
+        log.info("Созданы 2 функции успешно");
+
         CompositeTabulatedFunction compositeFunction = new CompositeTabulatedFunction(innerFunctionTabulated, outerFunctionTabulated);
+
+        log.info("создана композитная функция");
 
         for (ru.ssau.tk.faible.labs.functions.Point point : compositeFunction) {
             PointEntity pointEntity = new PointEntity(point.x, point.y, function);
