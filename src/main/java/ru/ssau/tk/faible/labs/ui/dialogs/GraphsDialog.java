@@ -40,7 +40,7 @@ public class GraphsDialog extends Dialog {
     private final CurrentUser currentUser;
 
     public GraphsDialog() {
-        setWidth("90vw");
+        setWidth("60vw");
         setHeight("90vh");
 
         currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
@@ -55,7 +55,6 @@ public class GraphsDialog extends Dialog {
         // Настройка Grid
         functionGrid.addColumn(FunctionDTO::getName).setHeader("Имя");
         functionGrid.addColumn(FunctionDTO::getType).setHeader("Тип");
-        functionGrid.addColumn(FunctionDTO::getId).setHeader("ID");
 
         functionGrid.addSelectionListener(event -> {
             if (!event.getFirstSelectedItem().isPresent()) return;

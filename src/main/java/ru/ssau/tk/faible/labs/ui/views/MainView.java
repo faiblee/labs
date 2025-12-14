@@ -52,7 +52,10 @@ public class MainView extends VerticalLayout {
                             dialog.open();
                         }),
                 createCard("🧮 Операции", "Выполняйте операции над функциями: сложение, умножение, дифференцирование.", "Открыть",
-                        () -> {}),
+                        () -> {
+                            OperationsDialog dialog = new OperationsDialog();
+                            dialog.open();
+                        }),
                 createCard("📊 Графики", "Стройте графики для визуализации ваших функций.", "Построить",
                         () -> {
                             GraphsDialog dialog = new GraphsDialog();
