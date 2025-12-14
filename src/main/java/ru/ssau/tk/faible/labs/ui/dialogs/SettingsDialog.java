@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
@@ -29,25 +30,25 @@ public class SettingsDialog extends Dialog {
     @Serial
     private static final long serialVersionUID = -3038251719462255126L;
     private final RestTemplate restTemplate = new RestTemplate();
-    private final TextField usernameField = new TextField("Имя пользователя");
-    private final PasswordField oldPasswordField = new PasswordField("Текущий пароль");
-    private final PasswordField newPasswordField = new PasswordField("Новый пароль");
-    private final PasswordField confirmPasswordField = new PasswordField("Подтвердите новый пароль");
+    private final TextField usernameField = new TextField(BrailleHelper.applyBrailleIfEnabled("Имя пользователя"));
+    private final PasswordField oldPasswordField = new PasswordField(BrailleHelper.applyBrailleIfEnabled("Текущий пароль"));
+    private final PasswordField newPasswordField = new PasswordField(BrailleHelper.applyBrailleIfEnabled("Новый пароль"));
+    private final PasswordField confirmPasswordField = new PasswordField(BrailleHelper.applyBrailleIfEnabled("Подтвердите новый пароль"));
     private final Select<String> factorySelect = new Select<>();
 
     public SettingsDialog() {
         setWidth("500px");
 
-        add(new H3("Настройки профиля"));
+        add(new H3(BrailleHelper.applyBrailleIfEnabled("Настройки профиля")));
 
         CurrentUser currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
         if (currentUser == null) {
-            add(new com.vaadin.flow.component.html.Div("Ошибка: пользователь не авторизован"));
+            add(new com.vaadin.flow.component.html.Div(BrailleHelper.applyBrailleIfEnabled("Ошибка: пользователь не авторизован")));
             return;
         }
         usernameField.setValue(currentUser.getUsername());
 
-        factorySelect.setLabel("Фабрика функций");
+        factorySelect.setLabel(BrailleHelper.applyBrailleIfEnabled("Фабрика функций"));
         factorySelect.setItems("array factory", "linkedList factory");
         log.info("Factory type: {}", currentUser.getFactory_type());
         factorySelect.setValue(currentUser.getFactory_type() + " factory");
@@ -57,8 +58,8 @@ public class SettingsDialog extends Dialog {
         add(form);
 
         HorizontalLayout buttons = new HorizontalLayout();
-        Button saveBtn = new Button("Сохранить", e -> saveChanges(currentUser));
-        Button cancelBtn = new Button("Отмена", e -> close());
+        Button saveBtn = new Button(BrailleHelper.applyBrailleIfEnabled("Сохранить"), e -> saveChanges(currentUser));
+        Button cancelBtn = new Button(BrailleHelper.applyBrailleIfEnabled("Отмена"), e -> close());
         buttons.add(saveBtn, cancelBtn);
 
         add(form, buttons);
@@ -73,7 +74,7 @@ public class SettingsDialog extends Dialog {
         String factoryTypeFromSelect = factorySelect.getValue();
 
         if (!newPassword.equals(confirmPassword)) {
-            ExceptionHandler.notifyUser(new IllegalArgumentException("Новые пароли не совпадают"));
+            ExceptionHandler.notifyUser(new IllegalArgumentException(BrailleHelper.applyBrailleIfEnabled("Новые пароли не совпадают")));
             return;
         }
 
@@ -130,7 +131,7 @@ public class SettingsDialog extends Dialog {
                 currentUser.setEncodedCredentials(encodedCredentials);
             }
 
-            NotificationManager.show("Изменения сохранены", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Изменения сохранены"), 3000, Notification.Position.BOTTOM_CENTER);
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
         }

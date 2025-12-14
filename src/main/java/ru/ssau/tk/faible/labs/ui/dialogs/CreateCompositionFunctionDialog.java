@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.FunctionDTO;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
@@ -35,12 +36,12 @@ public class CreateCompositionFunctionDialog extends Dialog {
     private final RestTemplate restTemplate = new RestTemplate();
     private final CurrentUser currentUser;
 
-    private final ComboBox<FunctionDTO> outerFunctionField = new ComboBox<>("Внешняя функция f(x)");
-    private final ComboBox<FunctionDTO> innerFunctionField = new ComboBox<>("Внутренняя функция g(x)");
-    private final TextField nameField = new TextField("Имя новой функции");
+    private final ComboBox<FunctionDTO> outerFunctionField = new ComboBox<>(BrailleHelper.applyBrailleIfEnabled("Внешняя функция f(x)"));
+    private final ComboBox<FunctionDTO> innerFunctionField = new ComboBox<>(BrailleHelper.applyBrailleIfEnabled("Внутренняя функция g(x)"));
+    private final TextField nameField = new TextField(BrailleHelper.applyBrailleIfEnabled("Имя новой функции"));
 
-    private final Button createButton = new Button("Создать");
-    private final Button cancelButton = new Button("Отмена");
+    private final Button createButton = new Button(BrailleHelper.applyBrailleIfEnabled("Создать"));
+    private final Button cancelButton = new Button(BrailleHelper.applyBrailleIfEnabled("Отмена"));
 
     public CreateCompositionFunctionDialog() {
         currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
@@ -48,10 +49,10 @@ public class CreateCompositionFunctionDialog extends Dialog {
         setWidth("60vw");
         setHeight("60vh");
 
-        H2 title = new H2("Создание композиции функций");
+        H2 title = new H2(BrailleHelper.applyBrailleIfEnabled("Создание композиции функций"));
         title.getStyle().set("margin", "0 0 1rem 0").set("font-size", "1.5em");
 
-        Paragraph description = new Paragraph("Выберите внешнюю и внутреннюю функции для создания f(g(x)).");
+        Paragraph description = new Paragraph(BrailleHelper.applyBrailleIfEnabled("Выберите внешнюю и внутреннюю функции для создания f(g(x))."));
         description.getStyle().set("margin", "0 0 1rem 0").set("color", "var(--lumo-secondary-text-color)");
 
         // Загрузка функций
@@ -118,11 +119,11 @@ public class CreateCompositionFunctionDialog extends Dialog {
         FunctionDTO innerFunc = innerFunctionField.getValue();
 
         if (name == null || name.trim().isEmpty()) {
-            NotificationManager.show("Пожалуйста, введите имя функции!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пожалуйста, введите имя функции!"), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
         if (outerFunc == null || innerFunc == null) {
-            NotificationManager.show("Пожалуйста, выберите обе функции!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пожалуйста, выберите обе функции!"), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
@@ -152,7 +153,7 @@ public class CreateCompositionFunctionDialog extends Dialog {
             // Отправляем POST-запрос на создание композиции
             restTemplate.postForObject(url, request, Void.class);
 
-            NotificationManager.show("Композиция функций '" + name + "' = f(g(x)) создана!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Композиция функций '" + name + "' = f(g(x)) создана!"), 3000, Notification.Position.BOTTOM_CENTER);
             close();
 
         } catch (Exception ex) {
