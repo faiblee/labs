@@ -23,6 +23,7 @@ import ru.ssau.tk.faible.labs.repository.PointRepository;
 import ru.ssau.tk.faible.labs.repository.UserRepository;
 import ru.ssau.tk.faible.labs.service.SecurityService;
 
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
