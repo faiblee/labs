@@ -145,7 +145,25 @@ public class FunctionsListDialog extends Dialog {
             applyLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
             applyLayout.setSpacing(true);
             detailPanel.add(new H3(BrailleHelper.applyBrailleIfEnabled("Вычислить значение")), applyLayout);
+            VerticalLayout applyVertical = new VerticalLayout(new H3("Вычислить значение"), applyLayout);
+//            detailPanel.add(, applyLayout);
 
+            // === Добавление новой точки ===
+            TextField addXField = new TextField("X");
+            TextField addYField = new TextField("Y");
+            Button addButton = new Button("Добавить точку", e ->
+                    addPoint(func.getId(), addXField.getValue(), addYField.getValue())
+            );
+
+            HorizontalLayout addPointLayout = new HorizontalLayout(addXField, addYField, addButton);
+            addPointLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
+            addPointLayout.setSpacing(true);
+            VerticalLayout addPointVertical = new VerticalLayout(new H3("Добавить точку"), addPointLayout);
+//            detailPanel.add(new H3("Добавить точку"), addPointLayout);
+
+            HorizontalLayout bottomLayout = new HorizontalLayout(applyVertical, addPointVertical);
+
+            detailPanel.add(bottomLayout);
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
         }
@@ -192,13 +210,47 @@ public class FunctionsListDialog extends Dialog {
                     setter.accept(item, parsed);
                 }
             } catch (NumberFormatException ex) {
-                Notification.show(BrailleHelper.applyBrailleIfEnabled("Введите корректное число"), 3000, Notification.Position.MIDDLE);
+                Notification.show("Введите корректное число", 3000, Notification.Position.MIDDLE);
                 field.setValue("");
                 setter.accept(item, null);
             }
         });
 
         return field;
+    }
+
+    private void addPoint(int functionId, String xStr, String yStr) {
+        if (xStr == null || xStr.trim().isEmpty() || yStr == null || yStr.trim().isEmpty()) {
+            NotificationManager.show("Введите оба значения x и y", 3000, Notification.Position.BOTTOM_CENTER);
+            return;
+        }
+        try {
+            double x = Double.parseDouble(xStr);
+            double y = Double.parseDouble(yStr);
+
+            // Формируем тело запроса
+            Map<String, Object> pointData = new HashMap<>();
+            pointData.put("xvalue", x);
+            pointData.put("yvalue", y);
+
+            String url = "http://localhost:8080/api/functions/" + functionId + "/points";
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(pointData, headers);
+            restTemplate.postForObject(url, request, Void.class);
+
+            NotificationManager.show("Точка добавлена!", 3000, Notification.Position.BOTTOM_CENTER);
+
+            // Перезагрузить точки, чтобы новая появилась в таблице
+            loadFunctionDetails(selectedFunction);
+
+        } catch (NumberFormatException e) {
+            NotificationManager.show("Некорректные значения x или y", 3000, Notification.Position.BOTTOM_CENTER);
+        } catch (Exception ex) {
+            ExceptionHandler.notifyUser(ex);
+        }
     }
 
     private void savePoints(int functionId) {
