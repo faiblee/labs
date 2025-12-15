@@ -56,7 +56,7 @@ public class PointController {
         securityService.getCurrentUser();
 
         // Получаем точки по ID функции
-        List<PointEntity> points = pointRepository.findByFunctionId(functionId);
+        List<PointEntity> points = pointRepository.findByFunctionIdOrderByXValueAsc(functionId);
 
         log.info("Retrieved {} points for function ID: {}", points.size(), functionId);
 
