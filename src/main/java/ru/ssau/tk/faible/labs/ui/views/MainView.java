@@ -8,6 +8,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -40,10 +41,15 @@ public class MainView extends VerticalLayout {
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         H3 title = new H3(BrailleHelper.applyBrailleIfEnabled("Функциональный калькулятор"));
-        Div spacer = new Div();
+        Button brailleButton = new Button(VaadinIcon.BOLD.create(), e -> {
+            boolean isEnabled = BrailleHelper.isBrailleModeEnabled();
+            BrailleHelper.setBrailleModeEnabled(!isEnabled);
+            Notification.show("Режим Брайля " + (!isEnabled ? "включён" : "выключен"));
+            UI.getCurrent().getPage().reload();
+        });
         LogoutButton logoutButton = new LogoutButton();
 
-        header.add(spacer, title, logoutButton);
+        header.add(brailleButton, title, logoutButton);
         add(header);
 
         // === Центральная область: сетка 2x3 ===
@@ -79,14 +85,6 @@ public class MainView extends VerticalLayout {
                         () -> {
                             FunctionsListDialog dialog = new FunctionsListDialog();
                             dialog.open();
-                        }),
-                createCard("🔤 Режим Брайля", "Включить/отключить отображение всего текста в символах Брайля.", "Переключить",
-                        () -> {
-                            boolean isEnabled = BrailleHelper.isBrailleModeEnabled();
-                            BrailleHelper.setBrailleModeEnabled(!isEnabled);
-                            Notification.show("Режим Брайля " + (!isEnabled ? "включён" : "выключен"));
-                            // Перезагрузка страницы для обновления всех текстов
-                            UI.getCurrent().getPage().reload();
                         })
         );
 
