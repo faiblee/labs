@@ -6,7 +6,7 @@ import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
@@ -50,6 +50,7 @@ public class OperationsDialog extends Dialog {
 
     private final Button loadJson1 = new Button("Загрузить из JSON");
     private final Button loadJson2 = new Button("Загрузить из JSON");
+    private final Button calculateButton = new Button("Вычислить");
 
     // Result section
     private final Grid<PointDTO> resultGrid;
@@ -57,6 +58,129 @@ public class OperationsDialog extends Dialog {
 
     // Operation
     private final Select<String> operationSelect = new Select<>();
+
+
+    public OperationsDialog() {
+        this.currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
+
+        setWidth("98vw");
+        setHeight("95vh");
+
+        // === Заголовок ===
+        H2 title = new H2(BrailleHelper.applyBrailleIfEnabled("Операции над функциями"));
+        title.getStyle().set("margin", "0 0 1rem 0").set("font-size", "1.5em");
+
+        // === Выбор операции (вверху) ===
+        operationSelect.setLabel("Выберите операцию");
+        operationSelect.setItems("сложение", "вычитание", "умножение", "деление");
+        operationSelect.setWidth("200px");
+
+        HorizontalLayout operationLayout = new HorizontalLayout(new Span("Операция:"), operationSelect, calculateButton);
+        operationLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+        operationLayout.setSpacing(true);
+
+
+        // Таблицы
+        this.pointsGrid1 = createPointsGrid(points1, true);
+        this.pointsGrid2 = createPointsGrid(points2, true);
+        this.resultGrid = createPointsGrid(resultPoints, false);
+
+        calculateButton.addClickListener(e -> updateResult());
+
+        // Панели
+        VerticalLayout leftPanel = createFunctionPanel("Функция f(x)", function1Select, pointsGrid1, loadJson1);
+        VerticalLayout centerPanel = createFunctionPanel("Функция g(x)", function2Select, pointsGrid2, loadJson2);
+        VerticalLayout rightPanel = createResultPanel();
+
+        loadJson1.addClickListener(e -> openJsonUploadDialog(points1, pointsGrid1));
+        loadJson2.addClickListener(e -> openJsonUploadDialog(points2, pointsGrid2));
+
+        // Основной макет
+        HorizontalLayout mainLayout = new HorizontalLayout(leftPanel, centerPanel, rightPanel);
+        mainLayout.setSizeFull();
+        mainLayout.setFlexGrow(1, leftPanel);
+        mainLayout.setFlexGrow(1, centerPanel);
+        mainLayout.setFlexGrow(1, rightPanel);
+
+        // Обертка для заголовка и операции — по центру
+        VerticalLayout vert = new VerticalLayout(title, operationLayout);
+        vert.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        HorizontalLayout headerSection = new HorizontalLayout(vert);
+        headerSection.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER); // ← Центрирование
+        headerSection.setSpacing(true);
+        headerSection.setWidthFull();
+
+        // Основной контент
+        VerticalLayout content = new VerticalLayout(headerSection, mainLayout);
+        content.setSizeFull();
+        content.setSpacing(true);
+        content.setPadding(true);
+
+        Button closeButton = new Button("Закрыть", e -> close());
+        closeButton.setWidth("100px");
+
+        // Добавляем кнопку "Закрыть" вниз, по правому краю
+        HorizontalLayout footer = new HorizontalLayout();
+        footer.setWidthFull();
+        footer.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
+        footer.add(closeButton);
+
+        content.add(footer);
+
+        add(content);
+        loadFunctions();
+    }
+
+    private VerticalLayout createFunctionPanel(String title, Select<FunctionDTO> funcSelect, Grid<PointDTO> grid, Button loadJsonButton) {
+        H3 panelTitle = new H3(title);
+        panelTitle.getStyle().set("margin", "0 0 0.5rem 0");
+
+        funcSelect.setLabel(BrailleHelper.applyBrailleIfEnabled("Выберите функцию"));
+        funcSelect.setWidthFull();
+
+        // Таблица — растягивается
+        grid.setHeightFull();
+        VerticalLayout gridWrapper = new VerticalLayout(grid);
+        gridWrapper.setPadding(false);
+        gridWrapper.setSpacing(false);
+        gridWrapper.setSizeFull();
+
+        loadJsonButton.setWidthFull();
+
+        VerticalLayout panel = new VerticalLayout(panelTitle, funcSelect, gridWrapper, loadJsonButton);
+        panel.setPadding(true);
+        panel.setSpacing(true);
+        panel.setSizeFull();
+        panel.setFlexGrow(1, gridWrapper); // таблица растягивается
+        return panel;
+    }
+
+    private VerticalLayout createResultPanel() {
+        H3 panelTitle = new H3("Результат");
+        panelTitle.getStyle().set("margin", "0 0 0.5rem 0");
+
+        resultGrid.setHeightFull();
+        VerticalLayout gridWrapper = new VerticalLayout(resultGrid);
+        gridWrapper.setPadding(false);
+        gridWrapper.setSpacing(false);
+        gridWrapper.setSizeFull();
+
+        Button saveButton = new Button("Сохранить", e -> saveResult());
+        Button exportButton = new Button("Экспорт в JSON", e -> exportResultToJson());
+        exportButton.setWidthFull();
+        saveButton.setWidthFull();
+
+        VerticalLayout buttonLayout = new VerticalLayout(saveButton, exportButton);
+        buttonLayout.setSpacing(true);
+        buttonLayout.setWidthFull();
+
+        VerticalLayout panel = new VerticalLayout(panelTitle, gridWrapper, buttonLayout);
+        panel.setPadding(true);
+        panel.setSpacing(true);
+        panel.setSizeFull();
+        panel.setFlexGrow(1, gridWrapper);
+        return panel;
+    }
 
     private void openJsonUploadDialog(List<PointDTO> targetList, Grid<PointDTO> targetGrid) {
         UploadHandler uploadHandler = UploadHandler.inMemory((metadata, data) -> {
@@ -107,100 +231,6 @@ public class OperationsDialog extends Dialog {
         jsonDialog.open();
     }
 
-    public OperationsDialog() {
-        this.currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
-
-        setWidth("95vw");
-        setHeight("90vh");
-
-        add(new H3(BrailleHelper.applyBrailleIfEnabled("Операции над функциями")));
-
-        // Make grids accessible
-        this.pointsGrid1 = createPointsGrid(points1, true);
-        this.pointsGrid2 = createPointsGrid(points2, true);
-        this.resultGrid = createPointsGrid(resultPoints, false);
-
-        // === Левая панель: функция 1 ===
-        VerticalLayout leftPanel = createFunctionPanel("Функция f(x)", function1Select, pointsGrid1, loadJson1);
-        // === Центральная панель: операция + функция 2 ===
-        VerticalLayout centerPanel = createCenterPanel();
-        // === Правая панель: результат ===
-        VerticalLayout rightPanel = createResultPanel();
-
-        HorizontalLayout mainLayout = new HorizontalLayout(leftPanel, centerPanel, rightPanel);
-        mainLayout.setSizeFull();
-        mainLayout.setFlexGrow(1, leftPanel);
-        mainLayout.setFlexGrow(1, centerPanel);
-        mainLayout.setFlexGrow(1, rightPanel);
-
-        Button closeButton = new Button("Закрыть", e -> close());
-        closeButton.setWidth("100px");
-
-        loadJson1.addClickListener(e -> openJsonUploadDialog(points1, pointsGrid1));
-        loadJson2.addClickListener(e -> openJsonUploadDialog(points2, pointsGrid2));
-
-        VerticalLayout content = new VerticalLayout(mainLayout, closeButton);
-        content.setSizeFull();
-        content.setAlignItems(FlexComponent.Alignment.END);
-        add(content);
-
-        loadFunctions();
-    }
-
-    private VerticalLayout createFunctionPanel(String title, Select<FunctionDTO> funcSelect, Grid<PointDTO> pointsGrid, Button loadJson) {
-        funcSelect.setLabel(BrailleHelper.applyBrailleIfEnabled(title));
-        funcSelect.addValueChangeListener(e -> {
-            if (e.getValue() != null) {
-                loadPointsForFunction(e.getValue().getId(), points1, pointsGrid);
-            }
-        });
-
-        loadJson.addClickListener(e -> openJsonUploadDialog(points1, pointsGrid1)); // для левой панели
-
-        VerticalLayout controls = new VerticalLayout(funcSelect, loadJson);
-        controls.setSpacing(true);
-        controls.setWidthFull();
-
-        VerticalLayout gridWrapper = new VerticalLayout(pointsGrid);
-        gridWrapper.setHeight("300px");
-        gridWrapper.setWidthFull();
-
-        VerticalLayout panel = new VerticalLayout(new H3(title), controls, gridWrapper);
-        panel.setPadding(true);
-        panel.setSpacing(true);
-        panel.setWidthFull();
-        return panel;
-    }
-
-    private VerticalLayout createCenterPanel() {
-        operationSelect.setLabel("Операция");
-        operationSelect.setItems("сложение", "вычитание", "умножение", "деление");
-        operationSelect.addValueChangeListener(e -> updateResult());
-
-        function2Select.setLabel("Функция g(x)");
-        function2Select.addValueChangeListener(e -> {
-            if (e.getValue() != null) {
-                loadPointsForFunction(e.getValue().getId(), points2, pointsGrid2);
-            }
-        });
-
-        loadJson2.addClickListener(e -> openJsonUploadDialog(points2, pointsGrid2)); // для центральной
-
-        VerticalLayout controls = new VerticalLayout(operationSelect, function2Select, loadJson2);
-        controls.setSpacing(true);
-        controls.setWidthFull();
-
-        VerticalLayout gridWrapper = new VerticalLayout(pointsGrid2);
-        gridWrapper.setHeight("300px");
-        gridWrapper.setWidthFull();
-
-        VerticalLayout panel = new VerticalLayout(new H3("Операция и функция g(x)"), controls, gridWrapper);
-        panel.setPadding(true);
-        panel.setSpacing(true);
-        panel.setWidthFull();
-        return panel;
-    }
-
     private void exportResultToJson() {
         if (resultPoints.isEmpty()) {
             Notification.show("Нет данных для экспорта");
@@ -234,25 +264,6 @@ public class OperationsDialog extends Dialog {
         } catch (Exception ex) {
             Notification.show("Ошибка экспорта: " + ex.getMessage());
         }
-    }
-
-    private VerticalLayout createResultPanel() {
-        Button saveButton = new Button("Сохранить", e -> saveResult());
-        Button exportButton = new Button("Экспорт в JSON", e -> exportResultToJson());
-
-        VerticalLayout buttons = new VerticalLayout(saveButton, exportButton);
-        buttons.setSpacing(true);
-        buttons.setWidthFull();
-
-        VerticalLayout gridWrapper = new VerticalLayout(resultGrid);
-        gridWrapper.setHeight("400px");
-        gridWrapper.setWidthFull();
-
-        VerticalLayout panel = new VerticalLayout(new H3("Результат"), gridWrapper, buttons);
-        panel.setPadding(true);
-        panel.setSpacing(true);
-        panel.setWidthFull();
-        return panel;
     }
 
     private Grid<PointDTO> createPointsGrid(List<PointDTO> points, boolean editable) {
@@ -346,8 +357,6 @@ public class OperationsDialog extends Dialog {
                     ));
                 }
             }
-
-
             targetGrid.getDataProvider().refreshAll();
 
             updateResult();
