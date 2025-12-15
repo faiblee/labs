@@ -2,13 +2,12 @@
 
 package ru.ssau.tk.faible.labs.ui.dialogs;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -16,17 +15,23 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.streams.UploadHandler;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.models.*;
 import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
+import ru.ssau.tk.faible.labs.ui.utils.JsonFileHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class OperationsDialog extends Dialog {
@@ -35,22 +40,72 @@ public class OperationsDialog extends Dialog {
     private final CurrentUser currentUser;
 
     // UI components for left and center
-    private Select<FunctionDTO> function1Select = new Select<>();
-    private Select<FunctionDTO> function2Select = new Select<>();
-    private Button loadJson1 = new Button("Загрузить из JSON");
-    private Button loadJson2 = new Button("Загрузить из JSON");
+    private final Select<FunctionDTO> function1Select = new Select<>();
+    private final Select<FunctionDTO> function2Select = new Select<>();
 
     private Grid<PointDTO> pointsGrid1;
     private Grid<PointDTO> pointsGrid2;
-    private List<PointDTO> points1 = new ArrayList<>();
-    private List<PointDTO> points2 = new ArrayList<>();
+    private final List<PointDTO> points1 = new ArrayList<>();
+    private final List<PointDTO> points2 = new ArrayList<>();
+
+    private final Button loadJson1 = new Button("Загрузить из JSON");
+    private final Button loadJson2 = new Button("Загрузить из JSON");
 
     // Result section
-    private Grid<PointDTO> resultGrid;
-    private List<PointDTO> resultPoints = new ArrayList<>();
+    private final Grid<PointDTO> resultGrid;
+    private final List<PointDTO> resultPoints = new ArrayList<>();
 
     // Operation
-    private Select<String> operationSelect = new Select<>();
+    private final Select<String> operationSelect = new Select<>();
+
+    private void openJsonUploadDialog(List<PointDTO> targetList, Grid<PointDTO> targetGrid) {
+        UploadHandler uploadHandler = UploadHandler.inMemory((metadata, data) -> {
+            String fileName = metadata.fileName();
+            if (!fileName.toLowerCase().endsWith(".json")) {
+                Notification.show("Файл должен иметь расширение .json", 4000, Notification.Position.MIDDLE);
+                return;
+            }
+
+            try {
+                // Десериализуем из byte[]
+                try (var reader = new InputStreamReader(new ByteArrayInputStream(data), StandardCharsets.UTF_8)) {
+                    FunctionJsonDTO dto = JsonFileHandler.deserializeFunction(reader); // ← нужно обновить JsonFileHandler!
+
+                    targetList.clear();
+                    if (dto.getXValues() != null && dto.getYValues() != null &&
+                            dto.getXValues().size() == dto.getYValues().size()) {
+
+                        for (int i = 0; i < dto.getXValues().size(); i++) {
+                            targetList.add(new PointDTO(0, dto.getXValues().get(i), dto.getYValues().get(i), 0));
+                        }
+                    }
+
+                    targetGrid.getDataProvider().refreshAll();
+                    updateResult();
+
+                    Notification.show("Функция загружена из " + fileName, 3000, Notification.Position.BOTTOM_CENTER);
+                }
+            } catch (Exception ex) {
+                Notification.show("Ошибка: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+            }
+        });
+
+        Upload upload = new Upload(uploadHandler);
+        upload.setMaxFiles(1);
+        upload.setAcceptedFileTypes(".json");
+
+        Button cancelButton = new Button("Отмена", e -> close());
+        Button uploadButton = new Button("Загрузить");
+        uploadButton.setEnabled(false); // Upload сам управляет активностью
+
+        // Интегрируем Upload в кнопку-обёртку (чтобы не показывать стандартный стиль Upload)
+        // Но проще — использовать Upload как есть
+        Dialog jsonDialog = new Dialog();
+        jsonDialog.setHeaderTitle("Загрузить функцию из JSON");
+        jsonDialog.add(new VerticalLayout(new Span("Выберите JSON-файл:"), upload));
+        jsonDialog.setWidth("500px");
+        jsonDialog.open();
+    }
 
     public OperationsDialog() {
         this.currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
@@ -81,6 +136,9 @@ public class OperationsDialog extends Dialog {
         Button closeButton = new Button("Закрыть", e -> close());
         closeButton.setWidth("100px");
 
+        loadJson1.addClickListener(e -> openJsonUploadDialog(points1, pointsGrid1));
+        loadJson2.addClickListener(e -> openJsonUploadDialog(points2, pointsGrid2));
+
         VerticalLayout content = new VerticalLayout(mainLayout, closeButton);
         content.setSizeFull();
         content.setAlignItems(FlexComponent.Alignment.END);
@@ -97,7 +155,7 @@ public class OperationsDialog extends Dialog {
             }
         });
 
-        loadJson.addClickListener(e -> Notification.show("Загрузка из JSON — позже"));
+        loadJson.addClickListener(e -> openJsonUploadDialog(points1, pointsGrid1)); // для левой панели
 
         VerticalLayout controls = new VerticalLayout(funcSelect, loadJson);
         controls.setSpacing(true);
@@ -126,7 +184,7 @@ public class OperationsDialog extends Dialog {
             }
         });
 
-        loadJson2.addClickListener(e -> Notification.show("Загрузка из JSON — позже"));
+        loadJson2.addClickListener(e -> openJsonUploadDialog(points2, pointsGrid2)); // для центральной
 
         VerticalLayout controls = new VerticalLayout(operationSelect, function2Select, loadJson2);
         controls.setSpacing(true);
@@ -143,9 +201,44 @@ public class OperationsDialog extends Dialog {
         return panel;
     }
 
+    private void exportResultToJson() {
+        if (resultPoints.isEmpty()) {
+            Notification.show("Нет данных для экспорта");
+            return;
+        }
+
+        try {
+            String json = JsonFileHandler.serializeFunction(
+                    "Результат операции",
+                    "Табулированная функция",
+                    resultPoints
+            );
+
+            // Кодируем в base64
+            String base64 = java.util.Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+            String dataUrl = "data:application/json;charset=utf-8;base64," + base64;
+            String fileName = "result_function.json";
+
+            // Генерируем и выполняем JS для скачивания
+            String script = """
+            const a = document.createElement('a');
+            a.href = '%s';
+            a.download = '%s';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        """.formatted(dataUrl, fileName);
+
+            getUI().ifPresent(ui -> ui.getPage().executeJs(script));
+
+        } catch (Exception ex) {
+            Notification.show("Ошибка экспорта: " + ex.getMessage());
+        }
+    }
+
     private VerticalLayout createResultPanel() {
         Button saveButton = new Button("Сохранить", e -> saveResult());
-        Button exportButton = new Button("Экспорт в JSON", e -> Notification.show("Экспорт — позже"));
+        Button exportButton = new Button("Экспорт в JSON", e -> exportResultToJson());
 
         VerticalLayout buttons = new VerticalLayout(saveButton, exportButton);
         buttons.setSpacing(true);
