@@ -2,177 +2,373 @@
 
 package ru.ssau.tk.faible.labs.ui.dialogs;
 
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Setter;
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.server.VaadinSession;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.FunctionDTO;
-import ru.ssau.tk.faible.labs.ui.models.OperationRequestDTO;
+import ru.ssau.tk.faible.labs.ui.models.PointDTO;
 import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
-import java.util.List;
+import java.util.*;
 
 public class OperationsDialog extends Dialog {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final Select<String> operationSelect = new Select<>();
-    private final Select<FunctionDTO> function1Select = new Select<>();
-    private final Select<FunctionDTO> function2Select = new Select<>();
-    private final TextField resultNameField = new TextField(BrailleHelper.applyBrailleIfEnabled("Имя результата"));
+    private final CurrentUser currentUser;
 
-    private final Button executeButton = new Button(BrailleHelper.applyBrailleIfEnabled("Выполнить"));
-    private final Button cancelButton = new Button(BrailleHelper.applyBrailleIfEnabled("Отмена"));
+    // UI components for left and center
+    private Select<FunctionDTO> function1Select = new Select<>();
+    private Select<FunctionDTO> function2Select = new Select<>();
+    private Button loadJson1 = new Button("Загрузить из JSON");
+    private Button loadJson2 = new Button("Загрузить из JSON");
+
+    private Grid<PointDTO> pointsGrid1;
+    private Grid<PointDTO> pointsGrid2;
+    private List<PointDTO> points1 = new ArrayList<>();
+    private List<PointDTO> points2 = new ArrayList<>();
+
+    // Result section
+    private Grid<PointDTO> resultGrid;
+    private List<PointDTO> resultPoints = new ArrayList<>();
+
+    // Operation
+    private Select<String> operationSelect = new Select<>();
 
     public OperationsDialog() {
-        setWidth("60vw");
-        setHeight("60vh");
+        this.currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
 
-        // Заголовок
-        H2 title = new H2(BrailleHelper.applyBrailleIfEnabled("Операции над функциями"));
-        title.getStyle().set("margin", "0 0 1rem 0").set("font-size", "1.5em");
+        setWidth("95vw");
+        setHeight("90vh");
 
-        // Описание
-        Paragraph description = new Paragraph(BrailleHelper.applyBrailleIfEnabled("Выберите операцию и две функции."));
-        description.getStyle().set("margin", "0 0 1rem 0").set("color", "var(--lumo-secondary-text-color)");
+        add(new H3(BrailleHelper.applyBrailleIfEnabled("Операции над функциями")));
 
-        // Настройка Select для операций
+        // === Левая панель: функция 1 ===
+        VerticalLayout leftPanel = createFunctionPanel("Функция f(x)", function1Select, pointsGrid1, loadJson1, true);
+        // === Центральная панель: операция + функция 2 ===
+        VerticalLayout centerPanel = createCenterPanel();
+        // === Правая панель: результат ===
+        VerticalLayout rightPanel = createResultPanel();
+
+        // Make grids accessible
+        this.pointsGrid1 = createPointsGrid(points1, true);
+        this.pointsGrid2 = createPointsGrid(points2, true);
+        this.resultGrid = createPointsGrid(resultPoints, false);
+
+        // Replace placeholders
+        ((VerticalLayout) leftPanel.getComponentAt(2)).replace(pointsGrid1, this.pointsGrid1);
+        ((VerticalLayout) centerPanel.getComponentAt(2)).replace(pointsGrid2, this.pointsGrid2);
+        ((VerticalLayout) rightPanel.getComponentAt(1)).replace(resultGrid, this.resultGrid);
+
+        HorizontalLayout mainLayout = new HorizontalLayout(leftPanel, centerPanel, rightPanel);
+        mainLayout.setSizeFull();
+        mainLayout.setFlexGrow(1, leftPanel);
+        mainLayout.setFlexGrow(1, centerPanel);
+        mainLayout.setFlexGrow(1, rightPanel);
+
+        Button closeButton = new Button("Закрыть", e -> close());
+        closeButton.setWidth("100px");
+
+        VerticalLayout content = new VerticalLayout(mainLayout, closeButton);
+        content.setSizeFull();
+        content.setAlignItems(FlexComponent.Alignment.END);
+        add(content);
+
+        loadFunctions();
+    }
+
+    private VerticalLayout createFunctionPanel(String title, Select<FunctionDTO> funcSelect, Grid<PointDTO> placeholder, Button loadJson, boolean editable) {
+        funcSelect.setLabel(BrailleHelper.applyBrailleIfEnabled(title));
+        funcSelect.setItems(); // will be set later
+        funcSelect.addValueChangeListener(e -> {
+            if (e.getValue() != null) {
+                loadPointsForFunction(e.getValue().getId(), editable ? points1 : points2, editable ? pointsGrid1 : pointsGrid2);
+            }
+        });
+
+        loadJson.addClickListener(e -> {
+            // TODO: implement JSON upload later
+            Notification.show("Загрузка из JSON — будет реализована позже");
+        });
+
+        VerticalLayout selectLayout = new VerticalLayout(funcSelect, loadJson);
+        selectLayout.setSpacing(true);
+        selectLayout.setWidthFull();
+
+        // Placeholder for grid
+        VerticalLayout gridWrapper = new VerticalLayout(placeholder != null ? placeholder : new Span());
+        gridWrapper.setHeight("300px");
+        gridWrapper.setWidthFull();
+
+        VerticalLayout panel = new VerticalLayout(new H3(title), selectLayout, gridWrapper);
+        panel.setPadding(true);
+        panel.setSpacing(true);
+        panel.setWidthFull();
+        return panel;
+    }
+
+    private VerticalLayout createCenterPanel() {
         operationSelect.setLabel(BrailleHelper.applyBrailleIfEnabled("Операция"));
         operationSelect.setItems("Сложение", "Вычитание", "Умножение", "Деление");
+        operationSelect.addValueChangeListener(e -> updateResult());
 
-        // Настройка Select для функций
-        function1Select.setLabel(BrailleHelper.applyBrailleIfEnabled("Функция 1 (f)"));
-        function2Select.setLabel(BrailleHelper.applyBrailleIfEnabled("Функция 2 (g)"));
+        function2Select.setLabel(BrailleHelper.applyBrailleIfEnabled("Функция g(x)"));
+        function2Select.setItems(); // will be set later
+        function2Select.addValueChangeListener(e -> {
+            if (e.getValue() != null) {
+                loadPointsForFunction(e.getValue().getId(), points2, pointsGrid2);
+            }
+        });
 
-        // Загружаем функции при открытии диалога
-        loadFunctions();
+        loadJson2.addClickListener(e -> {
+            // TODO
+            Notification.show("Загрузка из JSON — будет реализована позже");
+        });
 
-        // Поле для имени результата
-        resultNameField.setPlaceholder(BrailleHelper.applyBrailleIfEnabled("Введите имя новой функции"));
-        resultNameField.setRequiredIndicatorVisible(true);
+        VerticalLayout selectLayout = new VerticalLayout(operationSelect, function2Select, loadJson2);
+        selectLayout.setSpacing(true);
+        selectLayout.setWidthFull();
 
-        // Форма
-        FormLayout form = new FormLayout();
-        form.add(title, description, operationSelect, function1Select, function2Select, resultNameField);
-        form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1));
-        form.addClassName("spacing-medium");
+        VerticalLayout gridWrapper = new VerticalLayout(pointsGrid2 != null ? pointsGrid2 : new Span());
+        gridWrapper.setHeight("300px");
+        gridWrapper.setWidthFull();
 
+        VerticalLayout panel = new VerticalLayout(new H3("Операция и функция g(x)"), selectLayout, gridWrapper);
+        panel.setPadding(true);
+        panel.setSpacing(true);
+        panel.setWidthFull();
+        return panel;
+    }
 
-        // Кнопки
-        HorizontalLayout buttons = new HorizontalLayout(executeButton, cancelButton);
-        buttons.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-        buttons.setWidthFull();
+    private VerticalLayout createResultPanel() {
+        H3 resultTitle = new H3("Результат: f(x) ? g(x)");
 
-        add(form, buttons);
+        Button saveButton = new Button("Сохранить к своим функциям", e -> saveResult());
+        Button exportButton = new Button("Экспорт в JSON", e -> {
+            // TODO
+            Notification.show("Экспорт в JSON — будет реализован позже");
+        });
 
-        // Обработчики событий
-        executeButton.addClickListener(e -> performOperation());
-        cancelButton.addClickListener(e -> close());
+        HorizontalLayout buttonLayout = new HorizontalLayout(saveButton, exportButton);
+        buttonLayout.setSpacing(true);
+        buttonLayout.setWidthFull();
+
+        VerticalLayout gridWrapper = new VerticalLayout(resultGrid != null ? resultGrid : new Span());
+        gridWrapper.setHeight("400px");
+        gridWrapper.setWidthFull();
+
+        VerticalLayout panel = new VerticalLayout(resultTitle, gridWrapper, buttonLayout);
+        panel.setPadding(true);
+        panel.setSpacing(true);
+        panel.setWidthFull();
+        return panel;
+    }
+
+    private Grid<PointDTO> createPointsGrid(List<PointDTO> points, boolean editable) {
+        Grid<PointDTO> grid = new Grid<>();
+        grid.setItems(points);
+        grid.addColumn(PointDTO::getXValue).setHeader("X").setAutoWidth(true);
+        grid.addColumn(PointDTO::getYValue).setHeader("Y").setAutoWidth(true);
+
+        if (editable) {
+            // Add edit columns
+            grid.removeColumnByKey("xValue");
+            grid.removeColumnByKey("yValue");
+            grid.addComponentColumn(item -> createEditableTextField(item, PointDTO::getXValue, PointDTO::setXValue))
+                    .setHeader("X").setAutoWidth(true);
+            grid.addComponentColumn(item -> createEditableTextField(item, PointDTO::getYValue, PointDTO::setYValue))
+                    .setHeader("Y").setAutoWidth(true);
+        }
+
+        return grid;
+    }
+
+    private TextField createEditableTextField(
+            PointDTO item,
+            ValueProvider<PointDTO, Double> valueProvider,
+            Setter<PointDTO, Double> setter) {
+        TextField field = new TextField();
+        Double value = valueProvider.apply(item);
+        field.setValue(value != null ? value.toString() : "");
+        field.setWidth("100px");
+        field.addValueChangeListener(e -> {
+            String val = e.getValue();
+            try {
+                if (val == null || val.trim().isEmpty()) {
+                    setter.accept(item, null);
+                } else {
+                    Double parsed = Double.parseDouble(val);
+                    setter.accept(item, parsed);
+                }
+            } catch (NumberFormatException ex) {
+                Notification.show("Введите число", 3000, Notification.Position.MIDDLE);
+                field.setValue("");
+                setter.accept(item, null);
+            }
+        });
+        return field;
     }
 
     private void loadFunctions() {
         try {
-            CurrentUser currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
-            if (currentUser == null) {
-                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пользователь не авторизован."), 3000, Notification.Position.BOTTOM_CENTER);
-                close();
-                return;
-            }
-
             String url = "http://localhost:8080/api/functions?ownerId=" + currentUser.getId();
-
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
-            HttpEntity<Void> request = new HttpEntity<>(headers);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
 
-            ResponseEntity<String> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    request,
-                    String.class
-            );
-
-            // Парсинг JSON вручную (как в GraphsDialog)
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            com.fasterxml.jackson.databind.JsonNode rootNode = mapper.readTree(response.getBody());
-
-            List<FunctionDTO> functions = new java.util.LinkedList<>();
-
-            if (rootNode.isArray()) {
-                for (com.fasterxml.jackson.databind.JsonNode node : rootNode) {
-                    int id = node.get("id").asInt();
-                    String name = node.get("name").asText();
-                    String type = node.get("type").asText();
-                    int ownerId = node.get("ownerId").asInt(); // или как у вас хранится
-
-                    functions.add(new FunctionDTO(id, name, ownerId, type));
+            var array = mapper.readTree(response.getBody());
+            List<FunctionDTO> functions = new ArrayList<>();
+            if (array.isArray()) {
+                for (var node : array) {
+                    functions.add(new FunctionDTO(
+                            node.get("id").asInt(),
+                            node.get("name").asText(),
+                            node.get("ownerId").asInt(),
+                            node.get("type").asText()
+                    ));
                 }
             }
-
             function1Select.setItems(functions);
             function2Select.setItems(functions);
-
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
-            close(); // Закрыть диалог при ошибке загрузки
         }
     }
 
-    private void performOperation() {
-        String operation = operationSelect.getValue();
-        FunctionDTO func1 = function1Select.getValue();
-        FunctionDTO func2 = function2Select.getValue();
-        String resultName = resultNameField.getValue();
+    private void loadPointsForFunction(int functionId, List<PointDTO> targetList, Grid<PointDTO> targetGrid) {
+        try {
+            String url = "http://localhost:8080/api/functions/" + functionId + "/points";
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
 
-        if (operation == null || func1 == null || func2 == null || resultName == null || resultName.trim().isEmpty()) {
-            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пожалуйста, заполните все поля."), 3000, Notification.Position.BOTTOM_CENTER);
+            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            var array = mapper.readTree(response.getBody());
+            targetList.clear();
+            if (array.isArray()) {
+                for (var node : array) {
+                    targetList.add(new PointDTO(
+                            node.get("id").asInt(),
+                            node.get("xvalue").asDouble(),
+                            node.get("yvalue").asDouble(),
+                            node.get("functionId").asInt()
+                    ));
+                }
+            }
+            targetGrid.getDataProvider().refreshAll();
+            updateResult();
+        } catch (Exception ex) {
+            ExceptionHandler.notifyUser(ex);
+        }
+    }
+
+    private void updateResult() {
+        FunctionDTO f1 = function1Select.getValue();
+        FunctionDTO f2 = function2Select.getValue();
+        String op = operationSelect.getValue();
+
+        if (f1 == null || f2 == null || op == null) {
+            resultPoints.clear();
+            resultGrid.getDataProvider().refreshAll();
             return;
         }
 
         try {
-            CurrentUser currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
-            if (currentUser == null) {
-                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пользователь не авторизован."), 3000, Notification.Position.BOTTOM_CENTER);
-                return;
-            }
+            // Build request
+            Map<String, Object> request = new HashMap<>();
+            request.put("function1Id", f1.getId());
+            request.put("function2Id", f2.getId());
+            request.put("operation", op);
 
-            // Подготовить DTO для запроса
-            OperationRequestDTO requestDto = new OperationRequestDTO();
-            requestDto.setOperation(operation); // "Сложение", "Вычитание" и т.д.
-            requestDto.setFunction1Id(func1.getId());
-            requestDto.setFunction2Id(func2.getId());
-            requestDto.setResultName(resultName);
-
-            String url = "http://localhost:8080/api/functions/operation"; // или другой путь
-
+            String url = "http://localhost:8080/api/functions/operation/preview";
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
-            headers.set("Content-Type", "application/json");
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<OperationRequestDTO> requestEntity = new HttpEntity<>(requestDto, headers);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
-            restTemplate.postForObject(url, requestEntity, Object.class);
-
-            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Операция выполнена успешно! Результат: " + resultName), 3000, Notification.Position.BOTTOM_CENTER);
-            close();
+            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            var root = mapper.readTree(response.getBody());
+            resultPoints.clear();
+            if (root.isArray()) {
+                for (var node : root) {
+                    resultPoints.add(new PointDTO(
+                            0,
+                            node.get("x").asDouble(),
+                            node.get("y").asDouble(),
+                            0
+                    ));
+                }
+            }
+            resultGrid.getDataProvider().refreshAll();
 
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
         }
+    }
+
+    private void saveResult() {
+        if (resultPoints.isEmpty()) {
+            NotificationManager.show("Нет результата для сохранения", 3000, Notification.Position.BOTTOM_CENTER);
+            return;
+        }
+
+        TextField nameField = new TextField("Имя новой функции");
+        Button saveBtn = new Button("Сохранить", e -> {
+            String name = nameField.getValue();
+            if (name == null || name.trim().isEmpty()) {
+                Notification.show("Введите имя");
+                return;
+            }
+
+            try {
+                // Collect x and y arrays
+                List<Double> xVals = new ArrayList<>();
+                List<Double> yVals = new ArrayList<>();
+                for (PointDTO p : resultPoints) {
+                    xVals.add(p.getXValue());
+                    yVals.add(p.getYValue());
+                }
+
+                Map<String, Object> body = new HashMap<>();
+                body.put("name", name);
+                body.put("xValues", xVals);
+                body.put("yValues", yVals);
+
+                String url = "http://localhost:8080/api/functions/tabulated";
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<Map<String, Object>> req = new HttpEntity<>(body, headers);
+
+                restTemplate.postForObject(url, req, Void.class);
+                NotificationManager.show("Функция сохранена!", 3000, Notification.Position.BOTTOM_CENTER);
+                close();
+            } catch (Exception ex) {
+                ExceptionHandler.notifyUser(ex);
+            }
+        });
+
+        Dialog saveDialog = new Dialog(nameField, saveBtn);
+        saveDialog.open();
     }
 }
