@@ -20,6 +20,7 @@ import ru.ssau.tk.faible.labs.functions.*;
 import ru.ssau.tk.faible.labs.functions.factory.ArrayTabulatedFunctionFactory;
 import ru.ssau.tk.faible.labs.functions.factory.LinkedListTabulatedFunctionFactory;
 import ru.ssau.tk.faible.labs.functions.factory.TabulatedFunctionFactory;
+import ru.ssau.tk.faible.labs.operations.TabulatedFunctionOperationService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -502,6 +503,7 @@ public class FunctionServlet extends HttpServlet {
             if (Math.abs(xValues1List.get(i) - xValues2List.get(i)) > 1e-10) { // Проверка с погрешностью
                 throw new RuntimeException("Cannot perform operation: X coordinates do not match at index " + i);
             }
+        }
 
         double[] xValues1 = xValues1List.stream().mapToDouble(Double::doubleValue).toArray();
         double[] yValues1 = yValues1List.stream().mapToDouble(Double::doubleValue).toArray();
@@ -518,7 +520,39 @@ public class FunctionServlet extends HttpServlet {
         TabulatedFunction tabulatedFunction1 = factory.create(xValues1, yValues1);
         TabulatedFunction tabulatedFunction2 = factory.create(xValues2, yValues2);
 
+        String operation = dto.getOperation();
+        TabulatedFunctionOperationService operationService = new TabulatedFunctionOperationService();
 
+        TabulatedFunction function;
+        if ("сложение".equalsIgnoreCase(operation)) {
+            function = operationService.add(tabulatedFunction1, tabulatedFunction2);
+        } else if ("вычитание".equalsIgnoreCase(operation)) {
+            function = operationService.subtract(tabulatedFunction1, tabulatedFunction2);
+        } else if ("умножение".equalsIgnoreCase(operation)) {
+            function = operationService.multiplication(tabulatedFunction1, tabulatedFunction2);
+        } else if ("деление".equalsIgnoreCase(operation)) {
+            function = operationService.division(tabulatedFunction1, tabulatedFunction2);
+        } else {
+            throw new IllegalArgumentException("Unsupported operation");
+        }
+
+
+        List<Double> xValuesList = new LinkedList<>();
+        List<Double> yValuesList = new LinkedList<>();
+
+        for (ru.ssau.tk.faible.labs.functions.Point point : function) {
+            xValuesList.add(point.x);
+            yValuesList.add(point.y);
+        }
+
+        double[] xValues = xValuesList.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] yValues = yValuesList.stream().mapToDouble(Double::doubleValue).toArray();
+
+        OperationResponseDTO responseDto = new OperationResponseDTO(xValues, yValues);
+
+        PrintWriter out =  resp.getWriter();
+        out.print(objectMapper.writeValueAsString(responseDto));
+        out.flush();
     }
 
     private void handlePostCompositeFunction(HttpServletRequest req, HttpServletResponse resp, User user) throws IOException {
