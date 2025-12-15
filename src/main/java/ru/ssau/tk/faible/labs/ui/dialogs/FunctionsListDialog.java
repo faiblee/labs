@@ -6,11 +6,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -169,6 +171,33 @@ public class FunctionsListDialog extends Dialog {
         }
     }
 
+    private void deletePoint(PointDTO point, int functionId) {
+        ConfirmDialog confirm = new ConfirmDialog();
+        confirm.setHeader("Подтверждение удаления точки");
+        confirm.setText("Вы действительно хотите удалить точку (" + point.getXValue() + ", " + point.getYValue() + ")?");
+        confirm.setCancelable(true);
+        confirm.setConfirmText("Удалить");
+        confirm.setRejectText("Отмена");
+        confirm.addConfirmListener(e -> {
+            try {
+                String url = "http://localhost:8080/api/points/" + point.getId();
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
+                restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(headers), Void.class);
+
+                NotificationManager.show("Точка удалена", 3000, Notification.Position.BOTTOM_CENTER);
+
+                // Удаляем из списка и обновляем таблицу
+                currentPoints.remove(point);
+                loadFunctionDetails(selectedFunction); // или перезагрузить только точки
+
+            } catch (Exception ex) {
+                ExceptionHandler.notifyUser(ex);
+            }
+        });
+        confirm.open();
+    }
+
     private Grid<PointDTO> createPointsGrid(List<PointDTO> points) {
         Grid<PointDTO> grid = new Grid<>();
         grid.setItems(points);
@@ -186,6 +215,13 @@ public class FunctionsListDialog extends Dialog {
                 PointDTO::getYValue,
                 PointDTO::setYValue
         )).setHeader("Y").setAutoWidth(true);
+
+        grid.addColumn(new ComponentRenderer<>(point -> {
+            Button deleteButton = new Button("Удалить", VaadinIcon.TRASH.create());
+            deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
+            deleteButton.addClickListener(e -> deletePoint(point, selectedFunction.getId()));
+            return deleteButton;
+        })).setHeader("Действия").setWidth("120px").setFlexGrow(0);
 
         return grid;
     }
