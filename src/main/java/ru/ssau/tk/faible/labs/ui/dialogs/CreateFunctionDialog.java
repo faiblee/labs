@@ -20,6 +20,7 @@ import ru.ssau.tk.faible.labs.ui.components.TabulatedInputBuilder;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.CreateFunctionDTO;
 import ru.ssau.tk.faible.labs.ui.models.Point;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
@@ -30,15 +31,15 @@ import java.util.List;
 public class CreateFunctionDialog extends Dialog {
 
     private final Select<String> typeSelect = new Select<>();
-    private final TextField nameField = new TextField("Имя функции");
-    private final TextField constantField = new TextField("Введите константу");
-    private final TextField xFromField = new TextField("X начальное");
-    private final TextField xToField = new TextField("X конечное");
-    private final IntegerField countField = new IntegerField("Количество точек");
+    private final TextField nameField = new TextField(BrailleHelper.applyBrailleIfEnabled("Имя функции"));
+    private final TextField constantField = new TextField(BrailleHelper.applyBrailleIfEnabled("Введите константу"));
+    private final TextField xFromField = new TextField(BrailleHelper.applyBrailleIfEnabled("X начальное"));
+    private final TextField xToField = new TextField(BrailleHelper.applyBrailleIfEnabled("X конечное"));
+    private final IntegerField countField = new IntegerField(BrailleHelper.applyBrailleIfEnabled("Количество точек"));
     private final TabulatedInputBuilder tabulatedInputBuilder = new TabulatedInputBuilder();
 
-    private final Button createButton = new Button("Создать");
-    private final Button cancelButton = new Button("Отмена");
+    private final Button createButton = new Button(BrailleHelper.applyBrailleIfEnabled("Создать"));
+    private final Button cancelButton = new Button(BrailleHelper.applyBrailleIfEnabled("Отмена"));
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -50,15 +51,15 @@ public class CreateFunctionDialog extends Dialog {
         countField.setMax(10000);
 
         // Заголовок
-        H2 title = new H2("Создание новой функции");
+        H2 title = new H2(BrailleHelper.applyBrailleIfEnabled("Создание новой функции"));
         title.getStyle().set("margin", "0 0 1rem 0").set("font-size", "1.5em");
 
         // Описание
-        Paragraph description = new Paragraph("Выберите тип функции и заполните поля.");
+        Paragraph description = new Paragraph(BrailleHelper.applyBrailleIfEnabled("Выберите тип функции и заполните поля."));
         description.getStyle().set("margin", "0 0 1rem 0").set("color", "var(--lumo-secondary-text-color)");
 
         // Настройка Select
-        typeSelect.setLabel("Тип функции");
+        typeSelect.setLabel(BrailleHelper.applyBrailleIfEnabled("Тип функции"));
         typeSelect.setItems(
                 "Функция с константой 0",
                 "Функция с константой 1",
@@ -123,7 +124,7 @@ public class CreateFunctionDialog extends Dialog {
         String selectedType = typeSelect.getValue();
         String name = nameField.getValue();
         if (selectedType == null || selectedType.trim().isEmpty()) {
-            NotificationManager.show("Пожалуйста, выберите тип функции!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пожалуйста, выберите тип функции!"), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
@@ -132,13 +133,13 @@ public class CreateFunctionDialog extends Dialog {
         if ("Константная функция".equals(selectedType)) {
             constantValue = constantField.getValue();
             if (constantValue == null || constantValue.trim().isEmpty()) {
-                NotificationManager.show("Пожалуйста, введите константу!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пожалуйста, введите константу!"), 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
             try {
                 Double.parseDouble(constantValue);
             } catch (NumberFormatException e) {
-                NotificationManager.show("Константа должна быть числом!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Константа должна быть числом!"), 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
         }
@@ -155,27 +156,27 @@ public class CreateFunctionDialog extends Dialog {
             Integer countVal = countField.getValue();
 
             if (xFromStr == null || xFromStr.trim().isEmpty()) {
-                NotificationManager.show("Пожалуйста, введите начальное значение X!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пожалуйста, введите начальное значение X!"), 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
             if (xToStr == null || xToStr.trim().isEmpty()) {
-                NotificationManager.show("Пожалуйста, введите конечное значение X!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пожалуйста, введите конечное значение X!"), 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
             if (countVal == null) {
-                NotificationManager.show("Пожалуйста, введите количество точек!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пожалуйста, введите количество точек!"), 3000, Notification.Position.BOTTOM_CENTER);
             }
 
             try {
                 xFrom = Double.parseDouble(xFromStr);
                 xTo = Double.parseDouble(xToStr);
             } catch (NumberFormatException e) {
-                NotificationManager.show("X начальное и X конечное должны быть числами!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("X начальное и X конечное должны быть числами!"), 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
 
             if (countVal < 2) {
-                NotificationManager.show("Количество точек должно быть не менее 2!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Количество точек должно быть не менее 2!"), 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
 
@@ -185,7 +186,7 @@ public class CreateFunctionDialog extends Dialog {
             }
 
             if (xFrom > xTo) {
-                NotificationManager.show("X начальное не может быть больше X конечного!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("X начальное не может быть больше X конечного!"), 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
 
@@ -204,28 +205,28 @@ public class CreateFunctionDialog extends Dialog {
             // если Tabulated
             tabulatedPoints = tabulatedInputBuilder.getPointsAsArray();
             if (tabulatedPoints == null || tabulatedPoints.isEmpty()) {
-                NotificationManager.show("Добавьте хотя бы одну точку!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Добавьте хотя бы одну точку!"), 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
 
             // Проверка: все x и y заданы
             for (Point p : tabulatedPoints) {
                 if (p.x == null || p.y == null) {
-                    NotificationManager.show("Все значения X и Y должны быть заполнены!", 3000, Notification.Position.BOTTOM_CENTER);
+                    NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Все значения X и Y должны быть заполнены!"), 3000, Notification.Position.BOTTOM_CENTER);
                     return;
                 }
             }
 
             // Проверка: минимум 2 точки
             if (tabulatedPoints.size() < 2) {
-                NotificationManager.show("Табулированная функция должна содержать минимум 2 точки!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Табулированная функция должна содержать минимум 2 точки!"), 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
 
             // Проверка: x строго возрастают
             for (int i = 1; i < tabulatedPoints.size(); i++) {
                 if (tabulatedPoints.get(i).x <= tabulatedPoints.get(i - 1).x) {
-                    NotificationManager.show("Значения X должны быть строго возрастающими!", 3000, Notification.Position.BOTTOM_CENTER);
+                    NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Значения X должны быть строго возрастающими!"), 3000, Notification.Position.BOTTOM_CENTER);
                     return;
                 }
             }
@@ -283,11 +284,11 @@ public class CreateFunctionDialog extends Dialog {
 
 
             if ("Константная функция".equals(selectedType)) {
-                NotificationManager.show("Функция типа '" + selectedType + "' с константой '" + constantValue + "' создана!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Функция типа '" + selectedType + "' с константой '" + constantValue + "' создана!"), 3000, Notification.Position.BOTTOM_CENTER);
             } else if ("Табулированная функция".equals(selectedType)) {
-                NotificationManager.show("Пустая табулированная функция типа '" + selectedType + "' создана!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Пустая табулированная функция типа '" + selectedType + "' создана!"), 3000, Notification.Position.BOTTOM_CENTER);
             } else {
-                NotificationManager.show("Функция типа '" + selectedType + "' с параметрами X=[" + xFrom + ", " + xTo + "], точек: " + count + " создана!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Функция типа '" + selectedType + "' с параметрами X=[" + xFrom + ", " + xTo + "], точек: " + count + " создана!"), 3000, Notification.Position.BOTTOM_CENTER);
             }
             close();
         } catch (Exception ex) {

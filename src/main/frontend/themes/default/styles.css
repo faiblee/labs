@@ -1,39 +1,201 @@
-/* Главный фон */
+/* === Главный фон (только для MainView, если нужно) === */
 .main-view {
-    background-color: #FFF;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
     padding: 1.5rem;
     min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Сетка 2x3 */
+/* === Заголовок === */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+}
+
+.main-header h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #2c3e50;
+}
+
+/* === Сетка 2x3 === */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
     max-width: 1200px;
     width: 100%;
-    margin-top: 2rem;
+    margin-top: 1rem;
 }
 
-/* Карточка */
-.card {
-    background: hsla(214, 61%, 25%, 0.05);
+/* === Карточка === */
+.card-wrapper {
+    background: white;
+    border: none;
     border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 220px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    cursor: pointer;
 }
 
-.card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+.card-wrapper:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* Кнопка в карточке */
-.card > .card-button {
+/* === Заголовок карточки с иконкой === */
+.card > .v-horizontal-layout {
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card > .v-horizontal-layout > vaadin-icon {
+    color: #3498db;
+    font-size: 1.2rem;
+}
+
+.card > .v-horizontal-layout > h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* === Описание === */
+.card p {
+    margin: 0.75rem 0 0;
+    font-size: 0.95rem;
+    color: #7f8c8d;
+    line-height: 1.4;
+}
+
+/* === Кнопка в карточке === */
+.card .card-button {
     margin-top: auto;
+    width: 100%;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.card .card-button:hover {
+    background: linear-gradient(45deg, #2980b9, #1a5276);
+    transform: scale(1.02);
+}
+
+/* === Кнопка "Режим Брайля" === */
+.braille-toggle-button {
+    background: linear-gradient(45deg, #9b59b6, #8e44ad);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.braille-toggle-button:hover {
+    transform: scale(1.05);
+}
+
+/* === === === === === === === === === === === === === === === === */
+/* === СТИЛИ ДЛЯ ВСЕХ DIALOG И КОМПОНЕНТОВ ВНУТРИ === */
+/* === === === === === === === === === === === === === === === === */
+
+/* === Диалог === */
+vaadin-dialog-overlay::part(content) {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* === Кнопки (во всех диалогах) === */
+vaadin-button {
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    border: none;
+    border-radius: 6px;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+vaadin-button:hover {
+    background: linear-gradient(45deg, #2980b9, #1a5276);
+    transform: scale(1.02);
+}
+
+/* === Кнопка "Отмена", "Закрыть" — серая === */
+vaadin-button[theme~="tertiary"] {
+    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+}
+
+vaadin-button[theme~="tertiary"]:hover {
+    background: linear-gradient(45deg, #7f8c8d, #566573);
+}
+
+/* === Текстовые поля === */
+vaadin-text-field {
+    --lumo-text-field-size: 2.5rem; /* Высота поля */
+    margin-bottom: 0.75rem;
+}
+
+/* === Выпадающий список === */
+vaadin-select {
+    --lumo-text-field-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+
+/* === Заголовки внутри диалогов === */
+vaadin-dialog h2,
+vaadin-dialog h3 {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* === Параграфы (описания) === */
+vaadin-dialog p {
+    color: #7f8c8d;
+    line-height: 1.4;
+}
+
+/* === Форма (FormLayout) внутри диалогов === */
+vaadin-form-layout {
+    padding: 1rem;
+}
+
+/* === Для адаптивности (мобильные устройства) === */
+@media (max-width: 768px) {
+    .grid-container {
+        grid-template-columns: 1fr;
+    }
+
+    .main-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    vaadin-dialog-overlay {
+        --_vaadin-overlay-viewport-constraint: 90vh;
+    }
 }

@@ -28,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.FunctionDTO;
 import ru.ssau.tk.faible.labs.ui.models.PointDTO;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
@@ -50,7 +51,7 @@ public class FunctionsListDialog extends Dialog {
         setWidth("95vw");
         setHeight("85vh");
 
-        add(new H3("Управление функциями"));
+        add(new H3(BrailleHelper.applyBrailleIfEnabled("Управление функциями")));
 
         // === Левая панель: список функций ===
         VerticalLayout leftPanel = createLeftPanel();
@@ -59,7 +60,7 @@ public class FunctionsListDialog extends Dialog {
         detailPanel.setSizeFull();
         detailPanel.setPadding(true);
         detailPanel.setSpacing(true);
-        detailPanel.add(new H3("Выберите функцию"));
+        detailPanel.add(new H3(BrailleHelper.applyBrailleIfEnabled("Выберите функцию")));
 
         // === Основной макет ===
         HorizontalLayout mainLayout = new HorizontalLayout(leftPanel, detailPanel);
@@ -67,7 +68,7 @@ public class FunctionsListDialog extends Dialog {
         mainLayout.setFlexGrow(0, leftPanel);
         mainLayout.setFlexGrow(1, detailPanel);
 
-        Button closeButton = new Button("Закрыть", e -> close());
+        Button closeButton = new Button(BrailleHelper.applyBrailleIfEnabled("Закрыть"), e -> close());
         closeButton.setWidth("100px");
 
         VerticalLayout content = new VerticalLayout(mainLayout, closeButton);
@@ -100,7 +101,7 @@ public class FunctionsListDialog extends Dialog {
         detailPanel.removeAll();
 
         // Заголовок
-        H3 title = new H3("Функция: " + func.getName());
+        H3 title = new H3(BrailleHelper.applyBrailleIfEnabled("Функция: " + func.getName()));
         detailPanel.add(title);
 
         // Загружаем точки
@@ -130,8 +131,8 @@ public class FunctionsListDialog extends Dialog {
             detailPanel.add(new H3("Точки функции"), pointsGrid);
 
             // Кнопки
-            Button saveButton = new Button("Сохранить изменения", e -> savePoints(func.getId()));
-            Button deleteButton = new Button("Удалить функцию", e -> deleteFunction(func.getId()));
+            Button saveButton = new Button(BrailleHelper.applyBrailleIfEnabled("Сохранить изменения"), e -> savePoints(func.getId()));
+            Button deleteButton = new Button(BrailleHelper.applyBrailleIfEnabled("Удалить функцию"), e -> deleteFunction(func.getId()));
             deleteButton.getStyle().set("background-color", "var(--lumo-error-color)").set("color", "white");
 
             HorizontalLayout buttonLayout = new HorizontalLayout(saveButton, deleteButton);
@@ -147,6 +148,7 @@ public class FunctionsListDialog extends Dialog {
             HorizontalLayout applyLayout = new HorizontalLayout(xInput, applyButton, applyResult);
             applyLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
             applyLayout.setSpacing(true);
+            detailPanel.add(new H3(BrailleHelper.applyBrailleIfEnabled("Вычислить значение")), applyLayout);
             VerticalLayout applyVertical = new VerticalLayout(new H3("Вычислить значение"), applyLayout);
 //            detailPanel.add(, applyLayout);
 
@@ -304,7 +306,7 @@ public class FunctionsListDialog extends Dialog {
 
                 restTemplate.put(url + p.getId(), request);
             }
-            NotificationManager.show("Изменения сохранены!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Изменения сохранены!"), 3000, Notification.Position.BOTTOM_CENTER);
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
         }
@@ -323,10 +325,10 @@ public class FunctionsListDialog extends Dialog {
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
                 restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(headers), Void.class);
-                NotificationManager.show("Функция удалена", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Функция удалена"), 3000, Notification.Position.BOTTOM_CENTER);
                 loadFunctions(); // Перезагрузить список
                 detailPanel.removeAll();
-                detailPanel.add(new H3("Выберите функцию"));
+                detailPanel.add(new H3(BrailleHelper.applyBrailleIfEnabled("Выберите функцию")));
             } catch (Exception ex) {
                 ExceptionHandler.notifyUser(ex);
             }
@@ -336,7 +338,7 @@ public class FunctionsListDialog extends Dialog {
 
     private void applyFunction(int functionId, String xStr) {
         if (xStr == null || xStr.trim().isEmpty()) {
-            NotificationManager.show("Введите значение x", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Введите значение x"), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
         try {
@@ -354,7 +356,7 @@ public class FunctionsListDialog extends Dialog {
 
             applyResult.setText("f(" + x + ") = " + String.format("%.4f", yValue));
         } catch (NumberFormatException e) {
-            NotificationManager.show("Некорректное значение x", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Некорректное значение x"), 3000, Notification.Position.BOTTOM_CENTER);
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
         }
