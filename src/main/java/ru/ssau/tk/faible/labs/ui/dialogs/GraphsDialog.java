@@ -22,6 +22,7 @@ import ru.ssau.tk.faible.labs.ui.components.ChartComponent;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.FunctionDTO;
 import ru.ssau.tk.faible.labs.ui.models.PointDTO;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
@@ -34,7 +35,7 @@ public class GraphsDialog extends Dialog {
     private final Grid<FunctionDTO> functionGrid = new Grid<>();
     private final ChartComponent chartComponent = new ChartComponent();
     private final CurrentUser currentUser;
-    private final H3 chartTitle = new H3("Выберите функцию для отображения графика");
+    private final H3 chartTitle = new H3(BrailleHelper.applyBrailleIfEnabled("Выберите функцию для отображения графика"));
 
     public GraphsDialog() {
         setWidth("95vw");
@@ -70,12 +71,12 @@ public class GraphsDialog extends Dialog {
     }
 
     private VerticalLayout createLeftPanel() {
-        H2 title = new H2("Ваши функции");
+        H2 title = new H2(BrailleHelper.applyBrailleIfEnabled("Ваши функции"));
         title.getStyle()
                 .set("margin", "0 0 0.5rem 0")
                 .set("font-size", "1.3em");
 
-        Paragraph description = new Paragraph("Выберите функцию для построения графика.");
+        Paragraph description = new Paragraph(BrailleHelper.applyBrailleIfEnabled("Выберите функцию для построения графика."));
         description.getStyle().set("margin", "0 0 1rem 0").set("color", "var(--lumo-secondary-text-color)");
 
         functionGrid.addColumn(FunctionDTO::getName).setHeader("Имя").setAutoWidth(true);
@@ -116,7 +117,7 @@ public class GraphsDialog extends Dialog {
     }
 
     private void showPlaceholder() {
-        chartTitle.setText("Выберите функцию для отображения графика");
+        chartTitle.setText(BrailleHelper.applyBrailleIfEnabled("Выберите функцию для отображения графика"));
         // Очищаем график (удаляем canvas и создаём новый)
         chartComponent.clearChart();
     }
@@ -145,7 +146,7 @@ public class GraphsDialog extends Dialog {
             }
 
             if (points.isEmpty()) {
-                NotificationManager.show("У функции нет точек для отображения.", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("У функции нет точек для отображения."), 3000, Notification.Position.BOTTOM_CENTER);
                 showPlaceholder();
                 return;
             }
