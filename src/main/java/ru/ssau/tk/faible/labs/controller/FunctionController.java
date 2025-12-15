@@ -88,6 +88,29 @@ public class FunctionController {
         }
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/functions/{id}/apply")
+    public Double apply(@PathVariable Long functionId, @RequestParam Double x) {
+        if (functionId == null || x == null)  {
+            throw new IllegalArgumentException("Illegal arguments");
+        }
+        List<PointEntity> points = pointRepository.findByFunctionId(functionId);
+
+        List<Double> xValuesList = new LinkedList<>();
+        List<Double> yValuesList = new LinkedList<>();
+        for (PointEntity point : points) {
+            xValuesList.add(point.getXValue());
+            yValuesList.add(point.getYValue());
+        }
+
+        double[] xValues = xValuesList.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] yValues = yValuesList.stream().mapToDouble(Double::doubleValue).toArray();
+
+        TabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        return function.apply(x);
+    }
+
     @ResponseStatus(HttpStatus.CREATED) // устанавливает HTTP-статус 201
     @PostMapping("/functions")
     public FunctionDTO createFunction(@RequestBody CreateFunctionDTO dto) {
