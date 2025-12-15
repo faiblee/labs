@@ -2,6 +2,7 @@
 
 package ru.ssau.tk.faible.labs.ui.dialogs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -21,9 +22,7 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.server.VaadinSession;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
-import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
-import ru.ssau.tk.faible.labs.ui.models.FunctionDTO;
-import ru.ssau.tk.faible.labs.ui.models.PointDTO;
+import ru.ssau.tk.faible.labs.ui.models.*;
 import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
@@ -117,7 +116,7 @@ public class OperationsDialog extends Dialog {
 
     private VerticalLayout createCenterPanel() {
         operationSelect.setLabel("Операция");
-        operationSelect.setItems("Сложение", "Вычитание", "Умножение", "Деление");
+        operationSelect.setItems("сложение", "вычитание", "умножение", "деление");
         operationSelect.addValueChangeListener(e -> updateResult());
 
         function2Select.setLabel("Функция g(x)");
@@ -277,37 +276,41 @@ public class OperationsDialog extends Dialog {
         }
 
         try {
-            // Build request
             Map<String, Object> request = new HashMap<>();
             request.put("function1Id", f1.getId());
             request.put("function2Id", f2.getId());
             request.put("operation", op);
 
-            String url = "http://localhost:8080/api/functions/operation/preview";
+            String url = "http://localhost:8080/api/functions/operation";
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
-            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            var root = mapper.readTree(response.getBody());
+            // 👇 Используем OperationResultDTO
+            ResponseEntity<OperationResponseDTO> response = restTemplate.postForEntity(url, entity, OperationResponseDTO.class);
+
+            OperationResponseDTO result = response.getBody();
             resultPoints.clear();
-            if (root.isArray()) {
-                for (var node : root) {
-                    resultPoints.add(new PointDTO(
-                            0,
-                            node.get("x").asDouble(),
-                            node.get("y").asDouble(),
-                            0
-                    ));
+
+            if (result != null && result.getXvalues() != null && result.getYvalues() != null) {
+                double[] xVals = result.getXvalues();
+                double[] yVals = result.getYvalues();
+
+                if (xVals.length == yVals.length) {
+                    for (int i = 0; i < xVals.length; i++) {
+                        resultPoints.add(new PointDTO(0, xVals[i], yVals[i], 0));
+                    }
                 }
             }
+
             resultGrid.getDataProvider().refreshAll();
 
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
+            resultPoints.clear();
+            resultGrid.getDataProvider().refreshAll();
         }
     }
 
@@ -334,18 +337,29 @@ public class OperationsDialog extends Dialog {
                     yVals.add(p.getYValue());
                 }
 
-                Map<String, Object> body = new HashMap<>();
-                body.put("name", name);
-                body.put("xvalues", xVals);
-                body.put("yvalues", yVals);
+                double[] xValues = xVals.stream().mapToDouble(Double::doubleValue).toArray();
+                double[] yValues = yVals.stream().mapToDouble(Double::doubleValue).toArray();
 
-                String url = "http://localhost:8080/api/functions/tabulated";
+                CreateFunctionDTO createFunctionDTO = new CreateFunctionDTO();
+
+                createFunctionDTO.setXvalues(xValues);
+                createFunctionDTO.setYvalues(yValues);
+                createFunctionDTO.setName(name);
+                createFunctionDTO.setOwnerId(currentUser.getId());
+                createFunctionDTO.setType("Табулированная функция");
+
+
+                String url = "http://localhost:8080/api/functions";
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
                 headers.setContentType(MediaType.APPLICATION_JSON);
-                HttpEntity<Map<String, Object>> req = new HttpEntity<>(body, headers);
-
-                restTemplate.postForObject(url, req, Void.class);
+                HttpEntity<CreateFunctionDTO> requestEntity = new HttpEntity<>(createFunctionDTO, headers);
+                try {
+                    restTemplate.postForObject(url, requestEntity, Object.class);
+                    close();
+                } catch (Exception ex) {
+                    ExceptionHandler.notifyUser(ex);
+                }
                 NotificationManager.show("Функция сохранена!", 3000, Notification.Position.BOTTOM_CENTER);
                 close();
             } catch (Exception ex) {
