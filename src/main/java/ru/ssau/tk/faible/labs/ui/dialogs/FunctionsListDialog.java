@@ -20,6 +20,7 @@ import com.vaadin.flow.data.binder.Setter;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.server.VaadinSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
@@ -30,6 +31,7 @@ import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
 import java.util.*;
 
+@Slf4j
 public class FunctionsListDialog extends Dialog {
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -307,6 +309,8 @@ public class FunctionsListDialog extends Dialog {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Basic " + currentUser.getEncodedCredentials());
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+
+            log.info("Request body: {}", response.getBody());
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.getBody());
