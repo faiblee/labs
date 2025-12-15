@@ -9,17 +9,8 @@ public class CreateFunctionDTO {
     private int count;
     private double constant;
     private String factory_type;
-
-    public CreateFunctionDTO(String name, int ownerId, String type, double xfrom, double xto, int count, double constant, String factory_type) {
-        this.name = name;
-        this.ownerId = ownerId;
-        this.type = type;
-        this.xfrom = xfrom;
-        this.xto = xto;
-        this.count = count;
-        this.constant = constant;
-        this.factory_type = factory_type;
-    }
+    private double[] xvalues;
+    private double[] yvalues;
 
     public String getName() {
         return name;
@@ -33,8 +24,8 @@ public class CreateFunctionDTO {
         return ownerId;
     }
 
-    public void setOwnerId(int owner_id) {
-        this.ownerId = owner_id;
+    public void setOwnerId(int ownerId) {
+        this.ownerId = ownerId;
     }
 
     public String getType() {
@@ -45,19 +36,19 @@ public class CreateFunctionDTO {
         this.type = type;
     }
 
-    public double getxfrom() {
+    public double getXfrom() {
         return xfrom;
     }
 
-    public void setxfrom(double xfrom) {
+    public void setXfrom(double xfrom) {
         this.xfrom = xfrom;
     }
 
-    public double getxto() {
+    public double getXto() {
         return xto;
     }
 
-    public void setxto(double xto) {
+    public void setXto(double xto) {
         this.xto = xto;
     }
 
@@ -83,5 +74,21 @@ public class CreateFunctionDTO {
 
     public void setFactory_type(String factory_type) {
         this.factory_type = factory_type;
+    }
+
+    public double[] getXvalues() {
+        return xvalues;
+    }
+
+    public void setXvalues(double[] xvalues) {
+        this.xvalues = xvalues;
+    }
+
+    public double[] getYvalues() {
+        return yvalues;
+    }
+
+    public void setYvalues(double[] yvalues) {
+        this.yvalues = yvalues;
     }
 }
