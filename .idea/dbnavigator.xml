@@ -38,6 +38,7 @@
   </component>
   <component name="DBNavigator.Project.DatasetFilterManager">
     <filter-actions connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" dataset="public.users" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" dataset="public.point" active-filter-id="" />
     <filter-actions connection-id="efbc6f52-9ac5-423e-b211-c91fddfd1c4d" dataset="public.functions" active-filter-id="EMPTY_FILTER">
       <filter id="46776e33-af69-4c24-93f7-5472fd33c586" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND">
         <condition column="id" operator="=" value="" active="true" />
