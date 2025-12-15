@@ -92,6 +92,11 @@ public class MainView extends VerticalLayout {
                         () -> {
                             FunctionsListDialog dialog = new FunctionsListDialog();
                             dialog.open();
+                        }),
+                createCardWithIcon("📈 Дифференцирование", "Все ваши функции.", "Открыть",
+                        () -> {
+                            DifferentiationDialog dialog = new DifferentiationDialog();
+                            dialog.open();
                         })
         );
 

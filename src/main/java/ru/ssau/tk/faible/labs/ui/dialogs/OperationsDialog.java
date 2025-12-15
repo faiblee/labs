@@ -95,6 +95,22 @@ public class OperationsDialog extends Dialog {
         loadJson1.addClickListener(e -> openJsonUploadDialog(points1, pointsGrid1));
         loadJson2.addClickListener(e -> openJsonUploadDialog(points2, pointsGrid2));
 
+        // Левая панель — для function1Select → points1
+        function1Select.addValueChangeListener(e -> {
+            if (e.getValue() != null) {
+                loadPointsForFunction(e.getValue().getId(), points1, pointsGrid1);
+            }
+        });
+        loadJson1.addClickListener(e -> openJsonUploadDialog(points1, pointsGrid1));
+
+        // Центральная панель — для function2Select → points2
+        function2Select.addValueChangeListener(e -> {
+            if (e.getValue() != null) {
+                loadPointsForFunction(e.getValue().getId(), points2, pointsGrid2);
+            }
+        });
+        loadJson2.addClickListener(e -> openJsonUploadDialog(points2, pointsGrid2));
+
         // Основной макет
         HorizontalLayout mainLayout = new HorizontalLayout(leftPanel, centerPanel, rightPanel);
         mainLayout.setSizeFull();
@@ -138,11 +154,8 @@ public class OperationsDialog extends Dialog {
         funcSelect.setLabel(BrailleHelper.applyBrailleIfEnabled("Выберите функцию"));
         funcSelect.setWidthFull();
 
-        // Таблица — растягивается
         grid.setHeightFull();
         VerticalLayout gridWrapper = new VerticalLayout(grid);
-        gridWrapper.setPadding(false);
-        gridWrapper.setSpacing(false);
         gridWrapper.setSizeFull();
 
         loadJsonButton.setWidthFull();
@@ -151,7 +164,7 @@ public class OperationsDialog extends Dialog {
         panel.setPadding(true);
         panel.setSpacing(true);
         panel.setSizeFull();
-        panel.setFlexGrow(1, gridWrapper); // таблица растягивается
+        panel.setFlexGrow(1, gridWrapper);
         return panel;
     }
 
