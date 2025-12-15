@@ -243,7 +243,7 @@ public class CreateFunctionDialog extends Dialog {
             functionDTO.setOwnerId(owner_id);
             functionDTO.setFactory_type(factory_type);
 
-            if ("Табулированная функция".equals(selectedType) && tabulatedPoints != null) {
+            if ("Табулированная функция".equals(selectedType)) {
                 List<Double> xList = new ArrayList<>();
                 List<Double> yList = new ArrayList<>();
                 for (Point p : tabulatedPoints) {

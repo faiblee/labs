@@ -16,6 +16,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Setter;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.server.VaadinSession;
 import org.springframework.http.*;
@@ -60,22 +61,17 @@ public class OperationsDialog extends Dialog {
 
         add(new H3(BrailleHelper.applyBrailleIfEnabled("Операции над функциями")));
 
-        // === Левая панель: функция 1 ===
-        VerticalLayout leftPanel = createFunctionPanel("Функция f(x)", function1Select, pointsGrid1, loadJson1, true);
-        // === Центральная панель: операция + функция 2 ===
-        VerticalLayout centerPanel = createCenterPanel();
-        // === Правая панель: результат ===
-        VerticalLayout rightPanel = createResultPanel();
-
         // Make grids accessible
         this.pointsGrid1 = createPointsGrid(points1, true);
         this.pointsGrid2 = createPointsGrid(points2, true);
         this.resultGrid = createPointsGrid(resultPoints, false);
 
-        // Replace placeholders
-        ((VerticalLayout) leftPanel.getComponentAt(2)).replace(pointsGrid1, this.pointsGrid1);
-        ((VerticalLayout) centerPanel.getComponentAt(2)).replace(pointsGrid2, this.pointsGrid2);
-        ((VerticalLayout) rightPanel.getComponentAt(1)).replace(resultGrid, this.resultGrid);
+        // === Левая панель: функция 1 ===
+        VerticalLayout leftPanel = createFunctionPanel("Функция f(x)", function1Select, pointsGrid1, loadJson1);
+        // === Центральная панель: операция + функция 2 ===
+        VerticalLayout centerPanel = createCenterPanel();
+        // === Правая панель: результат ===
+        VerticalLayout rightPanel = createResultPanel();
 
         HorizontalLayout mainLayout = new HorizontalLayout(leftPanel, centerPanel, rightPanel);
         mainLayout.setSizeFull();
@@ -94,30 +90,25 @@ public class OperationsDialog extends Dialog {
         loadFunctions();
     }
 
-    private VerticalLayout createFunctionPanel(String title, Select<FunctionDTO> funcSelect, Grid<PointDTO> placeholder, Button loadJson, boolean editable) {
+    private VerticalLayout createFunctionPanel(String title, Select<FunctionDTO> funcSelect, Grid<PointDTO> pointsGrid, Button loadJson) {
         funcSelect.setLabel(BrailleHelper.applyBrailleIfEnabled(title));
-        funcSelect.setItems(); // will be set later
         funcSelect.addValueChangeListener(e -> {
             if (e.getValue() != null) {
-                loadPointsForFunction(e.getValue().getId(), editable ? points1 : points2, editable ? pointsGrid1 : pointsGrid2);
+                loadPointsForFunction(e.getValue().getId(), points1, pointsGrid);
             }
         });
 
-        loadJson.addClickListener(e -> {
-            // TODO: implement JSON upload later
-            Notification.show("Загрузка из JSON — будет реализована позже");
-        });
+        loadJson.addClickListener(e -> Notification.show("Загрузка из JSON — позже"));
 
-        VerticalLayout selectLayout = new VerticalLayout(funcSelect, loadJson);
-        selectLayout.setSpacing(true);
-        selectLayout.setWidthFull();
+        VerticalLayout controls = new VerticalLayout(funcSelect, loadJson);
+        controls.setSpacing(true);
+        controls.setWidthFull();
 
-        // Placeholder for grid
-        VerticalLayout gridWrapper = new VerticalLayout(placeholder != null ? placeholder : new Span());
+        VerticalLayout gridWrapper = new VerticalLayout(pointsGrid);
         gridWrapper.setHeight("300px");
         gridWrapper.setWidthFull();
 
-        VerticalLayout panel = new VerticalLayout(new H3(title), selectLayout, gridWrapper);
+        VerticalLayout panel = new VerticalLayout(new H3(title), controls, gridWrapper);
         panel.setPadding(true);
         panel.setSpacing(true);
         panel.setWidthFull();
@@ -125,32 +116,28 @@ public class OperationsDialog extends Dialog {
     }
 
     private VerticalLayout createCenterPanel() {
-        operationSelect.setLabel(BrailleHelper.applyBrailleIfEnabled("Операция"));
+        operationSelect.setLabel("Операция");
         operationSelect.setItems("Сложение", "Вычитание", "Умножение", "Деление");
         operationSelect.addValueChangeListener(e -> updateResult());
 
-        function2Select.setLabel(BrailleHelper.applyBrailleIfEnabled("Функция g(x)"));
-        function2Select.setItems(); // will be set later
+        function2Select.setLabel("Функция g(x)");
         function2Select.addValueChangeListener(e -> {
             if (e.getValue() != null) {
                 loadPointsForFunction(e.getValue().getId(), points2, pointsGrid2);
             }
         });
 
-        loadJson2.addClickListener(e -> {
-            // TODO
-            Notification.show("Загрузка из JSON — будет реализована позже");
-        });
+        loadJson2.addClickListener(e -> Notification.show("Загрузка из JSON — позже"));
 
-        VerticalLayout selectLayout = new VerticalLayout(operationSelect, function2Select, loadJson2);
-        selectLayout.setSpacing(true);
-        selectLayout.setWidthFull();
+        VerticalLayout controls = new VerticalLayout(operationSelect, function2Select, loadJson2);
+        controls.setSpacing(true);
+        controls.setWidthFull();
 
-        VerticalLayout gridWrapper = new VerticalLayout(pointsGrid2 != null ? pointsGrid2 : new Span());
+        VerticalLayout gridWrapper = new VerticalLayout(pointsGrid2);
         gridWrapper.setHeight("300px");
         gridWrapper.setWidthFull();
 
-        VerticalLayout panel = new VerticalLayout(new H3("Операция и функция g(x)"), selectLayout, gridWrapper);
+        VerticalLayout panel = new VerticalLayout(new H3("Операция и функция g(x)"), controls, gridWrapper);
         panel.setPadding(true);
         panel.setSpacing(true);
         panel.setWidthFull();
@@ -158,23 +145,18 @@ public class OperationsDialog extends Dialog {
     }
 
     private VerticalLayout createResultPanel() {
-        H3 resultTitle = new H3("Результат: f(x) ? g(x)");
+        Button saveButton = new Button("Сохранить", e -> saveResult());
+        Button exportButton = new Button("Экспорт в JSON", e -> Notification.show("Экспорт — позже"));
 
-        Button saveButton = new Button("Сохранить к своим функциям", e -> saveResult());
-        Button exportButton = new Button("Экспорт в JSON", e -> {
-            // TODO
-            Notification.show("Экспорт в JSON — будет реализован позже");
-        });
+        VerticalLayout buttons = new VerticalLayout(saveButton, exportButton);
+        buttons.setSpacing(true);
+        buttons.setWidthFull();
 
-        HorizontalLayout buttonLayout = new HorizontalLayout(saveButton, exportButton);
-        buttonLayout.setSpacing(true);
-        buttonLayout.setWidthFull();
-
-        VerticalLayout gridWrapper = new VerticalLayout(resultGrid != null ? resultGrid : new Span());
+        VerticalLayout gridWrapper = new VerticalLayout(resultGrid);
         gridWrapper.setHeight("400px");
         gridWrapper.setWidthFull();
 
-        VerticalLayout panel = new VerticalLayout(resultTitle, gridWrapper, buttonLayout);
+        VerticalLayout panel = new VerticalLayout(new H3("Результат"), gridWrapper, buttons);
         panel.setPadding(true);
         panel.setSpacing(true);
         panel.setWidthFull();
@@ -183,18 +165,17 @@ public class OperationsDialog extends Dialog {
 
     private Grid<PointDTO> createPointsGrid(List<PointDTO> points, boolean editable) {
         Grid<PointDTO> grid = new Grid<>();
-        grid.setItems(points);
-        grid.addColumn(PointDTO::getXValue).setHeader("X").setAutoWidth(true);
-        grid.addColumn(PointDTO::getYValue).setHeader("Y").setAutoWidth(true);
+        ListDataProvider<PointDTO> dataProvider = new ListDataProvider<>(points);
+        grid.setDataProvider(dataProvider);
 
         if (editable) {
-            // Add edit columns
-            grid.removeColumnByKey("xValue");
-            grid.removeColumnByKey("yValue");
             grid.addComponentColumn(item -> createEditableTextField(item, PointDTO::getXValue, PointDTO::setXValue))
                     .setHeader("X").setAutoWidth(true);
             grid.addComponentColumn(item -> createEditableTextField(item, PointDTO::getYValue, PointDTO::setYValue))
                     .setHeader("Y").setAutoWidth(true);
+        } else {
+            grid.addColumn(PointDTO::getXValue).setHeader("X").setAutoWidth(true);
+            grid.addColumn(PointDTO::getYValue).setHeader("Y").setAutoWidth(true);
         }
 
         return grid;
@@ -273,8 +254,12 @@ public class OperationsDialog extends Dialog {
                     ));
                 }
             }
+
+
             targetGrid.getDataProvider().refreshAll();
+
             updateResult();
+
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
         }
@@ -351,8 +336,8 @@ public class OperationsDialog extends Dialog {
 
                 Map<String, Object> body = new HashMap<>();
                 body.put("name", name);
-                body.put("xValues", xVals);
-                body.put("yValues", yVals);
+                body.put("xvalues", xVals);
+                body.put("yvalues", yVals);
 
                 String url = "http://localhost:8080/api/functions/tabulated";
                 HttpHeaders headers = new HttpHeaders();
