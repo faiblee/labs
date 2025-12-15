@@ -446,10 +446,79 @@ public class FunctionServlet extends HttpServlet {
             // api/functions/composition
             log.info("Получен запрос на создание сложной функции");
             handlePostCompositeFunction(req, resp, user);
+        } else if (parts.length == 1 && "operation".equals(parts[0])) {
+            log.info("Получен operation запрос");
+            handlePostOperationFunction(req, resp, user);
         } else {
             log.error("Неверный путь");
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Неверный путь", objectMapper);
         }
+    }
+
+    private void handlePostOperationFunction(HttpServletRequest req, HttpServletResponse resp, User user) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader reader = req.getReader();
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            sb.append(line);
+        }
+
+        log.info("Тело запроса - {}", sb.toString());
+
+        OperationRequestDTO dto =  objectMapper.readValue(sb.toString(), OperationRequestDTO.class);
+
+        Function function1 = functionsDAO.getFunctionById(dto.getFunction1Id());
+        Function function2 = functionsDAO.getFunctionById(dto.getFunction2Id());
+
+        if (function1.getOwnerId() != user.getId() && !user.getRole().equals("ADMIN") || function2.getOwnerId() != user.getId() && !user.getRole().equals("ADMIN")) {
+            log.warn("Доступ запрещен");
+            sendError(resp, HttpServletResponse.SC_FORBIDDEN, "Доступ запрещен", objectMapper);
+            return;
+        }
+
+        List<Point> points1 = pointsDAO.getPointsByFunctionId(function1.getId());
+        List<Point> points2 = pointsDAO.getPointsByFunctionId(function2.getId());
+
+        if (points1.size() != points2.size()) {
+            throw new RuntimeException("Cannot perform operation: functions must have the same number of points.");
+        }
+
+        List<Double> xValues1List = new LinkedList<>();
+        List<Double> yValues1List = new LinkedList<>();
+        List<Double> xValues2List = new LinkedList<>();
+        List<Double> yValues2List = new LinkedList<>();
+
+        for (Point point : points1) {
+            xValues1List.add(point.getXValue());
+            yValues1List.add(point.getYValue());
+        }
+        for (Point point : points2) {
+            xValues2List.add(point.getXValue());
+            yValues2List.add(point.getYValue());
+        }
+
+        for (int i = 0; i < xValues1List.size(); i++) {
+            if (Math.abs(xValues1List.get(i) - xValues2List.get(i)) > 1e-10) { // Проверка с погрешностью
+                throw new RuntimeException("Cannot perform operation: X coordinates do not match at index " + i);
+            }
+
+        double[] xValues1 = xValues1List.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] yValues1 = yValues1List.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] xValues2 = xValues2List.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] yValues2 = yValues2List.stream().mapToDouble(Double::doubleValue).toArray();
+
+        TabulatedFunctionFactory factory;
+        if ("array".equals(user.getFactory_type())) {
+            factory = new ArrayTabulatedFunctionFactory();
+        } else {
+            factory = new LinkedListTabulatedFunctionFactory();
+        }
+
+        TabulatedFunction tabulatedFunction1 = factory.create(xValues1, yValues1);
+        TabulatedFunction tabulatedFunction2 = factory.create(xValues2, yValues2);
+
+
     }
 
     private void handlePostCompositeFunction(HttpServletRequest req, HttpServletResponse resp, User user) throws IOException {
