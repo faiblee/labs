@@ -143,7 +143,8 @@ public class FunctionsListDialog extends Dialog {
             HorizontalLayout applyLayout = new HorizontalLayout(xInput, applyButton, applyResult);
             applyLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
             applyLayout.setSpacing(true);
-            detailPanel.add(new H3("Вычислить значение"), applyLayout);
+            VerticalLayout applyVertical = new VerticalLayout(new H3("Вычислить значение"), applyLayout);
+//            detailPanel.add(, applyLayout);
 
             // === Добавление новой точки ===
             TextField addXField = new TextField("X");
@@ -155,8 +156,12 @@ public class FunctionsListDialog extends Dialog {
             HorizontalLayout addPointLayout = new HorizontalLayout(addXField, addYField, addButton);
             addPointLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
             addPointLayout.setSpacing(true);
-            detailPanel.add(new H3("Добавить точку"), addPointLayout);
+            VerticalLayout addPointVertical = new VerticalLayout(new H3("Добавить точку"), addPointLayout);
+//            detailPanel.add(new H3("Добавить точку"), addPointLayout);
 
+            HorizontalLayout bottomLayout = new HorizontalLayout(applyVertical, addPointVertical);
+
+            detailPanel.add(bottomLayout);
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
         }

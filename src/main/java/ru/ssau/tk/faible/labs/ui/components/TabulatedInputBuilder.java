@@ -48,6 +48,7 @@ public class TabulatedInputBuilder extends Div {
 
     public TabulatedInputBuilder() {
         pointCountField.setMin(2);
+        pointCountField.setMax(1000);
         pointCountField.setStepButtonsVisible(true);
         pointCountField.setValue(2);
 
