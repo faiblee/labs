@@ -1,5 +1,6 @@
 package ru.ssau.tk.faible.labs.entity;
 
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
