@@ -6,10 +6,7 @@ public class BrailleHelper {
 
     private static final String BRAILLE_MODE_KEY = "braille_mode_enabled";
 
-    /**
-     * Проверяет, включён ли режим Брайля у текущего пользователя,
-     * и возвращает текст в нужном виде.
-     */
+    //Проверяет, включён ли режим Брайля у текущего пользователя и возвращает текст в нужном виде.
     public static String applyBrailleIfEnabled(String text) {
         if (text == null) return null;
 
@@ -20,24 +17,20 @@ public class BrailleHelper {
         return text;
     }
 
-    /**
-     * Устанавливает режим Брайля для текущего пользователя.
-     */
+    // Устанавливает режим Брайля для текущего пользователя.
     public static void setBrailleModeEnabled(boolean enabled) {
         VaadinSession.getCurrent().setAttribute(BRAILLE_MODE_KEY, enabled);
     }
 
-    /**
-     * Проверяет, включён ли режим Брайля у текущего пользователя.
-     */
+
+    // Проверяет, включён ли режим Брайля у текущего пользователя
     public static boolean isBrailleModeEnabled() {
         Boolean brailleMode = getBrailleModeFromSession();
         return brailleMode != null && brailleMode;
     }
 
-    /**
-     * Вспомогательный метод для получения флага из сессии.
-     */
+
+     // Вспомогательный метод для получения флага из сессии
     private static Boolean getBrailleModeFromSession() {
         return (Boolean) VaadinSession.getCurrent().getAttribute(BRAILLE_MODE_KEY);
     }
