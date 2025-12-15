@@ -8,10 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import ru.ssau.tk.faible.labs.DTO.CompositionFunctionRequestDTO;
-import ru.ssau.tk.faible.labs.DTO.CreateFunctionDTO;
-import ru.ssau.tk.faible.labs.DTO.FunctionDTO;
-import ru.ssau.tk.faible.labs.DTO.OperationRequestDTO;
+import ru.ssau.tk.faible.labs.DTO.*;
 import ru.ssau.tk.faible.labs.entity.FunctionEntity;
 import ru.ssau.tk.faible.labs.entity.PointEntity;
 import ru.ssau.tk.faible.labs.entity.User;
@@ -19,6 +16,7 @@ import ru.ssau.tk.faible.labs.functions.*;
 import ru.ssau.tk.faible.labs.functions.factory.ArrayTabulatedFunctionFactory;
 import ru.ssau.tk.faible.labs.functions.factory.LinkedListTabulatedFunctionFactory;
 import ru.ssau.tk.faible.labs.functions.factory.TabulatedFunctionFactory;
+import ru.ssau.tk.faible.labs.operations.TabulatedFunctionOperationService;
 import ru.ssau.tk.faible.labs.repository.FunctionRepository;
 import ru.ssau.tk.faible.labs.repository.PointRepository;
 import ru.ssau.tk.faible.labs.repository.UserRepository;
@@ -339,7 +337,7 @@ public class FunctionController {
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/functions/operation")
-    public void performOperation(
+    public OperationResponseDTO performOperation(
             @RequestBody OperationRequestDTO operationRequestDTO) {
 
         User currentUser = securityService.getCurrentUser();
@@ -365,8 +363,8 @@ public class FunctionController {
         }
 
         // 3. Загрузить точки обеих функций
-        List<PointEntity> points1 = pointRepository.findByFunctionId(operationRequestDTO.getFunction1Id());
-        List<PointEntity> points2 = pointRepository.findByFunctionId(operationRequestDTO.getFunction2Id());
+        List<PointEntity> points1 = pointRepository.findByFunctionOrderByXValueAsc(func1);
+        List<PointEntity> points2 = pointRepository.findByFunctionOrderByXValueAsc(func2);
 
         log.info("Точек в func1 = {}", points1.size());
         log.info("Точек в func2 = {}", points2.size());
@@ -423,51 +421,34 @@ public class FunctionController {
 
         // 7. Выполнить операцию
         String operation = operationRequestDTO.getOperation();
-        double[] resultYArray = new double[y1Array.length];
+        TabulatedFunctionOperationService operationService = new TabulatedFunctionOperationService();
 
-        switch (operation.toLowerCase()) { // Приводим к нижнему регистру для надёжности
-            case "сложение":
-            case "addition":
-                for (int i = 0; i < resultYArray.length; i++) {
-                    resultYArray[i] = y1Array[i] + y2Array[i];
-                }
-                break;
-            case "вычитание":
-            case "subtraction":
-                for (int i = 0; i < resultYArray.length; i++) {
-                    resultYArray[i] = y1Array[i] - y2Array[i];
-                }
-                break;
-            case "умножение":
-            case "multiplication":
-                for (int i = 0; i < resultYArray.length; i++) {
-                    resultYArray[i] = y1Array[i] * y2Array[i];
-                }
-                break;
-            case "деление":
-            case "division":
-                for (int i = 0; i < resultYArray.length; i++) {
-                    if (Math.abs(y2Array[i]) < 1e-10) {
-                        throw new RuntimeException("Cannot divide by zero at x=" + x1Array[i]);
-                    }
-                    resultYArray[i] = y1Array[i] / y2Array[i];
-                }
-                break;
-            default:
-                throw new RuntimeException("Unsupported operation: " + operation);
+        TabulatedFunction function;
+        if ("сложение".equalsIgnoreCase(operation)) {
+            function = operationService.add(func1Tabulated, func2Tabulated);
+        } else if ("вычитание".equalsIgnoreCase(operation)) {
+            function = operationService.subtract(func1Tabulated, func2Tabulated);
+        } else if ("умножение".equalsIgnoreCase(operation)) {
+            function = operationService.multiplication(func1Tabulated, func2Tabulated);
+        } else if ("деление".equalsIgnoreCase(operation)) {
+            function = operationService.division(func1Tabulated, func2Tabulated);
+        } else {
+            throw new IllegalArgumentException("Unsupported operation");
         }
 
-        // 8. Создать новую функцию
-        FunctionEntity resultFunction = new FunctionEntity(operationRequestDTO.getResultName(), "OPERATION_RESULT", currentUser);
-        FunctionEntity savedResultFunction = functionRepository.save(resultFunction);
 
-        // 9. Создать и сохранить точки новой функции
-        for (int i = 0; i < x1Array.length; i++) {
-            PointEntity pointEntity = new PointEntity(x1Array[i], resultYArray[i], savedResultFunction);
-            pointRepository.save(pointEntity);
+        List<Double> xValuesList = new LinkedList<>();
+        List<Double> yValuesList = new LinkedList<>();
+
+        for (Point point : function) {
+            xValuesList.add(point.x);
+            yValuesList.add(point.y);
         }
 
-        log.info("Результат операции '{}' успешно сохранён как функция с ID: {}", operation, savedResultFunction.getId());
+        double[] xValues = xValuesList.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] yValues = yValuesList.stream().mapToDouble(Double::doubleValue).toArray();
+
+        return new OperationResponseDTO(xValues, yValues);
     }
     private FunctionDTO toDto(FunctionEntity entity) {
         return new FunctionDTO(
