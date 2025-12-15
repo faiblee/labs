@@ -90,7 +90,7 @@ public class FunctionController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/functions/{functionId}/apply")
-    public Double apply(@PathVariable Long functionId, @RequestParam Double x) {
+    public Map<String, Double> apply(@PathVariable Long functionId, @RequestParam Double x) {
         if (functionId == null || x == null)  {
             throw new IllegalArgumentException("Illegal arguments");
         }
@@ -111,7 +111,7 @@ public class FunctionController {
 
         TabulatedFunction tabulatedFunction = new ArrayTabulatedFunction(xValues, yValues);
 
-        return tabulatedFunction.apply(x);
+        return Collections.singletonMap("y", tabulatedFunction.apply(x));
     }
 
     @ResponseStatus(HttpStatus.CREATED) // устанавливает HTTP-статус 201
