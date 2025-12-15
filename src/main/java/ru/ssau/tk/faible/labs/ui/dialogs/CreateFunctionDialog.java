@@ -46,6 +46,9 @@ public class CreateFunctionDialog extends Dialog {
         setWidth("60vw");
         setHeight("70vh");
 
+        countField.setMin(2);
+        countField.setMax(10000);
+
         // Заголовок
         H2 title = new H2("Создание новой функции");
         title.getStyle().set("margin", "0 0 1rem 0").set("font-size", "1.5em");
@@ -176,8 +179,23 @@ public class CreateFunctionDialog extends Dialog {
                 return;
             }
 
+            if (countVal > 10000) {
+                NotificationManager.show("Количество точек должно быть не более 10000!", 3000, Notification.Position.BOTTOM_CENTER);
+                return;
+            }
+
             if (xFrom > xTo) {
                 NotificationManager.show("X начальное не может быть больше X конечного!", 3000, Notification.Position.BOTTOM_CENTER);
+                return;
+            }
+
+            if (Math.abs(xFrom) > 1e6) {
+                NotificationManager.show("X начальное не может быть по модулю больше 1.000.000!", 3000, Notification.Position.BOTTOM_CENTER);
+                return;
+            }
+
+            if (Math.abs(xTo) > 1e6) {
+                NotificationManager.show("X конечное не может быть по модулю больше 1.000.000!", 3000, Notification.Position.BOTTOM_CENTER);
                 return;
             }
 
