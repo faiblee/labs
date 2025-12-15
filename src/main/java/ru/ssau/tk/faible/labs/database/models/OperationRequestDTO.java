@@ -11,5 +11,4 @@ public class OperationRequestDTO {
     private String operation; // "Сложение", "Вычитание", "Умножение", "Деление"
     private int function1Id;
     private int function2Id;
-    private String resultName;
 }

@@ -550,7 +550,10 @@ public class FunctionServlet extends HttpServlet {
 
         OperationResponseDTO responseDto = new OperationResponseDTO(xValues, yValues);
 
+
         PrintWriter out =  resp.getWriter();
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
         out.print(objectMapper.writeValueAsString(responseDto));
         out.flush();
     }
