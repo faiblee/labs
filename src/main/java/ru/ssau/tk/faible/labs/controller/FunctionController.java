@@ -89,7 +89,7 @@ public class FunctionController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/functions/{id}/apply")
+    @GetMapping("/functions/{functionId}/apply")
     public Double apply(@PathVariable Long functionId, @RequestParam Double x) {
         if (functionId == null || x == null)  {
             throw new IllegalArgumentException("Illegal arguments");
