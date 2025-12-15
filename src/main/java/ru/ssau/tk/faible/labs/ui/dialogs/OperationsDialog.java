@@ -347,7 +347,7 @@ public class OperationsDialog extends Dialog {
                 createFunctionDTO.setName(name);
                 createFunctionDTO.setOwnerId(currentUser.getId());
                 createFunctionDTO.setType("Табулированная функция");
-
+                createFunctionDTO.setFactory_type(currentUser.getFactory_type());
 
                 String url = "http://localhost:8080/api/functions";
                 HttpHeaders headers = new HttpHeaders();
