@@ -55,8 +55,10 @@ public class PointController {
         // Проверка авторизации
         securityService.getCurrentUser();
 
+        FunctionEntity function = functionRepository.findById(functionId).orElseThrow(() -> new IllegalArgumentException("Function not found"));
+
         // Получаем точки по ID функции
-        List<PointEntity> points = pointRepository.findByFunctionIdOrderByXValueAsc(functionId);
+        List<PointEntity> points = pointRepository.findByFunctionOrderByXValueAsc(function);
 
         log.info("Retrieved {} points for function ID: {}", points.size(), functionId);
 

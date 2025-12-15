@@ -10,7 +10,7 @@ public class PointEntity {
     private Long id;
 
     @Column(name = "x_value", nullable = false)
-    private Double xValue;
+    private Double XValue;
 
     @Column(name = "y_value", nullable = false)
     private Double yValue;
@@ -22,7 +22,7 @@ public class PointEntity {
     public PointEntity() {}
 
     public PointEntity(Double xValue, Double yValue, FunctionEntity function) {
-        this.xValue = xValue;
+        this.XValue = xValue;
         this.yValue = yValue;
         this.function = function;
     }
@@ -30,8 +30,8 @@ public class PointEntity {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Double getXValue() { return xValue; }
-    public void setXValue(Double xValue) { this.xValue = xValue; }
+    public Double getXValue() { return XValue; }
+    public void setXValue(Double xValue) { this.XValue = xValue; }
 
     public Double getYValue() { return yValue; }
     public void setYValue(Double yValue) { this.yValue = yValue; }

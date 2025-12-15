@@ -17,6 +17,4 @@ public interface PointRepository extends JpaRepository<PointEntity, Long> {
     void deleteByFunction(FunctionEntity function);
 
     List<PointEntity> findByFunctionOrderByXValueAsc(FunctionEntity function);
-
-    List<PointEntity> findByFunctionIdOrderByXValueAsc(Long functionId);
 }
