@@ -94,7 +94,10 @@ public class FunctionController {
         if (functionId == null || x == null)  {
             throw new IllegalArgumentException("Illegal arguments");
         }
-        List<PointEntity> points = pointRepository.findByFunctionId(functionId);
+
+        FunctionEntity function = functionRepository.findById(functionId).orElseThrow(() -> new IllegalArgumentException("Function not found"));
+
+        List<PointEntity> points = pointRepository.findByFunctionOrderByXValueAsc(function);
 
         List<Double> xValuesList = new LinkedList<>();
         List<Double> yValuesList = new LinkedList<>();
@@ -106,9 +109,9 @@ public class FunctionController {
         double[] xValues = xValuesList.stream().mapToDouble(Double::doubleValue).toArray();
         double[] yValues = yValuesList.stream().mapToDouble(Double::doubleValue).toArray();
 
-        TabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        TabulatedFunction tabulatedFunction = new ArrayTabulatedFunction(xValues, yValues);
 
-        return function.apply(x);
+        return tabulatedFunction.apply(x);
     }
 
     @ResponseStatus(HttpStatus.CREATED) // устанавливает HTTP-статус 201
