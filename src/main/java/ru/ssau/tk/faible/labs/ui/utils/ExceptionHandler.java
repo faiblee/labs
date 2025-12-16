@@ -12,6 +12,8 @@ public class ExceptionHandler {
             NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Ошибка: " + message), 5000, Notification.Position.BOTTOM_CENTER);
         } else if (e instanceof ResourceAccessException) {
             NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Сервер недоступен. Проверьте подключение к сети."), 5000, Notification.Position.BOTTOM_CENTER);
+        } else if (e.getMessage().contains("api/functions/operation")) {
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Ошибка: для выполнения операций значения x должны совпадать"), 5000, Notification.Position.BOTTOM_CENTER);
         } else {
             // Общая ошибка
             NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Произошла непредвиденная ошибка: " + e.getMessage()), 5000, Notification.Position.BOTTOM_CENTER);

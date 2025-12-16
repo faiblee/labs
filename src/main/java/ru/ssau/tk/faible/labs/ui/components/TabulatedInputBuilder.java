@@ -67,8 +67,8 @@ public class TabulatedInputBuilder extends Div {
 
     private void buildTable() {
         Integer count = pointCountField.getValue();
-        if (count == null || count < 2) {
-            NotificationManager.show("Укажите количество точек (минимум 2)", 3000, Notification.Position.BOTTOM_CENTER);
+        if (count == null || count < 2 || count > 500) {
+            NotificationManager.show("Укажите верное количество точек (от 2 до 1000)", 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
@@ -118,7 +118,7 @@ public class TabulatedInputBuilder extends Div {
     }
 
     private static boolean isValidDouble(String s) {
-        if (s == null || s.trim().isEmpty()) return true; // пусто = допустимо (пока)
+        if (s == null || s.trim().isEmpty()) return false; // пусто = допустимо
         try {
             Double.parseDouble(s.trim());
             return true;
