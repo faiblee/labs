@@ -81,8 +81,8 @@ public class FunctionsListDialog extends Dialog {
 
     private VerticalLayout createLeftPanel() {
         functionGrid.setColumns("name", "type");
-        functionGrid.getColumnByKey("name").setHeader("Имя");
-        functionGrid.getColumnByKey("type").setHeader("Тип");
+        functionGrid.getColumnByKey("name").setHeader(BrailleHelper.applyBrailleIfEnabled("Имя"));
+        functionGrid.getColumnByKey("type").setHeader(BrailleHelper.applyBrailleIfEnabled("Тип"));
         functionGrid.setHeight("70vh");
         functionGrid.setWidth("300px");
 
@@ -91,7 +91,7 @@ public class FunctionsListDialog extends Dialog {
             loadFunctionDetails(selectedFunction);
         });
 
-        VerticalLayout leftPanel = new VerticalLayout(new H3("Функции"), functionGrid);
+        VerticalLayout leftPanel = new VerticalLayout(new H3(BrailleHelper.applyBrailleIfEnabled("Функции")), functionGrid);
         leftPanel.setPadding(true);
         leftPanel.setWidth("320px");
         return leftPanel;
@@ -128,7 +128,7 @@ public class FunctionsListDialog extends Dialog {
             // Таблица точек
             Grid<PointDTO> pointsGrid = createPointsGrid(currentPoints);
             pointsGrid.setHeight("400px");
-            detailPanel.add(new H3("Точки функции"), pointsGrid);
+            detailPanel.add(new H3(BrailleHelper.applyBrailleIfEnabled("Точки функции")), pointsGrid);
 
             // Кнопки
             Button saveButton = new Button(BrailleHelper.applyBrailleIfEnabled("Сохранить изменения"), e -> savePoints(func.getId()));
@@ -140,8 +140,8 @@ public class FunctionsListDialog extends Dialog {
             detailPanel.add(buttonLayout);
 
             // Вычисление f(x)
-            TextField xInput = new TextField("Введите x");
-            Button applyButton = new Button("Вычислить f(x)", e -> applyFunction(func.getId(), xInput.getValue()));
+            TextField xInput = new TextField(BrailleHelper.applyBrailleIfEnabled("Введите x"));
+            Button applyButton = new Button(BrailleHelper.applyBrailleIfEnabled("Вычислить f(x)"), e -> applyFunction(func.getId(), xInput.getValue()));
             applyResult.setText("");
             applyResult.getStyle().set("margin-left", "10px");
 
@@ -149,20 +149,20 @@ public class FunctionsListDialog extends Dialog {
             applyLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
             applyLayout.setSpacing(true);
             detailPanel.add(new H3(BrailleHelper.applyBrailleIfEnabled("Вычислить значение")), applyLayout);
-            VerticalLayout applyVertical = new VerticalLayout(new H3("Вычислить значение"), applyLayout);
+            VerticalLayout applyVertical = new VerticalLayout(new H3(BrailleHelper.applyBrailleIfEnabled("Вычислить значение")), applyLayout);
 //            detailPanel.add(, applyLayout);
 
             // === Добавление новой точки ===
             TextField addXField = new TextField("X");
             TextField addYField = new TextField("Y");
-            Button addButton = new Button("Добавить точку", e ->
+            Button addButton = new Button(BrailleHelper.applyBrailleIfEnabled("Добавить точку"), e ->
                     addPoint(func.getId(), addXField.getValue(), addYField.getValue())
             );
 
             HorizontalLayout addPointLayout = new HorizontalLayout(addXField, addYField, addButton);
             addPointLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.BASELINE);
             addPointLayout.setSpacing(true);
-            VerticalLayout addPointVertical = new VerticalLayout(new H3("Добавить точку"), addPointLayout);
+            VerticalLayout addPointVertical = new VerticalLayout(new H3(BrailleHelper.applyBrailleIfEnabled("Добавить точку")), addPointLayout);
 //            detailPanel.add(new H3("Добавить точку"), addPointLayout);
 
             HorizontalLayout bottomLayout = new HorizontalLayout(applyVertical, addPointVertical);
@@ -175,11 +175,11 @@ public class FunctionsListDialog extends Dialog {
 
     private void deletePoint(PointDTO point, int functionId) {
         ConfirmDialog confirm = new ConfirmDialog();
-        confirm.setHeader("Подтверждение удаления точки");
-        confirm.setText("Вы действительно хотите удалить точку (" + point.getXValue() + ", " + point.getYValue() + ")?");
+        confirm.setHeader(BrailleHelper.applyBrailleIfEnabled("Подтверждение удаления точки"));
+        confirm.setText(BrailleHelper.applyBrailleIfEnabled("Вы действительно хотите удалить точку (" + point.getXValue() + ", " + point.getYValue() + ")?"));
         confirm.setCancelable(true);
-        confirm.setConfirmText("Удалить");
-        confirm.setRejectText("Отмена");
+        confirm.setConfirmText(BrailleHelper.applyBrailleIfEnabled("Удалить"));
+        confirm.setRejectText(BrailleHelper.applyBrailleIfEnabled("Отмена"));
         confirm.addConfirmListener(e -> {
             try {
                 String url = "http://localhost:8080/api/points/" + point.getId();
@@ -219,11 +219,11 @@ public class FunctionsListDialog extends Dialog {
         )).setHeader("Y").setAutoWidth(true);
 
         grid.addColumn(new ComponentRenderer<>(point -> {
-            Button deleteButton = new Button("Удалить", VaadinIcon.TRASH.create());
+            Button deleteButton = new Button(BrailleHelper.applyBrailleIfEnabled("Удалить"), VaadinIcon.TRASH.create());
             deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
             deleteButton.addClickListener(e -> deletePoint(point, selectedFunction.getId()));
             return deleteButton;
-        })).setHeader("Действия").setWidth("120px").setFlexGrow(0);
+        })).setHeader(BrailleHelper.applyBrailleIfEnabled("Действия")).setWidth("120px").setFlexGrow(0);
 
         return grid;
     }
@@ -248,7 +248,7 @@ public class FunctionsListDialog extends Dialog {
                     setter.accept(item, parsed);
                 }
             } catch (NumberFormatException ex) {
-                Notification.show("Введите корректное число", 3000, Notification.Position.MIDDLE);
+                Notification.show(BrailleHelper.applyBrailleIfEnabled("Введите корректное число"), 3000, Notification.Position.MIDDLE);
                 field.setValue("");
                 setter.accept(item, null);
             }
@@ -259,7 +259,7 @@ public class FunctionsListDialog extends Dialog {
 
     private void addPoint(int functionId, String xStr, String yStr) {
         if (xStr == null || xStr.trim().isEmpty() || yStr == null || yStr.trim().isEmpty()) {
-            NotificationManager.show("Введите оба значения x и y", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Введите оба значения x и y"), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
         try {
@@ -279,13 +279,13 @@ public class FunctionsListDialog extends Dialog {
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(pointData, headers);
             restTemplate.postForObject(url, request, Void.class);
 
-            NotificationManager.show("Точка добавлена!", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Точка добавлена!"), 3000, Notification.Position.BOTTOM_CENTER);
 
             // Перезагрузить точки, чтобы новая появилась в таблице
             loadFunctionDetails(selectedFunction);
 
         } catch (NumberFormatException e) {
-            NotificationManager.show("Некорректные значения x или y", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Некорректные значения x или y"), 3000, Notification.Position.BOTTOM_CENTER);
         } catch (Exception ex) {
             ExceptionHandler.notifyUser(ex);
         }
@@ -314,8 +314,8 @@ public class FunctionsListDialog extends Dialog {
 
     private void deleteFunction(int functionId) {
         ConfirmDialog confirm = new ConfirmDialog();
-        confirm.setHeader("Подтверждение удаления");
-        confirm.setText("Вы действительно хотите удалить функцию?");
+        confirm.setHeader(BrailleHelper.applyBrailleIfEnabled("Подтверждение удаления"));
+        confirm.setText(BrailleHelper.applyBrailleIfEnabled("Вы действительно хотите удалить функцию?"));
         confirm.setCancelable(true);
         confirm.setConfirmText("Удалить");
         confirm.setRejectText("Отмена");

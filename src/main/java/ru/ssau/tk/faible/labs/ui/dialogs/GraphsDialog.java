@@ -56,7 +56,7 @@ public class GraphsDialog extends Dialog {
         mainLayout.setFlexGrow(1, rightPanel);  // правая — растягивается
 
         // === Кнопка закрытия (внизу, по центру) ===
-        Button closeButton = new Button("Закрыть", e -> close());
+        Button closeButton = new Button(BrailleHelper.applyBrailleIfEnabled("Закрыть"), e -> close());
         closeButton.addClassName("graph-dialog-close-button");
 
         VerticalLayout dialogContent = new VerticalLayout(mainLayout, closeButton);
@@ -79,7 +79,7 @@ public class GraphsDialog extends Dialog {
         Paragraph description = new Paragraph(BrailleHelper.applyBrailleIfEnabled("Выберите функцию для построения графика."));
         description.getStyle().set("margin", "0 0 1rem 0").set("color", "var(--lumo-secondary-text-color)");
 
-        functionGrid.addColumn(FunctionDTO::getName).setHeader("Имя").setAutoWidth(true);
+        functionGrid.addColumn(FunctionDTO::getName).setHeader(BrailleHelper.applyBrailleIfEnabled("Имя")).setAutoWidth(true);
         functionGrid.setHeight("60vh"); // фиксированная высота, чтобы не растягивалась
         functionGrid.addClassName("graph-function-grid");
 
@@ -124,7 +124,7 @@ public class GraphsDialog extends Dialog {
 
     private void loadAndDisplayChart(FunctionDTO selectedFunction) {
         try {
-            chartTitle.setText("График: " + selectedFunction.getName());
+            chartTitle.setText(BrailleHelper.applyBrailleIfEnabled("График: " + selectedFunction.getName()));
 
             String url = "http://localhost:8080/api/functions/" + selectedFunction.getId() + "/points";
             HttpHeaders headers = new HttpHeaders();

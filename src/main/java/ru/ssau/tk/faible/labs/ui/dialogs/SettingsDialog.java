@@ -13,6 +13,7 @@ import com.vaadin.flow.server.VaadinSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+import ru.ssau.tk.faible.labs.ui.components.LogoutButton;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
@@ -60,7 +61,8 @@ public class SettingsDialog extends Dialog {
         HorizontalLayout buttons = new HorizontalLayout();
         Button saveBtn = new Button(BrailleHelper.applyBrailleIfEnabled("Сохранить"), e -> saveChanges(currentUser));
         Button cancelBtn = new Button(BrailleHelper.applyBrailleIfEnabled("Отмена"), e -> close());
-        buttons.add(saveBtn, cancelBtn);
+        LogoutButton logoutButton = new LogoutButton();
+        buttons.add(saveBtn, cancelBtn, logoutButton);
 
         add(form, buttons);
     }

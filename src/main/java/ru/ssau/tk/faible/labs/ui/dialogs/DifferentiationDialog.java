@@ -27,6 +27,7 @@ import ru.ssau.tk.faible.labs.operations.LeftSteppingDifferentialOperator;
 import ru.ssau.tk.faible.labs.ui.models.CurrentUser;
 import ru.ssau.tk.faible.labs.ui.models.FunctionDTO;
 import ru.ssau.tk.faible.labs.ui.models.PointDTO;
+import ru.ssau.tk.faible.labs.ui.utils.BrailleHelper;
 import ru.ssau.tk.faible.labs.ui.utils.ExceptionHandler;
 import ru.ssau.tk.faible.labs.ui.utils.NotificationManager;
 
@@ -44,14 +45,14 @@ public class DifferentiationDialog extends Dialog {
     private final List<PointDTO> inputPoints = new ArrayList<>();
     private final List<PointDTO> resultPoints = new ArrayList<>();
 
-    private final Button differentiateButton = new Button("Продифференцировать");
+    private final Button differentiateButton = new Button(BrailleHelper.applyBrailleIfEnabled("Продифференцировать"));
 
     public DifferentiationDialog() {
         this.currentUser = VaadinSession.getCurrent().getAttribute(CurrentUser.class);
 
         setWidth("95vw");
         setHeight("85vh");
-        add(new H3("Дифференцирование функции"));
+        add(new H3(BrailleHelper.applyBrailleIfEnabled("Дифференцирование функции")));
 
         this.inputGrid = createPointsGrid(inputPoints, true);
         this.resultGrid = createPointsGrid(resultPoints, false);
@@ -64,7 +65,7 @@ public class DifferentiationDialog extends Dialog {
         mainLayout.setFlexGrow(1, leftPanel);
         mainLayout.setFlexGrow(1, rightPanel);
 
-        Button closeButton = new Button("Закрыть", e -> close());
+        Button closeButton = new Button(BrailleHelper.applyBrailleIfEnabled("Закрыть"), e -> close());
         closeButton.setWidth("100px");
 
         VerticalLayout content = new VerticalLayout(mainLayout, closeButton);
@@ -76,7 +77,7 @@ public class DifferentiationDialog extends Dialog {
     }
 
     private VerticalLayout createInputPanel() {
-        functionSelect.setLabel("Выберите функцию");
+        functionSelect.setLabel(BrailleHelper.applyBrailleIfEnabled("Выберите функцию"));
         functionSelect.setWidthFull();
         functionSelect.addValueChangeListener(e -> {
             if (e.getValue() != null) {
@@ -89,7 +90,7 @@ public class DifferentiationDialog extends Dialog {
         gridWrapper.setSizeFull();
 
         VerticalLayout panel = new VerticalLayout(
-                new H3("Исходная функция"),
+                new H3(BrailleHelper.applyBrailleIfEnabled("Исходная функция")),
                 functionSelect,
                 gridWrapper
         );
@@ -108,7 +109,7 @@ public class DifferentiationDialog extends Dialog {
         gridWrapper.setSizeFull();
 
         VerticalLayout panel = new VerticalLayout(
-                new H3("Производная"),
+                new H3(BrailleHelper.applyBrailleIfEnabled("Производная")),
                 gridWrapper,
                 differentiateButton
         );
@@ -125,12 +126,12 @@ public class DifferentiationDialog extends Dialog {
 
         if (editable) {
             grid.addComponentColumn(item -> createEditableTextField(item, PointDTO::getXValue, PointDTO::setXValue))
-                    .setHeader("X").setAutoWidth(true);
+                    .setHeader(BrailleHelper.applyBrailleIfEnabled("X")).setAutoWidth(true);
             grid.addComponentColumn(item -> createEditableTextField(item, PointDTO::getYValue, PointDTO::setYValue))
-                    .setHeader("Y").setAutoWidth(true);
+                    .setHeader(BrailleHelper.applyBrailleIfEnabled("Y")).setAutoWidth(true);
         } else {
-            grid.addColumn(PointDTO::getXValue).setHeader("X").setAutoWidth(true);
-            grid.addColumn(PointDTO::getYValue).setHeader("Y").setAutoWidth(true);
+            grid.addColumn(PointDTO::getXValue).setHeader(BrailleHelper.applyBrailleIfEnabled("X")).setAutoWidth(true);
+            grid.addColumn(PointDTO::getYValue).setHeader(BrailleHelper.applyBrailleIfEnabled("Y")).setAutoWidth(true);
         }
         return grid;
     }
@@ -153,7 +154,7 @@ public class DifferentiationDialog extends Dialog {
                     setter.accept(item, parsed);
                 }
             } catch (NumberFormatException ex) {
-                Notification.show("Введите число", 3000, Notification.Position.MIDDLE);
+                Notification.show(BrailleHelper.applyBrailleIfEnabled("Введите число"), 3000, Notification.Position.MIDDLE);
                 field.setValue("");
                 setter.accept(item, null);
             }
@@ -215,7 +216,7 @@ public class DifferentiationDialog extends Dialog {
 
     private void performDifferentiation() {
         if (inputPoints.isEmpty()) {
-            NotificationManager.show("Выберите функцию для дифференцирования", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Выберите функцию для дифференцирования"), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 

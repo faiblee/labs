@@ -53,9 +53,12 @@ public class MainView extends VerticalLayout {
         title.getStyle().set("margin", "0").set("font-size", "1.4em").set("color", "#2c3e50");
 
         // Кнопка выхода
-        LogoutButton logoutButton = new LogoutButton();
+        Button settingsButton = new Button(VaadinIcon.COG.create(), e -> {
+            SettingsDialog dialog = new SettingsDialog();
+            dialog.open();
+        });
 
-        header.add(brailleButton, title, logoutButton);
+        header.add(brailleButton, title, settingsButton);
         add(header);
 
         // === Центральная область: сетка 2x3 ===
@@ -78,11 +81,6 @@ public class MainView extends VerticalLayout {
                             GraphsDialog dialog = new GraphsDialog();
                             dialog.open();
                         }),
-                createCardWithIcon("⚙️ Настройки", "Изменяйте профиль (логин, пароль) и выбирайте фабрику.", "Открыть настройки",
-                        () -> {
-                            Dialog dialog = new SettingsDialog();
-                            dialog.open();
-                        }),
                 createCardWithIcon("🔄 Комплексные функции", "Работайте с составными функциями.", "Открыть",
                         () -> {
                             CreateCompositionFunctionDialog dialog = new CreateCompositionFunctionDialog();
@@ -93,7 +91,7 @@ public class MainView extends VerticalLayout {
                             FunctionsListDialog dialog = new FunctionsListDialog();
                             dialog.open();
                         }),
-                createCardWithIcon("📈 Дифференцирование", "Все ваши функции.", "Открыть",
+                createCardWithIcon("📜 Дифференцирование", "Продифференцировать ваши функции.", "Посчитать",
                         () -> {
                             DifferentiationDialog dialog = new DifferentiationDialog();
                             dialog.open();
@@ -117,7 +115,7 @@ public class MainView extends VerticalLayout {
         titleLayout.setSpacing(true);
 
         Icon icon = getIconForTitle(title);
-        H3 cardTitle = new H3(BrailleHelper.applyBrailleIfEnabled(title));
+        H3 cardTitle = new H3(BrailleHelper.applyBrailleIfEnabled(title.substring(2)));
         cardTitle.getStyle().set("margin", "0").set("font-size", "1.3rem").set("color", "#2c3e50");
 
         titleLayout.add(icon, cardTitle);
@@ -157,6 +155,8 @@ public class MainView extends VerticalLayout {
             return VaadinIcon.LINK.create();
         } else if (title.contains("📈")) {
             return VaadinIcon.FOLDER.create();
+        } else if (title.contains("📜")) {
+            return VaadinIcon.FUNCTION.create();
         }
         // Иконка по умолчанию
         return VaadinIcon.INFO_CIRCLE.create();

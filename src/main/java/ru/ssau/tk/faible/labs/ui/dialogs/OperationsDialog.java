@@ -48,9 +48,9 @@ public class OperationsDialog extends Dialog {
     private final List<PointDTO> points1 = new ArrayList<>();
     private final List<PointDTO> points2 = new ArrayList<>();
 
-    private final Button loadJson1 = new Button("Загрузить из JSON");
-    private final Button loadJson2 = new Button("Загрузить из JSON");
-    private final Button calculateButton = new Button("Вычислить");
+    private final Button loadJson1 = new Button(BrailleHelper.applyBrailleIfEnabled("Загрузить из JSON"));
+    private final Button loadJson2 = new Button(BrailleHelper.applyBrailleIfEnabled("Загрузить из JSON"));
+    private final Button calculateButton = new Button(BrailleHelper.applyBrailleIfEnabled("Вычислить"));
 
     // Result section
     private final Grid<PointDTO> resultGrid;
@@ -71,11 +71,11 @@ public class OperationsDialog extends Dialog {
         title.getStyle().set("margin", "0 0 1rem 0").set("font-size", "1.5em");
 
         // === Выбор операции (вверху) ===
-        operationSelect.setLabel("Выберите операцию");
+        operationSelect.setLabel(BrailleHelper.applyBrailleIfEnabled("Выберите операцию"));
         operationSelect.setItems("сложение", "вычитание", "умножение", "деление");
         operationSelect.setWidth("200px");
 
-        HorizontalLayout operationLayout = new HorizontalLayout(new Span("Операция:"), operationSelect, calculateButton);
+        HorizontalLayout operationLayout = new HorizontalLayout(new Span(BrailleHelper.applyBrailleIfEnabled("Операция:")), operationSelect, calculateButton);
         operationLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
         operationLayout.setSpacing(true);
 
@@ -88,8 +88,8 @@ public class OperationsDialog extends Dialog {
         calculateButton.addClickListener(e -> updateResult());
 
         // Панели
-        VerticalLayout leftPanel = createFunctionPanel("Функция f(x)", function1Select, pointsGrid1, loadJson1);
-        VerticalLayout centerPanel = createFunctionPanel("Функция g(x)", function2Select, pointsGrid2, loadJson2);
+        VerticalLayout leftPanel = createFunctionPanel(BrailleHelper.applyBrailleIfEnabled("Функция f(x)"), function1Select, pointsGrid1, loadJson1);
+        VerticalLayout centerPanel = createFunctionPanel(BrailleHelper.applyBrailleIfEnabled("Функция g(x)"), function2Select, pointsGrid2, loadJson2);
         VerticalLayout rightPanel = createResultPanel();
 
         loadJson1.addClickListener(e -> openJsonUploadDialog(points1, pointsGrid1));
@@ -132,7 +132,7 @@ public class OperationsDialog extends Dialog {
         content.setSpacing(true);
         content.setPadding(true);
 
-        Button closeButton = new Button("Закрыть", e -> close());
+        Button closeButton = new Button(BrailleHelper.applyBrailleIfEnabled("Закрыть"), e -> close());
         closeButton.setWidth("100px");
 
         // Добавляем кнопку "Закрыть" вниз, по правому краю
@@ -169,7 +169,7 @@ public class OperationsDialog extends Dialog {
     }
 
     private VerticalLayout createResultPanel() {
-        H3 panelTitle = new H3("Результат");
+        H3 panelTitle = new H3(BrailleHelper.applyBrailleIfEnabled("Результат"));
         panelTitle.getStyle().set("margin", "0 0 0.5rem 0");
 
         resultGrid.setHeightFull();
@@ -178,8 +178,8 @@ public class OperationsDialog extends Dialog {
         gridWrapper.setSpacing(false);
         gridWrapper.setSizeFull();
 
-        Button saveButton = new Button("Сохранить", e -> saveResult());
-        Button exportButton = new Button("Экспорт в JSON", e -> exportResultToJson());
+        Button saveButton = new Button(BrailleHelper.applyBrailleIfEnabled("Сохранить"), e -> saveResult());
+        Button exportButton = new Button(BrailleHelper.applyBrailleIfEnabled("Экспорт в JSON"), e -> exportResultToJson());
         exportButton.setWidthFull();
         saveButton.setWidthFull();
 
@@ -199,7 +199,7 @@ public class OperationsDialog extends Dialog {
         UploadHandler uploadHandler = UploadHandler.inMemory((metadata, data) -> {
             String fileName = metadata.fileName();
             if (!fileName.toLowerCase().endsWith(".json")) {
-                Notification.show("Файл должен иметь расширение .json", 4000, Notification.Position.MIDDLE);
+                Notification.show(BrailleHelper.applyBrailleIfEnabled("Файл должен иметь расширение .json"), 4000, Notification.Position.MIDDLE);
                 return;
             }
 
@@ -220,10 +220,10 @@ public class OperationsDialog extends Dialog {
                     targetGrid.getDataProvider().refreshAll();
                     updateResult();
 
-                    Notification.show("Функция загружена из " + fileName, 3000, Notification.Position.BOTTOM_CENTER);
+                    Notification.show(BrailleHelper.applyBrailleIfEnabled("Функция загружена из " + fileName), 3000, Notification.Position.BOTTOM_CENTER);
                 }
             } catch (Exception ex) {
-                Notification.show("Ошибка: " + ex.getMessage(), 5000, Notification.Position.MIDDLE);
+                Notification.show(BrailleHelper.applyBrailleIfEnabled("Ошибка: " + ex.getMessage()), 5000, Notification.Position.MIDDLE);
             }
         });
 
@@ -231,22 +231,22 @@ public class OperationsDialog extends Dialog {
         upload.setMaxFiles(1);
         upload.setAcceptedFileTypes(".json");
 
-        Button cancelButton = new Button("Отмена", e -> close());
-        Button uploadButton = new Button("Загрузить");
+        Button cancelButton = new Button(BrailleHelper.applyBrailleIfEnabled("Отмена"), e -> close());
+        Button uploadButton = new Button(BrailleHelper.applyBrailleIfEnabled("Загрузить"));
         uploadButton.setEnabled(false); // Upload сам управляет активностью
 
         // Интегрируем Upload в кнопку-обёртку (чтобы не показывать стандартный стиль Upload)
         // Но проще — использовать Upload как есть
         Dialog jsonDialog = new Dialog();
-        jsonDialog.setHeaderTitle("Загрузить функцию из JSON");
-        jsonDialog.add(new VerticalLayout(new Span("Выберите JSON-файл:"), upload));
+        jsonDialog.setHeaderTitle(BrailleHelper.applyBrailleIfEnabled("Загрузить функцию из JSON"));
+        jsonDialog.add(new VerticalLayout(new Span(BrailleHelper.applyBrailleIfEnabled("Выберите JSON-файл:")), upload));
         jsonDialog.setWidth("500px");
         jsonDialog.open();
     }
 
     private void exportResultToJson() {
         if (resultPoints.isEmpty()) {
-            Notification.show("Нет данных для экспорта");
+            Notification.show(BrailleHelper.applyBrailleIfEnabled("Нет данных для экспорта"));
             return;
         }
 
@@ -315,7 +315,7 @@ public class OperationsDialog extends Dialog {
                     setter.accept(item, parsed);
                 }
             } catch (NumberFormatException ex) {
-                Notification.show("Введите число", 3000, Notification.Position.MIDDLE);
+                Notification.show(BrailleHelper.applyBrailleIfEnabled("Введите число"), 3000, Notification.Position.MIDDLE);
                 field.setValue("");
                 setter.accept(item, null);
             }
@@ -431,12 +431,12 @@ public class OperationsDialog extends Dialog {
 
     private void saveResult() {
         if (resultPoints.isEmpty()) {
-            NotificationManager.show("Нет результата для сохранения", 3000, Notification.Position.BOTTOM_CENTER);
+            NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Нет результата для сохранения"), 3000, Notification.Position.BOTTOM_CENTER);
             return;
         }
 
-        TextField nameField = new TextField("Имя новой функции");
-        Button saveBtn = new Button("Сохранить", e -> {
+        TextField nameField = new TextField(BrailleHelper.applyBrailleIfEnabled("Имя новой функции"));
+        Button saveBtn = new Button(BrailleHelper.applyBrailleIfEnabled("Сохранить"), e -> {
             String name = nameField.getValue();
             if (name == null || name.trim().isEmpty()) {
                 Notification.show("Введите имя");
@@ -475,7 +475,7 @@ public class OperationsDialog extends Dialog {
                 } catch (Exception ex) {
                     ExceptionHandler.notifyUser(ex);
                 }
-                NotificationManager.show("Функция сохранена!", 3000, Notification.Position.BOTTOM_CENTER);
+                NotificationManager.show(BrailleHelper.applyBrailleIfEnabled("Функция сохранена!"), 3000, Notification.Position.BOTTOM_CENTER);
                 close();
             } catch (Exception ex) {
                 ExceptionHandler.notifyUser(ex);
